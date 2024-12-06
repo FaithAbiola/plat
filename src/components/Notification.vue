@@ -12,7 +12,7 @@ withDefaults(
 );
 </script>
 <template class="">
-  <div class="dropdown dropdown-end hidden">
+  <div class="dropdown dropdown-end">
     <label
       tabindex="0"
       class="relative flex items-center bg-grey-100 lg:p-2.5 p-3.5 rounded-full space-x-3 cursor-pointer"
@@ -29,7 +29,7 @@ withDefaults(
           "
         />
       </span>
-      <span class="font-semimedium text-sm hidden lg:block"
+      <span class="font-semimedium text-sm lg:block"
         >Your notifications</span
       >
       <span

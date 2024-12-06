@@ -4,7 +4,7 @@ import { useSlots } from "vue";
 // slots
 const slot = useSlots();
 
-const props = withDefaults(defineProps<{ disabled: boolean }>(), {
+const props = withDefaults(defineProps<{ disabled?: boolean }>(), {
   disabled: false,
 });
 </script>

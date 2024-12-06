@@ -341,47 +341,68 @@ defineExpose({
   <div class="pt-6 pb-24 lg:px-16+2" v-else>
     <div class="mx-auto lg:w-[500px] space-y-18">
       <div class="space-y-9 lg:px-[30px] px-[20px]" id="element-to-print">
-        <div v-if="responseData.data">
-          <h3 class="text-black-rgba text-2xl font-black">NGN {{ formatNumber(responseData.data.data.grade.salary) }}</h3>
+        <!-- <div v-if="responseData.data"> -->
+        <div>
+          <!-- <h3 class="text-black-rgba text-2xl font-black">NGN {{ formatNumber(responseData.data.data.grade.salary) }}</h3> -->
+          <h3 class="text-black-rgba text-2xl font-black">NGN 1,500,000</h3>
           <span class="text-sm text-gray-rgba-3">Gross Salary</span>
         </div>
 
         <div class="divide-grey-200 divide-y">
           <div class="text-base flex items-center justify-between py-4">
             <span class="font-semi-medium text-gray-rgba-3">Basic/Net</span>
-            <span class="text-black-100 font-semi-medium">N{{ formatNumber(responseData.data.data.grade.salary) }}</span>
+            <!-- <span class="text-black-100 font-semi-medium">N{{ formatNumber(responseData.data.data.grade.salary) }}</span> -->
+            <span class="text-black-100 font-semi-medium">N 990,000.32</span>
+            <!-- <span class="text-black-100 font-semi-medium">n/a</span> -->
             <!-- <span class="text-black-100 font-semi-medium">n/a</span> -->
           </div>
           <div class="text-base flex items-center justify-between py-4">
             <span class="font-semi-medium text-gray-rgba-3">Pension</span>
             <!-- <span class="text-black-100 font-semi-medium">N{{ formatNumber(grandTotal.bonus) }}</span> -->
-            <span class="text-black-100 font-semi-medium">n/a</span>
+            <span class="text-black-100 font-semi-medium">N19,000</span>
+            <!-- <span class="text-black-100 font-semi-medium">n/a</span> -->
+          </div>
+          <div class="text-base flex items-center justify-between py-4">
+            <span class="font-semi-medium text-gray-rgba-3">Health</span>
+            <!-- <span class="text-black-100 font-semi-medium">N{{ formatNumber(responseData.data.data.grade.salary) }}</span> -->
+            <span class="text-black-100 font-semi-medium">N32,000</span>
+            <!-- <span class="text-black-100 font-semi-medium">n/a</span> -->
+            <!-- <span class="text-black-100 font-semi-medium">n/a</span> -->
+          </div>
+          <div class="text-base flex items-center justify-between py-4">
+            <span class="font-semi-medium text-gray-rgba-3">Housing</span>
+            <!-- <span class="text-black-100 font-semi-medium">N{{ formatNumber(responseData.data.data.grade.salary) }}</span> -->
+            <span class="text-black-100 font-semi-medium">N24,000</span>
+            <!-- <span class="text-black-100 font-semi-medium">n/a</span> -->
+            <!-- <span class="text-black-100 font-semi-medium">n/a</span> -->
           </div>
           <div class="text-base flex items-center justify-between py-4">
             <span class="font-semi-medium text-gray-rgba-3">Transport</span>
             <!-- <span class="text-black-100 font-semi-medium">N{{ formatNumber(grandTotal.deductions) }}</span> -->
-            <span class="text-black-100 font-semi-medium">n/a</span>
+            <span class="text-black-100 font-semi-medium">N16,800</span>
+            <!-- <span class="text-black-100 font-semi-medium">n/a</span> -->
           </div>
           <div class="text-base flex items-center justify-between py-4">
             <span class="font-semi-medium text-gray-rgba-3">Tax</span>
             <!-- <span class="text-black-100 font-semi-medium">N{{ formatNumber(grandTotal.tax) }}</span> -->
-            <span class="text-black-100 font-semi-medium">n/a</span>
+            <span class="text-black-100 font-semi-medium">N150,000</span>
+            <!-- <span class="text-black-100 font-semi-medium">n/a</span> -->
           </div>
         </div>
       </div>
 
       <div class="lg:space-x-4 lg:block flex  flex-col justify-center lg:space-y-0 space-y-2">
-        <!-- <button
+        <button
           class="bg-[#003b3d] text-white px-4+1 py-2.5+1 rounded-full text-sm whitespace-nowrap"
         >
           Update employee salary
-        </button> -->
-        <!-- <button
+        </button>
+        <button
           class="text-[#003b3d] bg-red-light text-sm text-bold px-4+1 py-2.5+1 rounded-full whitespace-nowrap"
           @click="exportToPDF()"
         >
           Print salary
-        </button> -->
+        </button>
       </div>
     </div>
   </div>

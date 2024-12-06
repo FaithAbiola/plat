@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, inject } from "vue";
 import CalenderInterface from "../../../layouts/CalenderLayout.vue";
-import { IIncDec, IIncDecBlue, IMenuVertical } from "../../../core/icons";
+import { IIncDec, IIncDecBlue, IMenuVertical, IUserThree } from "../../../core/icons";
 import FCheckedComponent from "../../../components/forms/FCheckBox.vue";
 import ButtonLightBlue from "../../../components/buttons/ButtonLightBlue.vue";
 import ButtonBlue from "../../../components/buttons/ButtonBlue.vue";
@@ -21,6 +21,7 @@ import {currency} from '../../../core/utils/currencyType'
 import { getItem } from "../../../core/utils/storage.helper";
 import Pagination from "../../../components/Pagination.vue";
 import { Payroll } from "../../../service/payroll/interface/payroll.interface";
+import ButtonLightRed from "../../../components/buttons/ButtonLightRed.vue";
 
 // initialize router
 const router = useRouter();
@@ -107,8 +108,13 @@ const getCurrentMonthPayrollId = () => {
 //   // ...
 // };
 
+const approvePayroll = async (id: any) => {
 
+}
 
+const declinePayroll = async (id: any) => {
+
+}
 // Helper function for formatting scheduled date
 const formatScheduledDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -215,20 +221,20 @@ const confirmRemovePayrolls = () => {
 
 const fetchPayroll = async (page = 1) => {
   loading.value = true;
+  try{
   const totalPayrollCached = cache("total_payroll");
-
   if (typeof totalPayrollCached !== "undefined") {
     loading.value = false;
     responseData.value.data = totalPayrollCached;
     // @ts-ignore comment above the problematic line
     responseData.value.sort(function(a, b){return b.id - a.id})
   }
-  const response = await request(payrollStore.index(organisationId,null, null, 10, page), loading);
+  const response = await request(payrollStore.index(organisationId,null, "Pending", 10, page), loading);
 
   const successResponse = handleSuccess(response);
 
   if (successResponse && typeof successResponse !== "undefined") {
-    cache("total_payroll", successResponse.data.data.pageItems);
+    // cache("total_payroll", successResponse.data.data.pageItems);
     responseData.value.data = successResponse.data.data.pageItems;
     currentPage.value = successResponse.data.data.currentPage;
     totalPages.value = successResponse.data.data.numberOfPages;
@@ -241,6 +247,11 @@ const fetchPayroll = async (page = 1) => {
     // console.log(responseData.value, sorted);
     console.log("********",  responseData.value.data);
   }
+} catch(error) {
+  console.error("Error fetching payroll:", error);
+} finally {
+   loading.value = false;
+}
 }; 
 // fetchPayroll();
 fetchPayroll(currentPage.value);
@@ -248,59 +259,11 @@ const updatePage = (page: number) => {
   fetchPayroll(page);
 }
 
-const fetchAllPayrolls = async () => {
-  loading.value = true;
-  allPayrolls = []; // Ensure this is the outer variable
-  let page = 1;
-  let totalPages = 1;
-
-  do {
-    try {
-      const response = await request(payrollStore.index(organisationId, null, null, 10, page), loading);
-      const successResponse = handleSuccess(response);
-
-      if (successResponse && typeof successResponse.data !== "undefined") {
-        const pageItems = successResponse.data.data.pageItems;
-        allPayrolls = allPayrolls.concat(pageItems);
-        totalPages = successResponse.data.data.numberOfPages; 
-        page++;
-      } else {
-        break;
-      }
-    } catch (error) {
-      console.error("Error fetching payrolls:", error);
-      break;
-    }
-  } while (page <= totalPages);
-
-  console.log("Total Payrolls Fetched:", allPayrolls.length);
-  responseDataa.value.data = allPayrolls; 
-  loading.value = false;
-
-  // Call the function here after fetching all payrolls
-  const payrollId = getCurrentMonthPayrollId();
-  console.log("Payroll ID:", payrollId);
-};
-
-// const navigateToCreateNew = () => {
-//   const payrollId = getCurrentMonthPayrollId();
-//   console.log("Payroll ID in navigateToCreateNew:", payrollId);
-  
-//   // Navigate to CreateNew with Payroll ID
-//   router.push({ 
-//     path: '/dashboard/payroll/add-new', 
-//     query: { payrollId } 
-//   });
-// };
-
-
-// fetchAllPayrolls();
-
 // navigateToCreateNew();
 </script>
 <template>
   <div>
-    <div class="bg-white h-full rounded-lg py-6 space-y-5">
+    <div class="bg-white h-full rounded-lg py-6 space-y-5 overflow-auto scrollbar-hide">
       <confirmAlert
         :showConfirm="showConfirm"
         @closeConfirm="showConfirm = false"
@@ -323,7 +286,7 @@ const fetchAllPayrolls = async () => {
         <template #otherMessage>CLOSE</template>
         {{ responseData.message }}</successAlert
       >
-      <div class="px-5 py-2 flex justify-between">
+      <div class="px-5 py-2 flex justify-between lg:space-x-0 space-x-3">
         <div class="space-y-6">
           <div>
             <h3 class="font-bold text-2xl">Payroll History</h3>
@@ -385,11 +348,11 @@ const fetchAllPayrolls = async () => {
           </div>
         </div>
       </div>
-      <div class="space-y-10 overflow-auto scrollbar-hide">
+      <div class="space-y-10">
         <!-- table -->
         <div class="border-t border-grey">
-          <div class="py-6 space-y-6">
-            <div class="flex space-x-2 items-center px-6">
+          <div class="py-6">
+            <!-- <div class="flex space-x-2 items-center px-6">
               <span class="pt-2">
                 <FCheckBoxComp
                   :value="
@@ -405,9 +368,13 @@ const fetchAllPayrolls = async () => {
               <span class="text-sm pt-1 font-semimedium text-[#626669]"
                 >Select All</span
               >
-            </div>
+            </div> -->
             <div class="align-middle inline-block min-w-full">
               <div class="overflow-hidden sm:rounded-lg">
+                <spinner
+                  v-if="loading == true"
+                  class="flex justify-center items-center lg:h-[400px] h-[300px]"
+                />
                 <table class="min-w-full table-fixed">
                   <thead
                     v-if="responseData && responseData.data"
@@ -430,7 +397,7 @@ const fetchAllPayrolls = async () => {
                         scope=" col"
                         class="py-4 font-normal text-left whitespace-nowrap"
                       >
-                        Pay Type
+                      Total Net Pay
                       </th>
                       <th
                         scope="col"
@@ -454,12 +421,12 @@ const fetchAllPayrolls = async () => {
                         scope="col"
                         class="py-4 font-normal text-left whitespace-nowrap"
                       >
-                        Action
+                        Actions
                       </th>
                     </tr>
                   </thead>
                   <tbody
-                    v-if="responseData && responseData.data[0]"
+                    v-if="responseData.data"
                     class="bg-white divide-y divide-grey-200"
                   >
                     <!--  -->
@@ -478,10 +445,10 @@ const fetchAllPayrolls = async () => {
                       </td> -->
                       <td class="py-4 whitespace-nowrap">
                         <div class="flex items-center space-x-3">
-                          <FCheckBoxComp
+                          <!-- <FCheckBoxComp
                             :value="checkState(pay.payrollId)"
                             @click="handlePayroll(pay.payrollId)"
-                          />
+                          /> -->
 
                           <div class="flex flex-col">
                             <span class="text-sm font-semimedium"> {{ formatScheduledDate(pay.scheduledDate) }} </span
@@ -495,9 +462,8 @@ const fetchAllPayrolls = async () => {
                       <td class="py-4 whitespace-nowrap">
                         <div class="text-left flex flex-col">
                           <span class="text-sm font-semimedium"
-                            >{{ pay.payType }}
+                            >₦{{ pay.totalNetPay ? currency(pay.totalNetPay) : "0" }}
                           </span>
-                          <span class="text-xs text-gray-rgba-3">Net: ₦{{ pay.totalNetPay ? currency(pay.totalNetPay) : "0" }}</span>
                         </div>
                       </td>
                       <td class="py-4 whitespace-nowrap">
@@ -513,6 +479,7 @@ const fetchAllPayrolls = async () => {
                           <span class="text-sm font-semimedium"
                             >₦ {{ pay.totalDeductions ? currency(pay.totalDeductions) : "0" }}
                           </span>
+                          <span class="text-xs text-gray-rgba-3">Tax, Pensions, Health</span>
                         </div>
                       </td>
                       <td class="py-4 items-center text-left whitespace-nowrap">
@@ -541,10 +508,20 @@ const fetchAllPayrolls = async () => {
                       <td class="py-4 text-left whitespace-nowrap">
                         <div class="flex items-center space-x-2">
                           <div class="flex w-full justify-between">
+                            <ButtonBlue
+                                @click="approvePayroll(pay.payrollId)"
+                            >
+                                <template v-slot:placeholder>Approve</template>
+                            </ButtonBlue>
+                            <ButtonLightRed
+                                @click="declinePayroll(pay.payrollId)"
+                            >
+                            <template v-slot:placeholder>Decline</template>
+                          </ButtonLightRed>
                             <ButtonLightBlue
                               @click="
                                 router.push(
-                                  `/dashboard/payroll/approved/${pay.payrollId}`
+                                  `/dashboard/payroll/pending-approval/${pay.payrollId}`
                                 )
                               "
                             >

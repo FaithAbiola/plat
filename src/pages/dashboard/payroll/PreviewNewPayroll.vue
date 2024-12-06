@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, provide, watch, onMounted, nextTick, reactive } from "vue";
+import { ref, provide, watch, onMounted, nextTick, reactive, computed } from "vue";
 import successAlert from "../../../components/alerts/SuccessAlert.vue";
 import spinner from "../../../components/timer/Spinner.vue";
 
@@ -7,7 +7,7 @@ import { Create, EmployeePayroll } from "../../../service/payroll/interface/payr
 import {
   IIncDec,
   IMenuVertical,
-  IUserThree,
+  IArrowLeftTail,
   ITablePencil,
 } from "../../../core/icons";
 import Departments from "../../../components/dropdowns/department.vue";
@@ -49,27 +49,16 @@ const showDepartment = ref(false);
 const data = ref({ department: "all" });
 
 const showSuccess = ref(false);
-const editInput = ref(false);
 const loading = ref(false);
 const saving = ref(false);
 const showBonus = ref(false);
 const showDeduction = ref(false);
 const showTax = ref(false);
 const showNetPay = ref(false);
-const employeeId = ref("");
-const employeeAmount = ref(0);
 const dataObj = ref<any>({});
 const responseData = ref<any>({ data: [], message: "" });
 const employeeMap = ref<Record<string, string>>({}); 
 const successMessage = ref("Action successful");
-const showDropDown = ref(false);
-const grandTotal = ref({
-  grossPay: 0,
-  bonus: 0,
-  deductions: 0,
-  taxAmount: 0,
-  netPay: 0,
-})
 
 const dataObjj = reactive({
     employees: []
@@ -80,181 +69,117 @@ const currentPage = ref(1);
 const totalPages = ref(1);
 const pageSize = ref(10); 
 const totalItems = ref(0);
+const employeeSalaries = ref([]);
+const totalSalaries = ref(0);
+const totalEmployees = ref(0);
 
+const payrollData = ref<any>(null);
 const parsedUserInfo = typeof userInfo.value === 'string' ? JSON.parse(userInfo.value) : userInfo.value;
 const organisationId = parsedUserInfo?.customerInfo?.organisationId;
 
-// const savingDraft = ref(false);
+const month = computed(() => {
+  const date = new Date(responseData.value?.payroll?.scheduledDate);
+  return isNaN(date.getTime()) ? "" : date.toLocaleString('default', { month: 'long' }); 
+});
+
+const period = computed(() => {
+  const date = new Date(responseData.value?.payroll?.scheduledDate);
+  if (isNaN(date.getTime())) {
+    return ""; 
+  }
+  const year = date.getFullYear();
+  const startOfMonth = new Date(year, date.getMonth(), 1);
+  const endOfMonth = new Date(year, date.getMonth() + 1, 0);
+  return `${startOfMonth.toLocaleDateString()} - ${endOfMonth.toLocaleDateString()}`;
+});
+
 const edit = ref(false);
-// const draft = ref({
-//   month: "",
-//   year: "",
-//   department: null,
-//   start_date: "",
-//   end_date: "",
-//   draft: true,
-// });
 // inject and provide
 provide("showDepartment", showDepartment);
 provide("selectedDepartment", [data, departmentName]);
 provide("employeeMap", employeeMap);
 // method
 
-// const saveAsDraft = async () => {
-//   savingDraft.value = true;
-
-//   const day = new Date(Date.now()).getDate() as unknown as string;
-//   const year = new Date(Date.now()).getFullYear() as unknown as string;
-//   const month = new Date(Date.now()).toLocaleString("default", {
-//     month: "long",
-//   });
-//   let numberMonth: any = new Date(Date.now()).getMonth() + 1;
-
-//   if (numberMonth < 10) {
-//     numberMonth = `0${numberMonth}`;
-//   }
-
-//   draft.value.year = year;
-//   draft.value.month = month;
-//   draft.value.start_date = `${year}-${numberMonth}-${day}`;
-
-//   const response = await request(
-//     payrollStore.create(draft.value as any),
-//     savingDraft
-//   );
-
-//   console.log(response);
-//   handleError(response, userStore);
-//   const successResponse = handleSuccess(response, showSuccess);
-
-//   if (successResponse && typeof successResponse !== "undefined") {
-//     console.log(successResponse.data);
-//   }
-// };
-
 const formatNumber = (number:number) => {
   return number.toLocaleString();
 }
-const fetchEmployees = async (page = 1) => {
-  loading.value = true;
 
-  const totalEmployeeCached = cache("total_employees");
-  if (typeof totalEmployeeCached !== "undefined") {
-    loading.value = false;
-    responseData.value.data = totalEmployeeCached;
+const fetchPayroll = async () => {
+  const { payrollId } = router.currentRoute.value.query;
+  const parsedPayrollId = Number(payrollId);
+  console.log("AAA", parsedPayrollId)
+  const organisationId = parsedUserInfo?.customerInfo?.organisationId;
+
+  if (isNaN(parsedPayrollId)) {
+    console.error("Invalid parameters");
+    return;
   }
 
-  const response = await request(employeeStore.index(organisationId, 10, page), loading);
-  const successResponse = handleSuccess(response);
-
-  if (successResponse) {
-    const employees = successResponse.data.data.pageItems;
-    responseData.value.data = employees;
-    console.log("$$$$$", employees)
-
-    employees.forEach((employee: { firstName: any; lastName: any; id: string | number; }) => {
-      const fullName = `${employee.firstName} ${employee.lastName}`;
-      employeeMap.value[employee.id] = fullName;
-      console.log("", fullName)
-      console.log("Mapped Employee:", employee.id, fullName);
+  try {
+    const response = await payrollStore.getPayroll({
+      organisationId,
+      payrollId: parsedPayrollId,
+      pageSize: 10,
+      pageNumber: 1,
     });
 
-    cache("total_employees", employees);
-    currentPage.value = successResponse.data.data.currentPage;
-    totalPages.value = successResponse.data.data.numberOfPages;
-    totalItems.value = responseData.value.data.length; 
-    return employees; 
-  }
-};
-
-
-const handleSaveAndContinue = async () => {
-  saving.value = true;
-
-  try {
-    const employeesSalary = responseData.value.data.map((employee: { id: any; bonus: any; deduction: any; taxAmount: any; netPay: any; }) => ({
-      employeeId: employee.id,
-      bonus: JSON.parse(JSON.stringify(employee.bonus || { amount: 0, reason: "" })),
-      deduction: JSON.parse(JSON.stringify(employee.deduction || { amount: 0, reason: "" })),
-      taxAmount: employee.taxAmount || 0,
-      netPay: employee.netPay || 0,
-    }));
-
-    const payload = {
-      organisationId,
-      employeesSalary,
-      paytype: "once",
-      scheduledMonth: new Date().toISOString(),
-    };
-
-    console.log("Payload being sent:", JSON.stringify(payload));
-
-    const response = await payrollStore.createPayroll(payload);
-
     if (response.succeeded) {
-      const payrollId = response.data.payrollId; 
-      console.log("----", payrollId)
-      localStorage.setItem("payrollTableData", JSON.stringify(responseData.value.data));
-      // showSuccess.value = true;
-      // successMessage.value = "Payroll created successfully!";
-      // router.push({ name: "PreviewNewPayroll", query: { payrollId } });
-      router.push({ name: 'dashboard.payroll.confirm', query: { payrollId } });
+      responseData.value = response.data.pageItems; 
+      console.log("Payroll data fetched successfully:", responseData.value);
+      const data = response.data.pageItems;
+      employeeSalaries.value = data.employeeSalaries;
+      totalSalaries.value = data.totalSalaries;
+      totalEmployees.value = data.totalEmployees;
     } else {
       throw new Error(response.message);
     }
   } catch (error) {
-    console.error("Error saving payroll:", error);
-  } finally {
-    saving.value = false;
+    console.error("Error fetching payroll:", error);
   }
 };
 
-const loadSavedData = () => {
-  const savedData = localStorage.getItem("payrollTableData");
-  if (savedData) {
-    responseData.value.data = JSON.parse(savedData);
-  }
-};
+// onMounted(() => {
+  fetchPayroll();
+// });
 
-const handleSaveToDraft = async () => {
-  saving.value = true;
+const removeEmployee = async (employeeId: number) => {
+  const { payrollId } = router.currentRoute.value.query;
+  const parsedPayrollId = Number(payrollId);
+
+  if (isNaN(parsedPayrollId)) {
+    console.error("Invalid payroll ID");
+    return;
+  }
 
   try {
-    const employeesSalary = responseData.value.data.map((employee: { id: any; bonus: any; deduction: any; taxAmount: any; netPay: any; }) => ({
-      employeeId: employee.id,
-      bonus: JSON.parse(JSON.stringify(employee.bonus || { amount: 0, reason: "" })),
-      deduction: JSON.parse(JSON.stringify(employee.deduction || { amount: 0, reason: "" })),
-      taxAmount: employee.taxAmount || 0,
-      netPay: employee.netPay || 0,
-    }));
-
-    const payload = {
-      organisationId,
-      employeesSalary,
-      paytype: "once",
-      scheduledMonth: new Date().toISOString(),
-    };
-
-    console.log("Payload being sent:", JSON.stringify(payload));
-
-    const response = await payrollStore.savePayrollToDraft(payload);
-
+    loading.value = true; 
+    const response = await payrollStore.removeEmployee(parsedPayrollId, employeeId);
+    
     if (response.succeeded) {
-      localStorage.setItem("payrollTableData", JSON.stringify(responseData.value.data));
       showSuccess.value = true;
-      successMessage.value = "Payroll saved to draft successfully!";
-      console.log("Paaaay", response);
-      // Optionally, show a success message or navigate to another page
+      successMessage.value = "Employee removed successfully!";
+      await fetchPayroll(); 
     } else {
       throw new Error(response.message);
     }
   } catch (error) {
-    console.error("Error saving payroll to draft:", error);
+    console.error("Error removing employee:", error);
   } finally {
-    saving.value = false;
+    loading.value = false; 
   }
 };
 
+const saveAndContinue = async () => {
+  const payrollId = responseData.value?.payroll?.id;
+  if (payrollId) {
+    await router.push({ 
+      name: "dashboard.payroll.summary", 
+      query: { payrollId } 
+    });
+  } else {
+    console.error("Payroll ID is missing.");
+  }
+};
 
 const selectedEmployee = ref({ id: null, bonus: 0, deduction: 0, taxAmount: 0, netPay: 0 });
 
@@ -301,16 +226,6 @@ const handleNetSave = (netPayData: { amount: number }) => {
   showNetPay.value = false;
 };
 
-
-onMounted(() => {
-  loadSavedData();
-  if (!responseData.value.data.length) {
-    fetchEmployees();
-  }
-});
-// fetchEmployees();
-
-
 </script>
 <template>
   <div class="bg-white h-full rounded-t-lg py-6 space-y-5 overflow-auto scrollbar-hide">
@@ -355,20 +270,26 @@ onMounted(() => {
     <div class="px-5 py-2">
       <div class="space-y-6">
         <div class="flex justify-between">
-          <div>
-            <h3 class="font-bold text-2xl">Create new Payroll</h3>
-            <p class="text-sm pt-1 font-semimedium">
-              <span class="text-black-200">Payroll period: </span>
-              <span>&nbsp;</span>
-            </p>
-          </div>
-          <!-- <div>
-            <ButtonBlue @click="router.push('/dashboard/payroll/preview')">
-              <template v-slot:placeholder>
-                <span>Save & Continue</span></template
-              >
-            </ButtonBlue>
-          </div> -->
+            <div class="flex space-x-5">
+                <div class="pt-1">
+                  <IArrowLeftTail />
+                </div>
+                <div>
+                  <h3 class="font-bold text-2xl whitespace-nowrap">
+                    {{ month }} Salary Payment
+                  </h3>
+                  <p class="text-sm pt-1 font-semimedium whitespace-nowrap">
+                    <span class="text-black-200">Payroll period: </span>
+                    <span>{{ period }}</span>
+                  </p>
+                </div>
+              </div>
+              <div>
+                <ButtonBlue @click="saveAndContinue">
+                <template v-slot:placeholder>
+                    <span>Save & Continue</span></template>
+                </ButtonBlue>
+            </div>
         </div>
 
         <div class="relative w-20">
@@ -429,25 +350,28 @@ onMounted(() => {
                       <th scope="col" class="py-4 text-left whitespace-nowrap">
                         Net Pay
                       </th>
+                      <th scope="col" class="py-4 text-left whitespace-nowrap">
+                        Action
+                      </th>
                     </tr>
                   </thead>
                   <tbody class="bg-white divide-y divide-grey-200">
                     <tr
-                      v-for="(employee, index) in responseData && responseData.data"
-                      :key="employee.id"
+                      v-for="(employee, index) in responseData?.employeeSalaries"
+                      :key="employee.employeeId"
                       class="text-black-100"
                     >
                       <td class="py-4 whitespace-nowrap">
                         <div class="flex items-center space-x-3">
                           <div class="flex flex-col">
                             <span class="text-sm font-semimedium">{{ employee.firstName }} {{ employee.lastName }}</span>
-                            <span class="text-xs text-gray-rgba-3">₦{{ employee.grades.grossPay }}/yr</span>
+                            <span class="text-xs text-gray-rgba-3">₦{{ employee.grossPay }}/yr</span>
                           </div>
                         </div>
                       </td>
                       <td class="py-4 whitespace-nowrap">
                         <div class="text-left flex flex-col">
-                          <span class="text-sm font-semimedium"> ₦{{ employee.grades.grossPay }}  </span>
+                          <span class="text-sm font-semimedium"> ₦{{ employee.grossPay }}  </span>
                           <span class="text-xs text-gray-rgba-3">Direct deposit</span>
                         </div>
                       </td>
@@ -463,7 +387,7 @@ onMounted(() => {
                           />
                           <div class="font-normal text-left flex flex-col">
                             <span class="text-sm font-semimedium">
-                              ₦{{ employee.bonus ? employee.bonus.amount : 0 }}
+                              ₦{{ employee.bonus?.amount || 0 }}
                             </span>
                             <span class="text-xs text-gray-rgba-3">Commisions</span>
                           </div>
@@ -482,7 +406,7 @@ onMounted(() => {
                           />
                           <div class="font-normal text-left flex flex-col">
                             <span class="text-sm font-semimedium">
-                              ₦{{ employee.deduction ? employee.deduction.amount : 0 }}
+                                ₦{{ employee.deduction?.amount || 0 }}
                             </span>
                             <span class="text-xs text-gray-rgba-3">Pensions, Health</span>
                           </div>
@@ -522,6 +446,13 @@ onMounted(() => {
                           </div>
                         </div>
                       </td>
+                      <td class="py-4 whitespace-nowrap">
+                        <div class="flex items-center space-x-3">
+                          <div class="flex flex-col">
+                            <span class="text-sm font-semimedium text-red" @click="removeEmployee(employee.employeeId)">Remove</span>                          
+                          </div>
+                        </div>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -529,20 +460,6 @@ onMounted(() => {
             </div>
           </div>
         </div>
-        <!-- Buttons -->
-        <div class="px-5 flex space-x-4 mt-4 justify-left">
-          <ButtonBlue @click="handleSaveAndContinue">
-            <template v-slot:placeholder>
-              <span>Save & Continue</span>
-            </template>
-          </ButtonBlue>
-          <ButtonLightBlue @click="handleSaveToDraft">
-            <template v-slot:placeholder>
-              <span>Save changes for later</span>
-            </template>
-          </ButtonLightBlue>
-        </div>
-        <!-- Buttons -->
       </div>
     </div>
   </div>

@@ -78,6 +78,155 @@ class Payroll {
       });
   }
   
+  async createPayroll(payload: {
+    organisationId: number;
+    employeesSalary: Array<{
+      employeeId: number;
+      bonus?: { amount: number; reason: string };
+      deduction?: { amount: number; reason: string };
+      taxAmount: number;
+      netPay: number;
+    }>;
+    paytype: string;
+    scheduledMonth: string;
+  }): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+
+    return await customRequest
+      .post("/Payroll/create-payroll", payload)
+      .then((res) => res)
+      .catch((err) => {
+        console.error("Error creating payroll:", err);
+        throw err;
+      });
+  }
+  async updatePayroll(payload: {
+    organisationId: number;
+    employeesSalary: Array<{
+      employeeId: number;
+      bonus?: { amount: number; reason: string };
+      deduction?: { amount: number; reason: string };
+      taxAmount: number;
+      netPay: number;
+    }>;
+    paytype: string;
+    scheduledMonth: string;
+  }): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+
+    return await customRequest
+      .post("/Payroll/update-payroll", payload)
+      .then((res) => res)
+      .catch((err) => {
+        console.error("Error updating payroll:", err);
+        throw err;
+      });
+  }
+
+  async getPayroll(params: {
+    organisationId: number;
+    payrollId: number;
+    pageSize?: number;
+    pageNumber?: number;
+  }): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+  
+    return await customRequest
+      .get("/Payroll/get-payroll", { params })
+      .then((res) => res)
+      .catch((err) => {
+        console.error("Error fetching payroll:", err);
+        throw err;
+      });
+  }
+
+  async submitPayroll(payrollId: number): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+    return await customRequest
+      .put(`/Payroll/submit-payroll/${payrollId}`)
+      .then((res) => res)
+      .catch((err) => {
+        console.error("Error submitting payroll:", err);
+        throw err;
+      });
+  }
+  
+  async savePayrollToDraft(payload: any): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+  
+    return await customRequest
+      .post("/Payroll/save-payroll-to-draft", payload)
+      .then((res) => res)
+      .catch((err) => {
+        console.error("Error saving payroll to draft:", err);
+        throw err;
+      });
+  }
+  
+  async getOrganisationDraftedPayroll(params: {
+    organisationId: number;
+    draftedPayrollId?: number;
+    pageSize?: number;
+    pageNumber?: number;
+  }): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+  
+    try {
+      const response = await customRequest.get("/Payroll/get-organisation-drafted-payroll", { params });
+      return response.data;
+    } catch (err) {
+      console.error("Error fetching organisation drafted payroll:", err);
+      throw err;
+    }
+  }
+  async deleteDraftedPayroll(draftedPayrollId: number): Promise<any> {
+  const customRequest = this.createAxiosInstance();
+
+  try {
+    const response = await customRequest.delete(`/Payroll/delete-drafted-payroll/${draftedPayrollId}`);
+    return response.data;
+  } catch (err) {
+    console.error("Error deleting drafted payroll:", err);
+    throw err;
+  }
+}
+
+  
+async removeEmployeeFromPayroll(payrollId: number, employeeId: number, informalPayrollId?: number): Promise<any> {
+  const customRequest = this.createAxiosInstance();
+  
+  return await customRequest
+    .put(`/Payroll/remove-employee-on-payroll/${payrollId}`, null, {
+      params: {
+        employeeId,
+        informalPayrollId,
+      },
+    })
+    .then((res) => res)
+    .catch((err) => {
+      console.error("Error removing employee from payroll:", err);
+      throw err;
+    });
+}
+
+  
+    // async getPayroll(organisationId: number, payrollId: number): Promise<any> {
+    //   const customRequest = this.createAxiosInstance();
+
+    //   return await customRequest
+    //     .get(`/Payroll/get-payroll`, {
+    //       params: {
+    //         OrganisationId: organisationId,
+    //         PayrollId: payrollId
+    //       }
+    //     })
+    //     .then((res) => res.data) 
+    //     .catch((err) => {
+    //       console.error("Error fetching payroll:", err);
+    //       throw err;
+    //     });
+    // }
+
  // async initiate(department: any): Promise<any> {
   //   return await this.request
   //     .get(`/payroll/init?department=${department}`, {
@@ -142,6 +291,84 @@ class Payroll {
         return err;
       });
   }
+
+  async generateCsvTemplate(): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+    
+    return await customRequest
+      .post('/Payroll/generate-csv-template', null, {
+        headers: authhHeader(),
+        responseType: 'blob',
+      })
+      .then((res) => {
+        return res;
+      })
+      .catch((err) => {
+        return err;
+      });
+  }
+
+  async uploadCsv(formData: FormData): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+  
+    return await customRequest
+      .put('/Payroll/upload-payroll', formData, {
+        headers: {
+          ...authhHeader(),
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      .then((res) => {
+        return res;
+      })
+      .catch((err) => {
+        console.error('Error uploading CSV:', err);
+        return Promise.reject(err);
+      });
+  }
+
+  async uploadPayrollCsv(csvFile: File, organisationId: number, scheduledMonth: string): Promise<any> {
+    const formData = new FormData();
+    formData.append('CsvFile', csvFile);
+    
+    const params = {
+      params: {
+        OrganisationId: organisationId,
+        ScheduledMonth: scheduledMonth,
+      },
+    };
+  
+    const customRequest = this.createAxiosInstance();
+  
+    return await customRequest
+      .put('/Payroll/upload-payroll', formData, {
+        headers: {
+          ...authhHeader(),
+          'Content-Type': 'multipart/form-data',
+        },
+        ...params,
+      })
+      .then((res) => {
+        return res.data; 
+      })
+      .catch((err) => {
+        throw err; 
+      });
+  }
+  
+  
+
+  async getOrganisationPayrollCount(organisationId: number): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+  
+    return await customRequest
+      .get(`/Payroll/organisation-payroll-count/${organisationId}`, {
+        headers: authhHeader(),
+      })
+      .then((res) => res)
+      .catch((err) => err);
+  }
+  
   
   async create(data: Create): Promise<any> {
     return await this.request

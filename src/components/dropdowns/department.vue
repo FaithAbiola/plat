@@ -61,7 +61,7 @@ const getDepartments = async () => {
     departments.value = cachedData;
   }
 
-  const response = await request(groupStore.index(organisationId));
+  const response = await request(groupStore.index(organisationId, 10, 1));
 
   // handleError(response, userStore);
   const successResponse = handleSuccess(response);

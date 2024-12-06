@@ -296,6 +296,18 @@ const getProfile = async () => {
 
 getProfile();
 // fetchBank();
+
+const fullName = computed({
+  get() {
+    return `${data.value.firstname || ''} ${data.value.lastname || ''}`.trim();
+  },
+  set(value: string) {
+    const names = value.split(' ');
+    data.value.firstname = names[0] || '';
+    data.value.lastname = names.length > 1 ? names.slice(1).join(' ') : '';
+  }
+});
+
 // validations rule
 const rules = computed(() => {
   return {
@@ -414,25 +426,25 @@ defineExpose({
                 >
                   <input
                     type="text"
-                    id="firstname"
-                    v-model="data.firstname"
+                    id="fullName"
+                    v-model="fullName"
                     :disabled="disabled"
-                    maxlength="55"
+                    maxlength="110"
                     class="input-float peer pr-10.5"
                     placeholder=""
                   />
                   <label
-                    for="firstname"
+                    for="fullName"
                     class="input-float-label peer-focus:text-black-100 peer-placeholder-shown:scale-75 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-1 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:px-2"
                   >
-                    First</label
+                    Fulll Name</label
                   >
-                  <div v-if="v$.firstname.$error" class="text-red text-xs">
-                    {{ "* " + v$.firstname.$errors[0].$message }}
+                  <div v-if="v$.firstname.$error || v$.lastname.$error" class="text-red text-xs">
+                    {{ "* " + (v$.firstname.$error ? v$.firstname.$errors[0].$message : v$.lastname.$errors[0].$message) }}
                   </div>
                 </div>
 
-                <div
+                <!-- <div
                   class="relative"
                   @click="[(disabled = false), emit('doNotEdit', disabled)]"
                 >
@@ -454,7 +466,7 @@ defineExpose({
                   <div v-if="v$.lastname.$error" class="text-red text-xs">
                     {{ "* " + v$.lastname.$errors[0].$message }}
                   </div>
-                </div>
+                </div> -->
                 <div
                   class="relative"
                   @click="[(disabled = false), emit('doNotEdit', disabled)]"
@@ -502,12 +514,20 @@ defineExpose({
                   class="relative"
                   @click="[(disabled = false), emit('doNotEdit', disabled)]"
                 >
-                  <vue-tel-input
+                  <!-- <div
                     :value="data.telephone"
-                    :defaultCountry="data.countryCode"
                     @input="onInput"
-                    class="text-black text-sm border py-2 telinput"
-                  ></vue-tel-input>
+                    class="text-black text-sm border py-2"
+                  ></div> -->
+                  <input
+                  type="text"
+                  id="Telephone"
+                  v-model="data.telephone"
+                  :disabled="disabled"
+                  maxlength="110"
+                  class="input-float peer pr-10.5"
+                  placeholder=""
+                />
                   <label
                     for="Telephone"
                     class="input-float-label peer-focus:text-black-100 peer-placeholder-shown:scale-75 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-1 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:px-2"
@@ -610,7 +630,7 @@ defineExpose({
                   </div>
                 </div>
 
-                <!-- <div
+                <div
                   class="relative"
                   @click="[(disabled = false), emit('doNotEdit', disabled)]"
                 >
@@ -626,11 +646,11 @@ defineExpose({
                     for="Gross-Salary"
                     class="input-float-label peer-focus:text-black-100 peer-placeholder-shown:scale-75 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-1 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:px-2"
                   >
-                    Gross-Salary
+                    Gross Salary
                   </label>
-                </div> -->
+                </div>
 
-                <div
+                <!-- <div
                   class="relative"
                   @click="[(disabled = false), emit('doNotEdit', disabled)]"
                 >
@@ -649,9 +669,9 @@ defineExpose({
                   >
                     Account Name</label
                   >
-                </div>
+                </div> -->
 
-                <!-- <div
+                <div
                   class="relative"
                   @click="[(disabled = false), emit('doNotEdit', disabled)]"
                 >
@@ -669,7 +689,7 @@ defineExpose({
                   >
                     Base Salary</label
                   >
-                </div> -->
+                </div>
               </div>
             </div>
             <!--  -->

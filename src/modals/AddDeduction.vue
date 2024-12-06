@@ -29,7 +29,9 @@ const userStore = useUserStore();
 // emits
 const emit = defineEmits<{
   (e: 'close_deduction'): void;
-     (e: 'payroll_init'): void;
+  (e: 'payroll_init'): void;
+  (e: 'save_deduction', deductionData: { amount: number; reason: string }): void; 
+
 }>();
 
 // variables
@@ -51,27 +53,21 @@ const render = inject<any>('render');
 
 // methods
 
-const addDeduction = async () => {
-  const isFormCorrect = await v$.value.$validate();
-
-  if (isFormCorrect == true) {
-   
-    loading.value = true;
-    const response = await request(
-      employeeStore.createDeduction(props.employeeId, data.value),
-      loading
-    );
-
-    handleError(response, userStore);
-    const successResponse = handleSuccess(response, showSuccess);
-
-    if (successResponse && typeof successResponse !== 'undefined') {
-      responseData.value = successResponse;
-       emit("payroll_init")
-         
-    }
-
+const handleSubmit = () => {
+  if (v$.value.$invalid) {
+    return; 
   }
+  
+  emit('save_deduction', {
+    amount: data.value.amount,
+    reason: data.value.reason
+  });
+  console.log('Emitting Deduction Data:', {
+    amount: data.value.amount,
+    reason: data.value.reason,
+  }); 
+
+
   emit('close_deduction');
 };
 
@@ -115,7 +111,7 @@ const v$ = useVuelidate(rules as any, data);
           class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md"
         >
           <form
-            @submit.prevent="addDeduction"
+            @submit.prevent="handleSubmit"
             class="bg-white px-[37px] py-[27px] space-y-8"
           >
             <!-- content -->
@@ -233,7 +229,7 @@ const v$ = useVuelidate(rules as any, data);
             <!--  -->
 
             <div class="flex pb-5">
-              <ButtonBlue>
+              <ButtonBlue type="submit">
                 <template #placeholder>
                   <spinner v-if="loading == true" />
                   <span v-else>Add Deduction</span>

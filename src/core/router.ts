@@ -38,6 +38,8 @@ const EmployeesPage = () =>
   import("../pages/dashboard/employees/Employees.vue");
 const PendingEmployeePage = () =>
   import("../pages/dashboard/employees/PendingEmployees.vue");
+const InviteMultipleUsers = () =>
+  import("../pages/dashboard/employees/InviteMultipleUsers.vue");
 const EmployeeDepartmentPage = () =>
   import("../pages/dashboard/employees/Departments.vue");
 
@@ -64,13 +66,21 @@ const ViewEmployeePayrollHistory = () =>
 const PreviewPayroll =()=>import ('../pages/dashboard/payroll/PreviewPayroll.vue');
 const PayrollApprovedPage = () =>
   import("../pages/dashboard/payroll/SinglePayroll.vue");
+const PendingApprovalPage = () =>
+  import("../pages/dashboard/payroll/SinglePendingPayroll.vue");
 const PayrollDraftPage = () => import("../pages/dashboard/payroll/Drafts.vue");
 const PayrollDraftTwoPage = () =>
   import("../pages/dashboard/payroll/Draft-Two.vue");
 const PayrollCreatePage = () =>
   import("../pages/dashboard/payroll/CreateNew.vue");
+const ConfirmPayrollPage = () =>
+  import("../pages/dashboard/payroll/PreviewNewPayroll.vue");
+const PayrollSummaryPage = () =>
+  import("../pages/dashboard/payroll/PayrollSummary.vue");
 const PayrollHistoryPage = () =>
   import("../pages/dashboard/payroll/History.vue");
+const PendingPayrollPage = () =>
+  import("../pages/dashboard/payroll/PendingPayroll.vue");
 const PayrollSettingsPage = () =>
   import("../pages/dashboard/payroll/Settings.vue");
 
@@ -276,6 +286,14 @@ const routes = [
             },
           },
           {
+            path: "multiple",
+            name: "dashboard.employees.multiple",
+            component: InviteMultipleUsers,
+            meta: {
+              title: "Employees - Multiple",
+            },
+          },
+          {
             path: "departments",
             name: "dashboard.employees.departments",
             component: EmployeeDepartmentPage,
@@ -352,6 +370,22 @@ const routes = [
             },
           },
           {
+            path: "confirm",
+            name: "dashboard.payroll.confirm",
+            component: ConfirmPayrollPage,
+            meta: {
+              title: "Payroll - Confirm",
+            },
+          },
+          {
+            path: "summary",
+            name: "dashboard.payroll.summary",
+            component: PayrollSummaryPage,
+            meta: {
+              title: "Payroll - Summary",
+            },
+          },
+          {
             path: "settings",
             name: "dashboard.payroll.settings",
             component: PayrollSettingsPage,
@@ -368,11 +402,19 @@ const routes = [
             },
           },
           {
-            path: "approved/:id",
+            path: "approved/:payrollId",
             name: "dashboard.payroll.approved",
             component: PayrollApprovedPage,
             meta: {
               title: "Payroll - Approved",
+            },
+          },
+          {
+            path: "pending-approval/:payrollId",
+            name: "dashboard.payroll.pending-approval",
+            component: PendingApprovalPage,
+            meta: {
+              title: "Payroll - Pending",
             },
           },
           {
@@ -398,6 +440,15 @@ const routes = [
             component: PayrollHistoryPage,
             meta: {
               title: "Payroll - History - Dashboard",
+              showPayrollCards: true,
+            },
+          },
+          {
+            path: "pending",
+            name: "dashboard.payroll.pending",
+            component: PendingPayrollPage,
+            meta: {
+              title: "Payroll - Pending - Dashboard",
               showPayrollCards: true,
             },
           },
