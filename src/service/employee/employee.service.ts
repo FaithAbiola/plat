@@ -249,7 +249,41 @@ class Employee {
         return err;
       });
   }
+  async generateCsvTemplate(): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+    
+    return await customRequest
+      .post('/Employee/generate-csv-template', null, {
+        headers: authhHeader(),
+        responseType: 'blob',
+      })
+      .then((res) => {
+        return res;
+      })
+      .catch((err) => {
+        return err;
+      });
+  }
 
+  async uploadCsv(formData: FormData): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+  
+    return await customRequest
+      .post('/Organisation/upload-employees', formData, {
+        headers: {
+          ...authhHeader(),
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      .then((res) => {
+        return res;
+      })
+      .catch((err) => {
+        console.error('Error uploading CSV:', err);
+        return Promise.reject(err);
+      });
+  }
+  
   async previewCsv(data:any): Promise<any> {
     return await this.request
       .post(

@@ -25,15 +25,15 @@ import DarkModeToggle from "../DarkModeToggle.vue";
 
     <!--  -->
     <div class="flex items-center lg:space-x-6 space-x-3">
-      <!-- <DarkModeToggle :position="ComponentPosition.TOPNAV" /> -->
-      <!-- <button
+      <DarkModeToggle :position="ComponentPosition.TOPNAV" />
+      <button
         class="bg-grey-100 p-3 rounded-full h-11 w-11 flex items-center justify-center"
       >
         <IQuestionMark />
-      </button> -->
+      </button>
 
       <!-- notification -->
-      <!-- <Notification :position="ComponentPosition.TOPNAV" /> -->
+      <Notification :position="ComponentPosition.TOPNAV" />
       <!--  -->
 
       <div class="lg:flex items-center space-x-6 hidden">

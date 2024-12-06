@@ -28,6 +28,7 @@ const userStore = useUserStore();
 const emit = defineEmits<{
   (e: 'close_bonus'): void;
    (e: 'payroll_init'): void;
+   (e: 'save_bonus', bonusData: { amount: number; reason: string }): void; 
 }>();
 
 // variables
@@ -47,35 +48,7 @@ const valid = ref(false);
 
 const render = inject<any>('render');
 
-// methods
 
-const addBonus = async () => {
-  const isFormCorrect = await v$.value.$validate();
-
-  if (isFormCorrect == true) {
-    const sendData = {
-      amount: v$.value.amount.$model as string,
-      reason: v$.value.reason.$model as string,
-    };
-    loading.value = true;
-    const response = await request(
-      employeeStore.createBonus(props.employeeId, data.value),
-      loading
-    );
-
-    handleError(response, userStore);
-    const successResponse = handleSuccess(response, showSuccess);
-
-    if (successResponse && typeof successResponse !== 'undefined') {
-      responseData.value = successResponse;
-      emit("payroll_init")
-     
-      
-    
-    }
-  }
-  emit('close_bonus');
-};
 
 // validations rule
 const rules = computed(() => {
@@ -88,6 +61,24 @@ const rules = computed(() => {
     },
   };
 });
+
+const handleSubmit = () => {
+  if (v$.value.$invalid) {
+    return; 
+  }
+  
+  emit('save_bonus', {
+    amount: data.value.amount,
+    reason: data.value.reason
+  });
+  console.log('Emitting Bonus Data:', {
+    amount: data.value.amount,
+    reason: data.value.reason,
+  }); 
+
+
+  emit('close_bonus');
+};
 
 const v$ = useVuelidate(rules as any, data);
 </script>
@@ -116,8 +107,7 @@ const v$ = useVuelidate(rules as any, data);
         <div
           class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md"
         >
-          <form
-            @submit.prevent="addBonus"
+          <form @submit.prevent="handleSubmit"
             class="bg-white px-[37px] py-[27px] space-y-8"
           >
             <!-- content -->
@@ -236,7 +226,7 @@ const v$ = useVuelidate(rules as any, data);
             <!--  -->
 
             <div class="flex pb-5">
-              <ButtonBlue>
+              <ButtonBlue type="submit">
                 <template #placeholder>
                   <spinner v-if="loading == true" />
                   <span v-else>Add Bonus</span>

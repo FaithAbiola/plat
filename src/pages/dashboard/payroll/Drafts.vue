@@ -16,6 +16,8 @@ import handleError from "../../../composables/handle_error.composable";
 import handleSuccess from "../../../composables/handle_success.composable";
 import { usePayrollStore, useUserStore } from "../../../store/index";
 import {currency} from '../../../core/utils/currencyType'
+import { getItem } from "../../../core/utils/storage.helper";
+import Pagination from "../../../components/Pagination.vue";
 
 const router = useRouter();
 
@@ -24,9 +26,13 @@ const payrollStore = usePayrollStore();
 const userStore = useUserStore();
 
 // variables
-
+const userInfo = ref(getItem(import.meta.env.VITE_USERDETAILS));
+const currentPage = ref(1);
+const totalPages = ref(1);
+const pageSize = ref(10); 
+const totalItems = ref(0);
 const departmentName = ref("");
-const deleteDraftsId = ref<string[]>([]);
+const deleteDraftsId = ref<number[]>([]);
 const confirmType = ref("");
 const deleting = ref(false);
 const showConfirm = ref(false);
@@ -46,7 +52,16 @@ const group = ref();
 //   group: group.value,
 //   employees: [],
 // });
-const responseData = ref<any>({ data: [], message: "" });
+
+const parsedUserInfo = typeof userInfo.value === 'string' ? JSON.parse(userInfo.value) : userInfo.value;
+const organisationId = parsedUserInfo?.customerInfo?.organisationId;
+
+
+const responseData = ref<any>({
+  data: [],
+  message: "",
+});
+
 const successMessage = ref("");
 
 // provide and inject
@@ -76,84 +91,151 @@ const addAllDraftsForDelete = () => {
   }
 };
 
-const deleteSingleDraft = async () => {
-  if (deleteDraftsId.value[0]) {
-    deleting.value = true;
+// const deleteSingleDraft = async () => {
+//   if (deleteDraftsId.value[0]) {
+//     deleting.value = true;
 
-    const response = await request(
-      payrollStore.delete(deleteDraftsId.value[0]),
-      deleting
-    );
+//     const response = await request(
+//       payrollStore.delete(deleteDraftsId.value[0]),
+//       deleting
+//     );
 
-    handleError(response, userStore);
-    const successResponse = handleSuccess(response, showSuccess);
-    showSuccess.value=true
+//     handleError(response, userStore);
+//     const successResponse = handleSuccess(response, showSuccess);
+//     showSuccess.value=true
    
 
-    if (successResponse && typeof successResponse !== "undefined") {
-      responseData.value.data = responseData.value.data.filter((data: any) => {
-        return !deleteDraftsId.value.includes(data.id) && data.id;
-      });
-      responseData.value.message = "Draft  deleted succesfully";
-      deleteDraftsId.value.length = 0;
-      render.value = true;
-    }
-  }
-};
+//     if (successResponse && typeof successResponse !== "undefined") {
+//       responseData.value.data = responseData.value.data.filter((data: any) => {
+//         return !deleteDraftsId.value.includes(data.id) && data.id;
+//       });
+//       responseData.value.message = "Draft  deleted succesfully";
+//       deleteDraftsId.value.length = 0;
+//       render.value = true;
+//     }
+//   }
+// };
 
-const deleteManyDrafts = async () => {
+const deleteSingleDraftedPayroll = async () => {
   if (deleteDraftsId.value[0]) {
-    if (deleteDraftsId.value.length < 2) {
-      deleteSingleDraft();
-    } else {
-      deleting.value = true;
-
-      const response = await request(
-        payrollStore.deleteMany(deleteDraftsId.value),
-        deleting
-      );
-
-      handleError(response, userStore);
-      const successResponse = handleSuccess(response, showSuccess);
-
-      if (successResponse && typeof successResponse !== "undefined") {
-        responseData.value.data = responseData.value.data.filter(
-          (data: any) => {
-            return !deleteDraftsId.value.includes(data.id) && data.id;
-          }
-        );
-
+  deleting.value = true;
+  try {
+    const response = await payrollStore.deleteDraftedPayroll(deleteDraftsId.value[0]);
+    if (response.succeeded) {
+      console.log("OOOO", response)
+      showSuccess.value = true;
+      successMessage.value = "Drafted payroll deleted successfully.";
+      responseData.value.data = responseData.value.data.filter((data: any) => {
+          return !deleteDraftsId.value.includes(data.id) && data.id;
+        });
+        deleteDraftsId.value = [];
         render.value = true;
-      }
+      // await fetchDraftedPayroll();
     }
+  } catch (error) {
+    handleError(error, "Failed to delete drafted payroll");
+  } finally {
+    deleting.value = false;
+  }
   }
 };
+
+
+// const deleteManyDrafts = async () => {
+//   if (deleteDraftsId.value[0]) {
+//     if (deleteDraftsId.value.length < 2) {
+//       deleteSingleDraft();
+//     } else {
+//       deleting.value = true;
+
+//       const response = await request(
+//         payrollStore.deleteMany(deleteDraftsId.value),
+//         deleting
+//       );
+
+//       handleError(response, userStore);
+//       const successResponse = handleSuccess(response, showSuccess);
+
+//       if (successResponse && typeof successResponse !== "undefined") {
+//         responseData.value.data = responseData.value.data.filter(
+//           (data: any) => {
+//             return !deleteDraftsId.value.includes(data.id) && data.id;
+//           }
+//         );
+
+//         render.value = true;
+//       }
+//     }
+//   }
+// };
 const confirmRemoveDrafts = () => {
   confirmType.value = "delete";
   confirmMessage.value.message = `Do you really  want to delete multiple drafts(${deleteDraftsId.value.length})?  `;
   showConfirm.value = true;
 };
 
-const Drafts = async () => {
+// const Drafts = async () => {
+//   loading.value = true;
+
+//   const response = await request(payrollStore.draft(), loading);
+//   // console.log(loading.value);
+
+//   const successResponse = handleSuccess(response);
+
+//   if (successResponse && typeof successResponse !== "undefined") {
+//     if (typeof successResponse.data.data.length !== "undefined") {
+//       responseData.value.data = successResponse.data.data;
+//     } else {
+//       responseData.value.data.push(successResponse.data.data);
+//     }
+
+//     // console.log(successResponse.data);
+//   } else {
+//     responseData.value.data = [];
+//   }
+// };
+
+const getMonthFromDate = (dateString: string) => {
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) {
+    return ""; 
+  }
+  
+  const options: Intl.DateTimeFormatOptions = { month: 'long' };
+  return date.toLocaleString('default', options);
+};
+
+const fetchDraftedPayroll = async (page = 1) => {
   loading.value = true;
 
-  const response = await request(payrollStore.draft(), loading);
-  // console.log(loading.value);
+  try {
+    const params = {
+      organisationId,
+      pageSize: pageSize.value,
+      pageNumber: currentPage.value,
+    };
+    const response = await payrollStore.getOrganisationDraftedPayroll(params);
 
-  const successResponse = handleSuccess(response);
-
-  if (successResponse && typeof successResponse !== "undefined") {
-    if (typeof successResponse.data.data.length !== "undefined") {
-      responseData.value.data = successResponse.data.data;
-    } else {
-      responseData.value.data.push(successResponse.data.data);
+    if (response.data) {
+      console.log("========", response.data.pageItems)
+      console.log("======______===", response.data)
+      responseData.value.data = response.data.pageItems;
+      currentPage.value = response.data.currentPage;
+      totalPages.value = response.data.numberOfPages;
+      totalItems.value = response.data.pageSize * totalPages.value;
     }
-
-    // console.log(successResponse.data);
-  } else {
-    responseData.value.data = [];
+  } catch (error) {
+    console.error("Error fetching drafted payroll:", error);
+  } finally {
+    loading.value = false;
   }
 };
+
+// fetchDraftedPayroll();
+fetchDraftedPayroll(currentPage.value);
+const updatePage = (page: number) => {
+  fetchDraftedPayroll(page);
+}
 
 // Drafts();
 </script>
@@ -168,7 +250,7 @@ const Drafts = async () => {
       >
         <template #title> Delete</template>
         <template #confirm>
-          <span @click="[deleteManyDrafts(), (showConfirm = false)]">
+          <span @click="[deleteSingleDraftedPayroll(), (showConfirm = false)]">
             CONFIRM</span
           ></template
         >
@@ -225,7 +307,7 @@ const Drafts = async () => {
               textColor="text-red"
               :disabled="deleteDraftsId[0] ? false : true"
               class="text-red text-sm font-medium bg-red-light px-4+1 py-3 rounded-full"
-              :class="!deleteDraftsId[0] ? 'disabled:opacity-75' : ' '"
+              :class="!deleteDraftsId[0] ? 'disabled:opacity-55' : ' '"
               @click="confirmRemoveDrafts()"
             >
               <template v-slot:placeholder>
@@ -248,10 +330,7 @@ const Drafts = async () => {
                   class="flex justify-center items-center lg:h-[400px] h-[300px]"
                 />
                 <table v-else class="min-w-full table-fixed">
-                  <thead
-                    v-if="responseData.data[0]"
-                    class="text-black-200 font-semimedium text-sm text-left"
-                  >
+                  <thead  v-if="responseData.data[0]" class="text-black-200 font-semimedium text-sm text-left">
                     <tr>
                       <th
                         scope="col"
@@ -278,27 +357,27 @@ const Drafts = async () => {
                     </tr>
                   </thead>
                   <tbody
-                    v-if="responseData.data[0]"
+                    v-if="responseData.data.length"
                     class="bg-white divide-y divide-grey-200"
                   >
                     <tr
-                      v-for="(data, index) in responseData.data"
-                      :key="index"
+                    v-for="(data, index) in responseData && responseData.data"
+                      :key="data.draftedPayrollId"
                       class="text-black-100"
                     >
                       <td class="py-4 whitespace-nowrap">
                         <div class="flex items-center space-x-3">
                           <FCheckBoxComp
-                            :value="checkState(data.id)"
-                            @click="handleDraft(data.id)"
+                            :value="checkState(data.draftedPayrollId)"
+                            @click="handleDraft(data.draftedPayrollId)"
                           />
 
                           <div class="flex flex-col">
                             <span class="text-sm font-semimedium"
-                              >{{ data?.month }} Salary Payment</span
+                              >{{ getMonthFromDate(data?.fetchOrganisationPayrollResponse?.scheduledDate) }} Salary Payment</span
                             >
                             <span class="text-xs text-gray-rgba-3"
-                              >{{ data?.employees?.length }} Employees</span
+                              >{{ data?.fetchOrganisationPayrollResponse?.totalEmployees }} Employees</span
                             >
                           </div>
                         </div>
@@ -306,17 +385,17 @@ const Drafts = async () => {
                       <td class="py-4 whitespace-nowrap">
                         <div class="text-left flex flex-col">
                           <span class="text-sm font-semimedium"
-                            >₦ {{ currency(data?.salaries) }}</span
+                            >₦{{ data?.fetchOrganisationPayrollResponse?.totalGrossPay ? currency(data.fetchOrganisationPayrollResponse?.totalGrossPay) : "0" }}</span
                           >
                           <span class="text-xs text-gray-rgba-3"
-                            >Net: ₦ {{ currency(data?.salaries) }}
+                            >Net: ₦{{ data?.fetchOrganisationPayrollResponse?.totalNetPay ? currency(data.fetchOrganisationPayrollResponse?.totalNetPay) : "0" }}
                           </span>
                         </div>
                       </td>
                       <td class="py-4 whitespace-nowrap">
                         <div class="font-normal text-left flex flex-col">
                           <span class="text-sm font-semimedium"
-                            >₦ {{ data?.bonus ? currency(data.bonus) : "0" }}</span
+                            >₦ {{ data?.fetchOrganisationPayrollResponse?.totalBonus ? currency(data.fetchOrganisationPayrollResponse?.totalBonus) : "0" }}</span
                           >
                           <span class="text-xs text-gray-rgba-3"
                             >Commisions</span
@@ -326,7 +405,7 @@ const Drafts = async () => {
                       <td class="py-4 flex whitespace-nowrap">
                         <div class="font-normal text-left flex flex-col">
                           <span class="text-sm font-semimedium"
-                            >₦ {{ data?.deduction ? currency(data.deduction) : "0" }}</span
+                            >₦ {{ data?.fetchOrganisationPayrollResponse?.totalDeductions ? currency(data.fetchOrganisationPayrollResponse?.totalDeductions) : "0" }}</span
                           >
                           <span class="text-xs text-gray-rgba-3"
                             >Pensions, Health</span
@@ -336,7 +415,7 @@ const Drafts = async () => {
                       <td class="py-4 items-center text-left whitespace-nowrap">
                         <div class="font-normal flex flex-col">
                           <span class="text-sm font-semimedium"
-                            >₦ {{ data?.tax ? currency(data.tax) : "0" }}</span
+                            >₦ {{ data?.fetchOrganisationPayrollResponse?.totalTaxAmount ? currency(data.fetchOrganisationPayrollResponse?.totalTaxAmount) : "0" }}</span
                           >
                           <span class="text-xs text-gray-rgba-3">LAGIT</span>
                         </div>
@@ -344,9 +423,7 @@ const Drafts = async () => {
                       <td class="py-4 text-left whitespace-nowrap">
                         <div class="flex items-center space-x-2">
                           <div class="flex w-full justify-between">
-                            <ButtonLightBlue
-                              @click="router.push('/dashboard/payroll/add-new')"
-                            >
+                            <ButtonLightBlue>
                               <template v-slot:placeholder
                                 >Continue Edit</template
                               >
@@ -389,6 +466,13 @@ const Drafts = async () => {
           </div>
         </div>
         <!-- end of table -->
+        <Pagination 
+        :currentPage="currentPage" 
+        :totalPages="totalPages"
+        :pageSize="pageSize"
+        :totalItems="totalItems"
+        @updatePage="updatePage"
+        />
       </div>
     </div>
   </div>

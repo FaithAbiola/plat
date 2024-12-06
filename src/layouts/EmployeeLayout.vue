@@ -24,7 +24,8 @@ const groupStore = useGroupStore();
 
 const route = useRoute();
 const router = useRouter();
-
+const successMessage = ref("");
+const showModal = ref(false);
 const emptyDept = ref(false);
 const isInviteEmployee = ref(false);
 const isCreateDepartment = ref(false);
@@ -193,172 +194,221 @@ const csvToBase64 = async (data:any) => {
 //   }
 // };
 
-const importCsv = async () => {
-  downloading.value = true;
-  loading.value = true;
+// const importCsv = async () => {
+//   downloading.value = true;
+//   loading.value = true;
 
-  const formData = new FormData();
+//   const formData = new FormData();
 
-  console.log("Import Organisation ID:", organisationId);
+//   console.log("Import Organisation ID:", organisationId);
 
-  // Append the CSV file and OrganisationId to the FormData
-  formData.append('csvfile', new Blob([atob(csv64.value)], { type: 'text/csv' }), 'employees.csv');
-  formData.append('OrganisationId', organisationId.toString()); 
+//   // Append the CSV file and OrganisationId to the FormData
+//   formData.append('csvfile', new Blob([atob(csv64.value)], { type: 'text/csv' }), 'employees.csv');
+//   formData.append('OrganisationId', organisationId.toString()); 
+
+//   try {
+//     const response = await employeeStore.importCsvFile(formData);
+    
+//     handleError(response, userStore);
+//     const successResponse = handleSuccess(response, showSuccess);
+    
+//     loading.value = false;
+
+//     if (successResponse && typeof successResponse !== "undefined") {
+//       showSuccess.value = true;
+//       successResponse.message = "Your Import Is Ready.";
+//       csvContent.value = successResponse.data;
+//       responseData.value.message = successResponse.message;
+
+//       // Assuming the response contains the imported data
+//       csvContent.value.data.forEach((element:any) => {
+//         employeeData.value.push(element);
+//       });
+//       openImportCSV.value = false;
+//       window.location.reload(); // Refresh the page or fetch updated data
+//     }
+//   } catch (error) {
+//     loading.value = false;
+//     console.error("Error during CSV import:", error);
+//   }
+// };
+
+const handleCsvUpload = async (event: Event) => {
+  const file = (event.target as HTMLInputElement)?.files?.[0];
+  if (!file) {
+    console.error('No file selected!');
+    return;
+  }
+
+  if (!organisationId) {
+    console.error('Organisation ID not found!');
+    return;
+  }
 
   try {
-    const response = await employeeStore.importCsvFile(formData);
-    
-    handleError(response, userStore);
-    const successResponse = handleSuccess(response, showSuccess);
-    
-    loading.value = false;
+    const response = await employeeStore.importCsvFile({
+      file,
+      organisationId,
+    });
 
-    if (successResponse && typeof successResponse !== "undefined") {
-      showSuccess.value = true;
-      successResponse.message = "Your Import Is Ready.";
-      csvContent.value = successResponse.data;
-      responseData.value.message = successResponse.message;
-
-      // Assuming the response contains the imported data
-      csvContent.value.data.forEach((element:any) => {
-        employeeData.value.push(element);
-      });
-      openImportCSV.value = false;
-      window.location.reload(); // Refresh the page or fetch updated data
-    }
+    console.log('CSV uploaded successfully:', response);
+    showModal.value = false; 
+    showSuccess.value = true;
+    successMessage.value = 'CSV imported successfully!';
   } catch (error) {
+    console.error('Error uploading CSV:', error);
+    showError.value = true;
+  } finally {
+    clearInput();
+  }
+};
+
+const downloadCsvTemplate = async () => {
+  loading.value = true;
+  try {
+    await employeeStore.downloadCsvTemplate();
+    successMessage.value = "Template downloaded successfully!";
+    showModal.value = false; 
+    // showSuccess.value = true;
+  } catch (error) {
+    console.error("Error:", error);
+  } finally {
     loading.value = false;
-    console.error("Error during CSV import:", error);
   }
 };
 
+const importCsv = async () => {
+  showModal.value = true;
 
-const previewCsvAction = async (file:any) => {
-  previewing.value = true;
-  hasError.value = false
+};
 
-  const csvWatchList = ['firstname', 'lastname', 'email', 'telephone', 'bank', 'bank_code', 'account_name', 'account_number', 'payout_amount'];
 
-  if(file.target.value){
-    downloading.value = true;
-  
-    await csvToBase64(file);
-    headerError.value = [];
-  
-    const response = await request(employeeStore.previewCsvFile(csv64.value), downloading);
-  
-    openImportCSV.value = false;
-    handleError(response, userStore);
-  
-    const successResponse = handleSuccess(response, showSuccess);
-    // openImportCSV.value = false;
-  
-    if (successResponse && typeof successResponse !== "undefined") {
-      // console.log(successResponse.data);
-      // console.log('---')
-      successResponse.message = "Your Import Is Ready.";
-      csvContent.value = successResponse.data;
-      responseData.value.message= successResponse.message;
-      ErrorLog.value = [];
-  
-      let index = 0;
-      let allKeys:any = [];
+// const previewCsvAction = async (file:any) => {
+//   previewing.value = true;
+//   hasError.value = false
 
-      allKeys = allKeys.concat(Object.keys(csvContent.value.data[0].row));
+//   const csvWatchList = ['firstname', 'lastname', 'email', 'telephone', 'bank', 'bank_code', 'account_name', 'account_number', 'payout_amount'];
 
-      await allKeys.forEach((element:any) => {
-        const keyFound = csvWatchList.find((keys:any) => keys === element);
-        if(!keyFound){
-          hasError.value = true;
-          headerError.value.push(element);
-        }
-      })
+//   if(file.target.value){
+//     downloading.value = true;
+  
+//     await csvToBase64(file);
+//     headerError.value = [];
+  
+//     const response = await request(employeeStore.previewCsvFile(csv64.value), downloading);
+  
+//     openImportCSV.value = false;
+//     handleError(response, userStore);
+  
+//     const successResponse = handleSuccess(response, showSuccess);
+//     // openImportCSV.value = false;
+  
+//     if (successResponse && typeof successResponse !== "undefined") {
+//       // console.log(successResponse.data);
+//       // console.log('---')
+//       successResponse.message = "Your Import Is Ready.";
+//       csvContent.value = successResponse.data;
+//       responseData.value.message= successResponse.message;
+//       ErrorLog.value = [];
+  
+//       let index = 0;
+//       let allKeys:any = [];
+
+//       allKeys = allKeys.concat(Object.keys(csvContent.value.data[0].row));
+
+//       await allKeys.forEach((element:any) => {
+//         const keyFound = csvWatchList.find((keys:any) => keys === element);
+//         if(!keyFound){
+//           hasError.value = true;
+//           headerError.value.push(element);
+//         }
+//       })
       
-      if(hasError.value){
-        const errorHeaderIndicator:any = headerError.value.join(', ')
-        const Uppercase = errorHeaderIndicator.toUpperCase();
+//       if(hasError.value){
+//         const errorHeaderIndicator:any = headerError.value.join(', ')
+//         const Uppercase = errorHeaderIndicator.toUpperCase();
 
-        let errorResponse = {
-            data: {
-              message: 'Invalid Header '+Uppercase+', please download the Template and use the specified Headers.',
-              status: 500,
-            }
-        }
-        previewing.value = false;
-        previewCSV.value = false;
-        openImportCSV.value = false;
-        handleError(errorResponse, userStore);
-        clearInput();
-      }else{
+//         let errorResponse = {
+//             data: {
+//               message: 'Invalid Header '+Uppercase+', please download the Template and use the specified Headers.',
+//               status: 500,
+//             }
+//         }
+//         previewing.value = false;
+//         previewCSV.value = false;
+//         openImportCSV.value = false;
+//         handleError(errorResponse, userStore);
+//         clearInput();
+//       }else{
 
-        csvContent.value.data.forEach((obj:any) => {
-          //check if any is empty
-          Object.keys(obj.row).some(key => {
-            if (!obj.row[key]) {
-              ErrorLog.value.push({
-                keyName: key,
-                index: index,
-                message: "All Field Is Required.",
-              });
-            }
-          });
+//         csvContent.value.data.forEach((obj:any) => {
+//           //check if any is empty
+//           Object.keys(obj.row).some(key => {
+//             if (!obj.row[key]) {
+//               ErrorLog.value.push({
+//                 keyName: key,
+//                 index: index,
+//                 message: "All Field Is Required.",
+//               });
+//             }
+//           });
     
-          if(obj.row.telephone.length < 10 || obj.row.telephone.length > 11){
-            ErrorLog.value.push({
-                keyName: 'telephone',
-                index: index,
-                message: "Telephone Should be 11 digits.",
-              });
-          }
+//           if(obj.row.telephone.length < 10 || obj.row.telephone.length > 11){
+//             ErrorLog.value.push({
+//                 keyName: 'telephone',
+//                 index: index,
+//                 message: "Telephone Should be 11 digits.",
+//               });
+//           }
     
-          if(obj.row.account_number.length !== 10){
-            ErrorLog.value.push({
-                keyName: 'account_number',
-                index: index,
-                message: "Account Number Should be 10 digits.",
-              });
-          }
+//           if(obj.row.account_number.length !== 10){
+//             ErrorLog.value.push({
+//                 keyName: 'account_number',
+//                 index: index,
+//                 message: "Account Number Should be 10 digits.",
+//               });
+//           }
     
-          if(Number.isInteger(obj.row.telephone)){
-            ErrorLog.value.push({
-                keyName: 'telephone',
-                index: index,
-                message: "Telephone Must Be A Number.",
-              });
-          }
+//           if(Number.isInteger(obj.row.telephone)){
+//             ErrorLog.value.push({
+//                 keyName: 'telephone',
+//                 index: index,
+//                 message: "Telephone Must Be A Number.",
+//               });
+//           }
     
-          if(Number.isInteger(obj.row.account_number)){
-            ErrorLog.value.push({
-                keyName: 'account_number',
-                index: index,
-                message: "Account Number Must Be A Number.",
-              });    
-          }
+//           if(Number.isInteger(obj.row.account_number)){
+//             ErrorLog.value.push({
+//                 keyName: 'account_number',
+//                 index: index,
+//                 message: "Account Number Must Be A Number.",
+//               });    
+//           }
     
-          if(Number.isInteger(obj.row.bank_code)){
-            ErrorLog.value.push({
-              keyName: 'bank_code',
-              index: index,
-              message: "Bank Code Must Be A Number",
-            }); 
-          }
+//           if(Number.isInteger(obj.row.bank_code)){
+//             ErrorLog.value.push({
+//               keyName: 'bank_code',
+//               index: index,
+//               message: "Bank Code Must Be A Number",
+//             }); 
+//           }
 
-          if (obj.error.length) {
-            showError.value[index] = false;
-          }
+//           if (obj.error.length) {
+//             showError.value[index] = false;
+//           }
     
-          index++;
-        });
-        previewCSV.value = true;
-      }
+//           index++;
+//         });
+//         previewCSV.value = true;
+//       }
 
-      previewing.value = false;
-    }else{
-      openImportCSV.value = false;
-    }
-  }
-  previewing.value = false;
-};
+//       previewing.value = false;
+//     }else{
+//       openImportCSV.value = false;
+//     }
+//   }
+//   previewing.value = false;
+// };
 
 const clearInput = () => {
   // console.log(csvInput)
@@ -413,35 +463,34 @@ const checkTable = (index:number, key:string) => {
       <template #otherMessage>CLOSE</template>
       {{ csvContent.message }}</successAlert
     >
-    <div v-if="openImportCSV" class="flex items-center justify-center fixed top-0 left-0 bg-black/20 h-screen w-screen z-[99999]" @click.self="openImportCSV = false">
+    <div v-if="showModal" class="flex items-center justify-center fixed top-0 left-0 bg-black/20 h-screen w-screen z-[99999]" >
       <div class="box bg-white rounded-md md:w-[500px] w-[95%] h-[360px]">
         <header class="flex flex-col p-4">
-          <div class="flex items-center justify-center ml-auto w-[40px] h-[40px] rounded-full bg-grey cursor-pointer" @click="openImportCSV = false, clearInput()">
+          <div class="flex items-center justify-center ml-auto w-[40px] h-[40px] rounded-full bg-grey cursor-pointer" @click="showModal = false">
             <svg width="24px" height="24px" viewBox="-0.5 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3 21.32L21 3.32001" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M3 3.32001L21 21.32" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
           </div>
-          <div class="text-center mt-7 px-[35px]">
-            Easily import your CSV files by clicking the 'Import New CSV' button below.
+          <div class="text-left mt-7 px-[35px]">
+            <h3  class="font-bold text-2xl whitespace-nowrap">Add Employees in Bulk</h3>
+            <p class="text-sm pt-1 font-semimedium">Employee will recieve an email notification</p>
           </div>
           <div class="flex flex-col mt-7 gap-4 px-[35px]">
-            <a
-              href="https://payroll.platoonco.com/storage/payroll.csv"
-              class="bg-[#003b3d] text-center text-white px-4+1 py-2.5+1 rounded-full text-sm"
+            <button @click="downloadCsvTemplate" class="bg-[#003b3d] text-center text-white px-4+1 py-2.5+1 rounded-full text-sm"
             >
               Download CSV Template
-            </a>
-            <a
+            </button>
+            <!-- <a
               href="https://payroll.platoonco.com/storage/banks.xlsx"
               class="bg-[#003b3d] text-center text-white px-4+1 py-2.5+1 rounded-full text-sm"
             >
               Download Bank Codes
-            </a>
+            </a> -->
             <label
               for="csvInput"
               class="bg-[#003b3d] text-center text-white px-4+1 py-2.5+1 rounded-full text-sm cursor-pointer"
             >
-              <span v-if="!previewing">Import New CSV</span><span v-else><i>Please Wait...</i></span>
+              <span>Import New CSV</span>
             </label>
-            <input id="csvInput" ref="csvInput" type="file" accept=".csv" class="hidden" @change="previewCsvAction($event)">
+            <input id="csvInput" ref="csvInput" type="file" accept=".csv" class="hidden" @change="handleCsvUpload">
           </div>
         </header>
       </div>
@@ -606,12 +655,20 @@ const checkTable = (index:number, key:string) => {
         >
       </div>
       <div class="flex gap-3" v-if="!loadingDepartment">
+        
+        <button
+          v-if="isActiveRoute('dashboard.employees.all')"
+          @click="importCsv"
+          class="bg-[#003b3d] text-white px-4+1 py-2.5+1 rounded-full text-sm"
+        >
+        + Import CSV
+        </button>
         <button
           v-if="isActiveRoute('dashboard.employees.all')"
           @click="groupData? isInviteEmployee = !isInviteEmployee : emptyDept = true"
           class="bg-[#003b3d] text-white px-4+1 py-2.5+1 rounded-full text-sm" :class="{'opacity-50':emptyDept}"
         >
-          {{ !emptyDept ? '+ Invite Employee' : 'Create Department First'}}
+          {{ !emptyDept ? '+ Invite User' : 'Create Department First'}}
         </button>
         <button
         v-else
@@ -621,11 +678,14 @@ const checkTable = (index:number, key:string) => {
         + Create Department
         </button>
         <button
-          v-if="isActiveRoute('dashboard.employees.all')"
-          @click="openImportCSV = !openImportCSV"
+        @click="
+        router.push({
+          name: 'dashboard.employees.multiple',
+        })
+      "
           class="bg-[#003b3d] text-white px-4+1 py-2.5+1 rounded-full text-sm"
         >
-          Import CSV
+        + Invite Multiple Users
         </button>
         <!-- <button
           v-if="isActiveRoute('dashboard.employees.departments')"

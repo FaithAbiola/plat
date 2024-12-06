@@ -40,6 +40,42 @@ const employeeStore = defineStore('employee', {
         return await Promise.reject(error);
       }
     },
+
+    async downloadCsvTemplate(): Promise<void> {
+      try {
+        const response = await employeeService.generateCsvTemplate();
+        if (response.data) {
+          const blob = new Blob([response.data], { type: 'text/csv' });
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', 'Employee_Template.csv');
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        } else if (response.response) {
+          throw response.response;
+        } else {
+          throw response.message;
+        }
+      } catch (error: any) {
+        console.error('Error downloading CSV template:', error);
+      }
+    }, 
+
+    async importCsvFile(payload: { file: File; organisationId: number }): Promise<any> {
+      try {
+        const formData = new FormData();
+        formData.append('csvfile', payload.file);
+        formData.append('OrganisationId', payload.organisationId.toString()); 
+    
+        const response = await employeeService.uploadCsv(formData);
+        return response; 
+      } catch (error) {
+        console.error('Error importing CSV file:', error);
+        throw error; 
+      }
+    },    
     async previewCsvFile(data:any): Promise<any> {
 
       try {
@@ -55,7 +91,7 @@ const employeeStore = defineStore('employee', {
         return await Promise.reject(error);
       }
     },
-    async importCsvFile(data:any): Promise<any> {
+    async importCsvFilee(data:any): Promise<any> {
 
       try {
         const response = await employeeService.importCsv("data:@file/csv;base64,77u/"+data);

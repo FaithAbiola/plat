@@ -26,7 +26,7 @@ withDefaults(
 
 </script>
 <template>
-  <div class="rounded-lg px-6 py-4 space-y-4 flex h-full flex-col justify-between" :class="[activeColor, activeText]">
+  <div class="rounded-lg px-4 py-4 space-y-4 flex h-full flex-col justify-between" :class="[activeColor, activeText]">
     <div class="space-y-2.5">
       <div class="flex items-center justify-between">
         <div class="flex flex-col">
@@ -37,7 +37,7 @@ withDefaults(
             <slot name="text"></slot>
           </span>
         </div>
-        <div v-if="slot.icon" class="p-3 rounded-full h-12 w-12 flex items-center justify-center" :class="activeIconBg">
+        <div v-if="slot.icon" class="p-1 rounded-full h-12 w-12 flex items-center justify-center" :class="activeIconBg">
           <slot name="icon"></slot>
         </div>
       </div>

@@ -537,7 +537,7 @@ watch(showDepartment, (newValue, oldValue) => {
                         + Invite Employees
                       </button>
                       <button v-else
-                        @click="$router.push({name: 'dashboard.employees.departments'})"
+                        @click="router.push({name: 'dashboard.employees.departments'})"
                         class="bg-[#4a7e6a]/70 text-white px-4+1 py-2.5+1 rounded-full text-sm capitalize"
                       >
                         Your department is empty, please create new department. 

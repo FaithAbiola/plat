@@ -137,10 +137,10 @@ provide("showMonth", showMonth);
 provide<any>("selectedMonth", selectedMonth);
 
 // watchers
-watchEffect(() => {
-  data.value.payroll.bonus.month = selectedMonth.value;
-});
-fetchPayrollSettings();
+// watchEffect(() => {
+//   data.value.payroll.bonus.month = selectedMonth.value;
+// });
+// fetchPayrollSettings();
 </script>
 <template>
   <div class="px-5 bg-white rounded-sm rounded-t-lg py-10 space-y-16">

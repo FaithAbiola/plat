@@ -8,11 +8,10 @@ import {
   IUserGear,
   IArrowRightTail,
 } from "../../core/icons";
-import Notification from "../../components/Notification.vue";
 import ProfileAction from "../../components/dropdowns/profileAction.vue";
 import DarkModeToggle from "../../components/DarkModeToggle.vue";
 import confirmAlert from "../../components/alerts/ConfirmAlert.vue";
-import { ComponentPosition as DarkModeButtonPosition } from "../../interface/enums.interface";
+import { ComponentPosition, ComponentPosition as DarkModeButtonPosition } from "../../interface/enums.interface";
 import { useBrowserStore } from "../../store";
 import { useRouter } from "vue-router";
 import { request } from "../../composables/request.composable";
@@ -31,6 +30,8 @@ import {
   useUserStore,
   useAuthStore,
 } from "../../store/index";
+import IGridMenu from "../../components/icons/IGridMenu.vue";
+import Notification from "../../components/Notification.vue";
 
 // initialize router
 const router = useRouter();
@@ -176,21 +177,21 @@ fetchEmployees();
             <ILogo :color="'#ffffff'" />
           </a>
 
-          <!-- <p class="text-sm lg:block hidden text-white-rgba-100">
+          <p class="text-sm lg:block hidden text-white-rgba-100">
             Compared to N0.0 last month
-          </p> -->
+          </p>
         </div>
 
         <!--  -->
         <div class="flex items-center lg:space-x-6 space-x-3">
-          <!-- <DarkModeToggle :position="DarkModeButtonPosition.HOMEPAGE" /> -->
-          <!-- <button
+          <DarkModeToggle :position="DarkModeButtonPosition.HOMEPAGE" />
+          <button
             class="bg-clip-rgba p-3 rounded-full h-11 w-11 flex items-center justify-center"
           >
             <IQuestionMark :color="'#ffffff'" />
-          </button> -->
+          </button>
           <!-- notification -->
-          <Notification />
+          <Notification :position="ComponentPosition.HOMEPAGE"/>
           <!--  -->
           <div class="flex items-center space-x-6">
             <!-- <IGridMenu :color="'#ffffff'" /> -->
@@ -199,7 +200,7 @@ fetchEmployees();
               @click="showProfileAction = !showProfileAction"
               id="step-2"
             >
-              <!-- <img src="/images/png/avatar.png" alt="Avatar" /> -->
+              <img src="/images/png/avatar.png" alt="Avatar" />
               <IUserGear />
               <span
                 class="absolute right-0 top-7 h-3 w-3 rounded-full bg-green border-2 border-white"
@@ -245,7 +246,7 @@ fetchEmployees();
           }}
           <!-- <span v-show="responseData.data.acc_details" class="mt-2 text-[17px] text-center">(Account Number: {{ responseData.data.acc_details ? responseData.data.acc_details.account_number : 0 }})</span> -->
         </h3>
-        <!-- <form action="" class="lg:w-[400px] hidden lg:block mt-4">
+        <form action="" class="lg:w-[400px] hidden lg:block mt-4">
           <div
             class="flex items-center space-x-6 bg-[#003b3d] border border-white rounded-full px-10 py-3-1"
           >
@@ -258,7 +259,7 @@ fetchEmployees();
               placeholder="Search employee, actions etc."
             />
           </div>
-        </form> -->
+        </form>
       </div>
     </div>
 

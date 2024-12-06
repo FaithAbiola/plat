@@ -31,7 +31,8 @@ const confirmMessage = ref({ message: "" });
 // variables
 const confirmType = ref("");
 const showSuccess = ref(false);
-
+const showModal = ref(false);
+const showDecline = ref(false);
 const responseData = ref<any>();
 const successMessage = ref("Action successful");
 const retrying = ref(false);
@@ -92,87 +93,20 @@ const formatDate = (dateString: string, format: 'full' | 'monthYear' = 'full') =
   return `${day} ${monthYear}`;
 };
 
-// const getEmployeeNameAndSalary = (id: string) => {
-//   if (responseData.value) {
-//     const data = responseData.value.employees.find((value: any) => {
-//       // console.log(value.id === id);
-//       if (value.id === id) {
-//         return value;
-//       }
-//     });
-//     return [data.name, data.salary.total];
-//   } else {
-//     return "...";
-//   }
-// };
-// const checkState = (id: any) => {
-//   return retryPaymentsId.value.includes(id) ? true : false;
-// };
-// const handlePayment = (id: any) => {
-//   if (retryPaymentsId.value.includes(id)) {
-//     retryPaymentsId.value = retryPaymentsId.value.filter((value: any) => {
-//       return value !== id;
-//     });
-//   } else {
-//     retryPaymentsId.value.push(id);
-//   }
-// };
-// const addAllPaymentsForRetry = () => {
-//   if (retryPaymentsId.value[0]) {
-//     retryPaymentsId.value.length = 0;
-//   } else {
-//     responseData.value?.payments?.forEach((value: any) => {
-//       retryPaymentsId.value.push(value.id);
-//     });
-//   }
-//   // console.log(retryPaymentsId.value);
-// };
+const approve = async () => {
+  showModal.value = true;
 
-// const retryPayments = async () => {
-//   if (retryPaymentsId.value[0]) {
-//     retrying.value = true;
-//     const response = await request(
-//       payrollStore.retryPayment(id.value as string, {
-//         action: "retry",
-//         payments: retryPaymentsId.value,
-//       }),
-//       retrying
-//     );
-
-//     const successResponse = handleSuccess(response);
-
-//     if (successResponse && typeof successResponse !== "undefined") {
-//       showSuccess.value = true;
-//       successMessage.value = "Payments  retry  successful";
-//       // console.log(successResponse.data);
-//     }
-//   }
-// };
-
-const confirmRetryPayments = () => {
-  // console.log(dataObj.value);
-  // const response = await request(
-  //   payrollStore.create(dataObj.value as any),
-  //   saving
-  // );
-
-  // handleError(response, userStore);
-  // const successResponse = handleSuccess(response, showSuccess);
-
-  // if (successResponse && typeof successResponse !== "undefined") {
-  //   console.log(successResponse.data);
-  //   successMessage.value = "payroll created successfully";
-  //   setTimeout(() => {
-  //     render.value = true;
-  //   }, 6000);
-  //   router.push({name: 'dashboard.payroll'});
-  // }
-
-
-  confirmType.value = "delete";
-  confirmMessage.value.message = `Do you really want to retry multiple payments(${retryPaymentsId.value.length})?  `;
-  showConfirm.value = true;
 };
+
+const decline = async () => {
+  showDecline.value = true;
+
+};
+
+const navigateToPending = () => {
+  router.push({ name: "dashboard.payroll.pending" });
+};
+
 
 const fetchPayrollSummary = async () => {
   if (payrollId) {
@@ -244,6 +178,53 @@ fetchPayrollSummary();
       <template #otherMessage>CLOSE</template>
       {{ successMessage }}</successAlert
     >
+
+    <div v-if="showModal" class="flex items-center justify-center fixed top-0 left-0 bg-black/20 h-screen w-screen z-[99999]">
+        <div class="box bg-white rounded-md md:w-[400px] w-auto p-6 flex flex-col items-center justify-center space-y-6">
+          <div>
+            <svg width="69" height="69" viewBox="0 0 69 69" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="34.5" cy="34.5" r="34.5" fill="#F0F2F2" />
+              <path
+                d="M34.5 15.8125C30.804 15.8125 27.1909 16.9085 24.1178 18.9619C21.0446 21.0153 18.6494 23.9339 17.235 27.3486C15.8206 30.7633 15.4505 34.5207 16.1716 38.1458C16.8926 41.7708 18.6725 45.1006 21.286 47.7141C23.8994 50.3276 27.2292 52.1074 30.8543 52.8284C34.4793 53.5495 38.2367 53.1794 41.6514 51.765C45.0661 50.3506 47.9847 47.9554 50.0381 44.8822C52.0915 41.8091 53.1875 38.196 53.1875 34.5C53.1823 29.5454 51.2117 24.7952 47.7083 21.2917C44.2048 17.7883 39.4546 15.8177 34.5 15.8125ZM42.7045 31.2045L32.642 41.267C32.5085 41.4007 32.35 41.5067 32.1755 41.5791C32.001 41.6514 31.8139 41.6886 31.625 41.6886C31.4361 41.6886 31.249 41.6514 31.0745 41.5791C30.9 41.5067 30.7415 41.4007 30.608 41.267L26.2955 36.9545C26.0257 36.6848 25.8742 36.319 25.8742 35.9375C25.8742 35.556 26.0257 35.1902 26.2955 34.9205C26.5652 34.6507 26.931 34.4992 27.3125 34.4992C27.694 34.4992 28.0598 34.6507 28.3295 34.9205L31.625 38.2177L40.6705 29.1705C40.804 29.0369 40.9626 28.931 41.1371 28.8587C41.3116 28.7864 41.4986 28.7492 41.6875 28.7492C41.8764 28.7492 42.0634 28.7864 42.2379 28.8587C42.4124 28.931 42.571 29.0369 42.7045 29.1705C42.8381 29.304 42.944 29.4626 43.0163 29.6371C43.0886 29.8116 43.1258 29.9986 43.1258 30.1875C43.1258 30.3764 43.0886 30.5634 43.0163 30.7379C42.944 30.9124 42.8381 31.071 42.7045 31.2045Z"
+                fill="black" />
+            </svg>
+          </div>
+                <div class="text-center font-bold text-lg">
+                    Payroll Approved
+                </div>
+                <div class="text-center text-sm text-gray-100 px-6">
+            Payroll payment for <span class="font-bold">{{ summaryData.executionMonth }}</span> was successful. Check the status of each transaction once completed.
+          </div>
+                <ButtonBlue @click="navigateToPending">
+            <template v-slot:placeholder>
+              <span>Done</span>
+            </template>
+          </ButtonBlue>
+        </div>
+      </div>
+      <div v-if="showDecline" class="flex items-center justify-center fixed top-0 left-0 bg-black/20 h-screen w-screen z-[99999]">
+        <div class="box bg-white rounded-md md:w-[400px] w-auto p-6 flex flex-col items-center justify-center space-y-6">
+          <div>
+            <svg width="69" height="69" viewBox="0 0 69 69" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="34.5" cy="34.5" r="34.5" fill="#F0F2F2" />
+              <path
+                d="M34.5 15.8125C30.804 15.8125 27.1909 16.9085 24.1178 18.9619C21.0446 21.0153 18.6494 23.9339 17.235 27.3486C15.8206 30.7633 15.4505 34.5207 16.1716 38.1458C16.8926 41.7708 18.6725 45.1006 21.286 47.7141C23.8994 50.3276 27.2292 52.1074 30.8543 52.8284C34.4793 53.5495 38.2367 53.1794 41.6514 51.765C45.0661 50.3506 47.9847 47.9554 50.0381 44.8822C52.0915 41.8091 53.1875 38.196 53.1875 34.5C53.1823 29.5454 51.2117 24.7952 47.7083 21.2917C44.2048 17.7883 39.4546 15.8177 34.5 15.8125ZM42.7045 31.2045L32.642 41.267C32.5085 41.4007 32.35 41.5067 32.1755 41.5791C32.001 41.6514 31.8139 41.6886 31.625 41.6886C31.4361 41.6886 31.249 41.6514 31.0745 41.5791C30.9 41.5067 30.7415 41.4007 30.608 41.267L26.2955 36.9545C26.0257 36.6848 25.8742 36.319 25.8742 35.9375C25.8742 35.556 26.0257 35.1902 26.2955 34.9205C26.5652 34.6507 26.931 34.4992 27.3125 34.4992C27.694 34.4992 28.0598 34.6507 28.3295 34.9205L31.625 38.2177L40.6705 29.1705C40.804 29.0369 40.9626 28.931 41.1371 28.8587C41.3116 28.7864 41.4986 28.7492 41.6875 28.7492C41.8764 28.7492 42.0634 28.7864 42.2379 28.8587C42.4124 28.931 42.571 29.0369 42.7045 29.1705C42.8381 29.304 42.944 29.4626 43.0163 29.6371C43.0886 29.8116 43.1258 29.9986 43.1258 30.1875C43.1258 30.3764 43.0886 30.5634 43.0163 30.7379C42.944 30.9124 42.8381 31.071 42.7045 31.2045Z"
+                fill="black" />
+            </svg>
+          </div>
+                <div class="text-center font-bold text-lg">
+                    Payroll Declined
+                </div>
+                <div class="text-center text-sm text-gray-100 px-6">
+            Payroll payment for <span class="font-bold">{{ summaryData.executionMonth }}</span> was declined successfully.
+          </div>
+                <ButtonBlue @click="navigateToPending">
+            <template v-slot:placeholder>
+              <span>Done</span>
+            </template>
+          </ButtonBlue>
+        </div>
+      </div>
     <div class="bg-white h-full rounded-lg py-6 px-5 space-y-7">
       <div
         class="flex justify-between overflow-auto scrollbar-hide lg:space-x-0 space-x-3"
@@ -284,24 +265,21 @@ fetchPayrollSummary();
             </button>
           </div>
         </div>
-        <!-- <div class="text-sm whitespace-nowrap">
-          <div v-if="responseData ">
-            <div
-              v-if=" responseData.status === 'pending'"
-              class="flex space-x-4"
-            >
-              <ButtonBlue>
-                <template v-slot:placeholder>Approve Payroll</template>
+        <div class="text-sm whitespace-nowrap">
+          <div>
+            <div class="flex space-x-4">
+              <ButtonBlue @click="approve">
+                <template v-slot:placeholder>Approve</template>
               </ButtonBlue>
-              <ButtonLightBlue  textColor="text-red">
-                <template v-slot:placeholder>Decline Payroll</template>
+              <ButtonLightBlue @click="decline" textColor="text-red">
+                <template v-slot:placeholder>Decline</template>
               </ButtonLightBlue>
             </div>
-            <ButtonBlue v-else>
+            <!-- <ButtonBlue v-else>
               <template v-slot:placeholder>Download CSV</template>
-            </ButtonBlue>
+            </ButtonBlue> -->
           </div>
-        </div> -->
+        </div>
         <!-- <div class="text-sm whitespace-nowrap">
           <div v-if="responseData">
             <div class="flex space-x-4">
@@ -329,7 +307,7 @@ fetchPayrollSummary();
               <div class="flex flex-col">
                 <span class="text-sm">₦  {{ currency(payrollData.pageItems?.totalSalaries) }} </span>
                 <span class="text-xs text-gray-rgba-3"
-                  >Total charged</span
+                  >Total amount to be charged</span
                 >
               </div>
             </div>
@@ -347,7 +325,7 @@ fetchPayrollSummary();
                 <span class="text-xs text-gray-rgba-3">Total Employees</span>
               </div>
             </div>
-            <!-- <div class="items-center">
+            <div class="items-center">
               <div class="flex flex-col">
                 <span class="text-sm">₦0 </span>
                 <span class="text-xs text-gray-rgba-3">People HRM</span>
@@ -355,12 +333,10 @@ fetchPayrollSummary();
             </div>
             <div class="items-center">
               <div class="flex flex-col">
-                <span class="text-sm">{{
-                  responseData?.created_at.split("T")[0]
-                }}</span>
+                <span class="text-sm">Jan 12, 2022 15:32</span>
                 <span class="text-xs text-gray-rgba-3">Date added</span>
               </div>
-            </div> -->
+            </div>
           </div>
         </div>
         <!--grid 2  -->
@@ -374,7 +350,7 @@ fetchPayrollSummary();
             <div class="items-center">
               <div class="flex flex-col">
                 <span class="text-sm"
-                  >₦ {{ responseData?.pension ? currency(responseData.pension) : 0 }}
+                  >₦800,000
                 </span>
                 <span class="text-xs text-gray-rgba-3"
                   >Total pension remitted</span
@@ -384,7 +360,7 @@ fetchPayrollSummary();
             <div class="items-center">
               <div class="flex flex-col">
                 <span class="text-sm"
-                  >₦ {{ responseData?.tax ? currency(responseData.tax) : 0 }}</span
+                  >₦ 18,000</span
                 >
                 <span class="text-xs text-gray-rgba-3">Tax remitted</span>
               </div>
@@ -392,19 +368,15 @@ fetchPayrollSummary();
             <div class="items-center">
               <div class="flex flex-col">
                 <span class="text-sm"
-                  >#{{
-                    responseData?.health_insurance
-                      ? responseData.health_insurance
-                      : 0
-                  }}
+                  >1,000,000
                 </span>
                 <span class="text-xs text-gray-rgba-3">Health Insurance</span>
               </div>
             </div>
-            <!-- <div class="items-center">
+            <div class="items-center">
               <div class="flex flex-col">
                 <span class="text-sm"
-                  >₦{{ responseData?.nistf ? responseData.nistf : 0 }}
+                  >₦7,0000
                 </span>
                 <span class="text-xs text-gray-rgba-3">Total NSITF</span>
               </div>
@@ -412,68 +384,53 @@ fetchPayrollSummary();
             <div class="items-center">
               <div class="flex flex-col">
                 <span class="text-sm"
-                  >#{{
-                    responseData?.total_taxes ? responseData.total_taxes : 0
-                  }}</span
+                  >#9,0000</span
                 >
                 <span class="text-xs text-gray-rgba-3">Total Taxes</span>
               </div>
-            </div> -->
+            </div>
           </div>
         </div>
         <!-- grid  3 -->
         <div
-          v-if="payrollData.value?.pageItems?.payroll?.status === 'approved'"
           class="h-full rounded-lg p-4 bg-blue-lighter space-y-8"
         >
           <div class="items-center">
             <div class="flex flex-col">
-              <span class="text-xl font-semimedium">Approvals </span>
+              <span class="text-xl font-semimedium">Details </span>
             </div>
           </div>
           <div class="space-y-5">
             <div class="items-center">
               <div class="flex flex-col">
-                <span class="text-sm">{{
-                  responseData?.created_at.split("T")[0]
-                }}</span>
+                <span class="text-sm">Jan 12, 2022 15:32</span>
+                <span class="text-xs text-gray-rgba-3">Date Created</span>
+              </div>
+            </div>
+            <div class="items-center">
+              <div class="flex flex-col">
+                <span class="text-sm">Jan 12, 2022 15:32</span>
                 <span class="text-xs text-gray-rgba-3">Date Submitted</span>
               </div>
             </div>
             <div class="items-center">
               <div class="flex flex-col">
-                <span class="text-sm"
-                  >{{ responseData?.created_at.split("T")[0] }}
-                </span>
-                <span class="text-xs text-gray-rgba-3">Date Approved</span>
+                <span class="text-sm">Jan 12, 2022 15:32</span>
+                <span class="text-xs text-gray-rgba-3">Date to be Executed</span>
               </div>
             </div>
             <div class="items-center">
               <div class="flex flex-col">
-                <span class="text-sm"
-                  >{{ responseData?.start_date.slice(0, 10) }} {{ responseData?.end_date ? '/ '+responseData?.end_date.slice(0, 10) : '' }}
-                </span>
-                <span class="text-xs text-gray-rgba-3">Pay Out Date</span>
-              </div>
-            </div>
-            <!-- <div class="items-center">
-              <div class="flex flex-col">
-                <span class="text-sm"
-                  >{{
-                    responseData?.approved_by ? responseData.approved_by : "___"
-                  }}
-                </span>
-                <span class="text-xs text-gray-rgba-3">Approved by</span>
+                <span class="text-sm"> Ehizojie Ihayere</span>
+                <span class="text-xs text-gray-rgba-3">Created by</span>
               </div>
             </div>
             <div class="items-center">
               <div class="flex flex-col">
-                <span class="text-sm">{{
-                  responseData?.created_at.split("T")[0]
-                }}</span>
+                <span class="text-sm">Jan 12, 2022 15:32</span>
                 <span class="text-xs text-gray-rgba-3">Date added</span>
               </div>
-            </div> -->
+            </div>
           </div>
         </div>
       </div>
