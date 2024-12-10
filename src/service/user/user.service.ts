@@ -8,8 +8,8 @@ class UserService {
   constructor(private readonly request: Axios) {}
   private createAxiosInstance() {
     return axios.create({
-      baseURL: "https://platoon-backend.onrender.com/api", // Set your custom base URL here
-      headers: authhHeader(), // Include any headers you need
+      baseURL: "https://platoon-backend.onrender.com/api", // custom base URL here
+      headers: authhHeader(), 
     });
   }
   async show(userId: number): Promise<any> {
@@ -25,10 +25,28 @@ class UserService {
         return err;
       });
   }
-  async getUsers(): Promise<any> {
-    return await this.request
-      .get("/users", {
-        headers: authHeader(),
+  // async getUsers(): Promise<any> {
+  //   return await this.request
+  //     .get("/users", {
+  //       headers: authHeader(),
+  //     })
+  //     .then((res) => {
+  //       return res;
+  //     })
+  //     .catch((err) => {
+  //       return err;
+  //     });
+  // }
+  async getUsers(organisationId: number, pageSize: number, pageNumber: number): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+    return await customRequest
+      .get("/Role/retrieve-managers", {
+        params: {
+          OrganisationId: organisationId,
+          PageSize: pageSize,
+          PageNumber: pageNumber,
+        },
+        headers: authhHeader(),
       })
       .then((res) => {
         return res;
@@ -37,6 +55,7 @@ class UserService {
         return err;
       });
   }
+  
   async create(data: Create): Promise<any> {
     return await this.request
       .post(

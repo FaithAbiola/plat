@@ -3,6 +3,7 @@ import { inject, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import ButtonBlue from "../components/buttons/ButtonBlue.vue";
+import { onMounted } from "vue";
 
 // initialize router and route
 const route = useRoute();
@@ -12,15 +13,28 @@ const router = useRouter();
 const manageUser = ref<any>();
 
 // methods
+// const fetchUsers = () => {
+//   console.log("this one hhas been fired");
+//   typeof manageUser.value.fetchUsers !== "undefined"
+//     ? manageUser.value.fetchUsers()
+//     : " ";
+// };
+
 const fetchUsers = () => {
-  // console.log("this one hhas been fired");
-  typeof manageUser.value.fetchUsers !== "undefined"
-    ? manageUser.value.fetchUsers()
-    : " ";
+  console.log("Fetch users method called");
+  if (manageUser.value && typeof manageUser.value.fetchUsers === "function") {
+    manageUser.value.fetchUsers();
+  } else {
+    console.error("fetchUsers method is not available on manageUser");
+  }
 };
 
 // inject
 const openCreateUser = inject("openCreateUser");
+
+onMounted(() => {
+  fetchUsers();
+});
 
 defineExpose({ fetchUsers });
 </script>
