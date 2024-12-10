@@ -254,7 +254,7 @@ const v$ = useVuelidate(rules as any, data);
               </div>
               <!--  -->
               <div>
-                <div class="relative">
+                <!-- <div class="relative">
                   <vue-tel-input
                     :value="data.telephone"
                     @input="onInput"
@@ -264,7 +264,7 @@ const v$ = useVuelidate(rules as any, data);
                   <div v-if="v$.telephone.$error" class="text-red-600 text-xs">
                     {{ "* " + v$.telephone.$errors[0].$message }}
                   </div>
-                </div>
+                </div> -->
               </div>
               <!--  -->
               <div>

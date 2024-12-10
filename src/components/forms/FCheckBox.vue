@@ -2,7 +2,7 @@
 <script lang="ts" setup>
 
 import {withDefaults} from "vue"
-const props=withDefaults(defineProps<{value:boolean}>(),{value:false})
+const props=withDefaults(defineProps<{value?:boolean}>(),{value:false})
 
 
 </script>

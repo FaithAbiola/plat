@@ -14,6 +14,8 @@ import handleError from "../../../composables/handle_error.composable";
 import handleSuccess from "../../../composables/handle_success.composable";
 import { useUserStore } from "../../../store/index";
 import cache from "../../../composables/swr_cache";
+import { getItem } from "../../../core/utils/storage.helper";
+import Pagination from "../../../components/Pagination.vue";
 
 const router = useRouter();
 
@@ -23,30 +25,58 @@ const userStore = useUserStore();
 // variables
 
 const confirmMessage = ref({ message: "", id: "" });
+const currentPage = ref(1);
+const totalPages = ref(1);
+const pageSize = ref(10);
+const totalItems = ref(0);
 const showSuccess = ref(false);
 const showConfirm = ref(false);
 const loading = ref(false);
-const responseData = ref<any>([]);
+const responseData = ref<any>({ data: [], message: "" });
 const successMessage = ref("Action successful");
 
 // methods
-const fetchUsers = async () => {
+const userInfo = ref(getItem(import.meta.env.VITE_USERDETAILS));
+
+const parsedUserInfo = typeof userInfo.value === 'string' ? JSON.parse(userInfo.value) : userInfo.value;
+const organisationId = parsedUserInfo?.customerInfo?.organisationId;
+
+const openUpdateUser = inject("openUpdateUser");
+
+// const fetchUsers = async () => {
+//   loading.value = true;
+
+//   const totalUsersCached = cache("total_users");
+//   if (typeof totalUsersCached !== "undefined") {
+//     loading.value = false;
+//     responseData.value = totalUsersCached;
+//   }
+
+//   const response = await request(userStore.getUsers(), loading);
+
+//   const successResponse = handleSuccess(response);
+
+//   if (successResponse && typeof successResponse !== "undefined") {
+//     responseData.value = successResponse.data.data;
+//     cache("total_users", successResponse.data.data);
+//     // console.log(successResponse.data);
+//   }
+// };
+const fetchUsers = async (page: number) => {
   loading.value = true;
-
-  const totalUsersCached = cache("total_users");
-  if (typeof totalUsersCached !== "undefined") {
+  try {
+    const response = await userStore.getUsers(organisationId, pageSize.value, page);
+    if (response.data) {
+      console.log("========", response.data.data.pageItems)
+      responseData.value.data = response.data.data.pageItems;
+      currentPage.value = response.data.data.currentPage;
+      totalPages.value = response.data.data.numberOfPages;
+      totalItems.value = response.data.data.pageSize * totalPages.value;
+    }
+  } catch (error) {
+    handleError(error, "Error fetching users");
+  } finally {
     loading.value = false;
-    responseData.value = totalUsersCached;
-  }
-
-  const response = await request(userStore.getUsers(), loading);
-
-  const successResponse = handleSuccess(response);
-
-  if (successResponse && typeof successResponse !== "undefined") {
-    responseData.value = successResponse.data.data;
-    cache("total_users", successResponse.data.data);
-    // console.log(successResponse.data);
   }
 };
 // fetchUsers();
@@ -73,6 +103,11 @@ const confirmRemoveUser = (id: string) => {
 };
 
 defineExpose({ fetchUsers, loading, responseData, handleSuccess });
+
+fetchUsers(currentPage.value);
+const updatePage = (page: number) => {
+  fetchUsers(page);
+}
 </script>
 <template>
   <div>
@@ -108,7 +143,7 @@ defineExpose({ fetchUsers, loading, responseData, handleSuccess });
     <div v-else>
       <div
         class="space-y-10 overflow-auto scrollbar-hide"
-        v-if="responseData[0]"
+        v-if="responseData.data[0]"
       >
         <!-- table -->
         <div class="">
@@ -133,8 +168,8 @@ defineExpose({ fetchUsers, loading, responseData, handleSuccess });
                   </thead>
                   <tbody class="bg-white divide-y divide-grey-200">
                     <tr
-                      v-for="user in responseData"
-                      :key="user.id"
+                      v-for="(user, index) in responseData && responseData.data"
+                      :key="user.emailAddress"
                       class="text-black-100"
                     >
                       <td class="py-6 whitespace-nowrap w-[25%]">
@@ -149,14 +184,14 @@ defineExpose({ fetchUsers, loading, responseData, handleSuccess });
                       <td class="py-4 whitespace-nowrap w-[30%]">
                         <div class="text-left flex flex-col">
                           <span class="text-sm font-semimedium">{{
-                            user.email
+                            user.emailAddress
                           }}</span>
                         </div>
                       </td>
                       <td class="whitespace-nowrap w-[25%]">
                         <div class="font-normal text-left flex">
                           <span class="text-sm font-semimedium">{{
-                            user.telephone
+                            user.phoneNumber
                           }}</span>
                         </div>
                       </td>
@@ -169,8 +204,8 @@ defineExpose({ fetchUsers, loading, responseData, handleSuccess });
                       </td>
                       <td class="whitespace-nowrap flex space-x-3 mt-3">
                         <div class="font-normal flex text-left">
-                          <ButtonLightBlue textColor="text-blue">
-                            <template v-slot:placeholder>View log</template>
+                          <ButtonLightBlue @click="openUpdateUser = true">
+                            <template v-slot:placeholder>Edit Role</template>
                           </ButtonLightBlue>
                         </div>
                         <div class="font-normal flex text-left">
@@ -190,28 +225,13 @@ defineExpose({ fetchUsers, loading, responseData, handleSuccess });
           </div>
         </div>
         <!-- end of table -->
-        <div
-          class="hidden justify-between px-6 pb-6 text-sm text-gray-rgba-3 items-center lg:space-x-0 space-x-3 whitespace-nowrap"
-        >
-          <span> Showing 1-6 of 30 items</span>
-          <div class="flex space-x-3">
-            <div class="flex">
-              <ButtonBlue>
-                <template v-slot:placeholder>1</template>
-              </ButtonBlue>
-            </div>
-            <div class="flex">
-              <ButtonColorless>
-                <template v-slot:placeholder>2</template>
-              </ButtonColorless>
-            </div>
-            <div class="flex">
-              <ButtonColorless>
-                <template v-slot:placeholder>3</template>
-              </ButtonColorless>
-            </div>
-          </div>
-        </div>
+        <Pagination 
+        :currentPage="currentPage" 
+        :totalPages="totalPages"
+        :pageSize="pageSize"
+        :totalItems="totalItems"
+        @updatePage="updatePage"
+        />
       </div>
       <!-- empty state below -->
       <div class="w-full no-hover flex justify-center" v-else>

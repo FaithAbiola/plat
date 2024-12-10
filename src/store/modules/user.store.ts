@@ -70,9 +70,24 @@ const userStore = defineStore("user", {
         return await Promise.reject(error);
       }
     },
-    async getUsers(): Promise<any> {
+    // async getUsers(): Promise<any> {
+    //   try {
+    //     const response = await userService.getUsers();
+    //     if (response.data) {
+    //       return await Promise.resolve(response);
+    //     } else if (response.response) {
+    //       return await Promise.reject(response.response);
+    //     } else {
+    //       return await Promise.reject(response.message);
+    //     }
+    //   } catch (error: any) {
+    //     return await Promise.reject(error);
+    //   }
+    // },
+
+    async getUsers(organisationId: number, pageSize: number, pageNumber: number): Promise<any> {
       try {
-        const response = await userService.getUsers();
+        const response = await userService.getUsers(organisationId, pageSize, pageNumber);
         if (response.data) {
           return await Promise.resolve(response);
         } else if (response.response) {
@@ -83,7 +98,8 @@ const userStore = defineStore("user", {
       } catch (error: any) {
         return await Promise.reject(error);
       }
-    },
+    },   
+     
     async create(data: Create): Promise<any> {
       try {
         const response = await userService.create(data);
