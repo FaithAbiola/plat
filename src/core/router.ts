@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory, useRoute } from "vue-router";
-import isAuthenticated from "./helpers/authenticate";
+import isAuthenticateed from "./helpers/authenticate";
 // layouts
 const AuthLayout = () => import("../layouts/AuthLayout.vue");
 const DashboardLayout = () => import("../layouts/DashboardLayout.vue");
@@ -727,7 +727,7 @@ router.beforeEach((to, from, next) => {
   if (to.meta && to.meta.public) {
     return next();
   } else {
-    const isLoggedIn = isAuthenticated();
+    const isLoggedIn = isAuthenticateed();
     if (isLoggedIn == true) {
       return next();
     } else {
