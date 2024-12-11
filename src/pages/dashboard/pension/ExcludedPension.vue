@@ -165,33 +165,33 @@ const add = (id: any, valueId: string, type?: string) => {
   }
 };
 
-const fetchEmployees = async () => {
-  loading.value = true;
-  const totalExcludedPensionCache = cache("total_excluded_pension");
+// const fetchEmployees = async () => {
+//   loading.value = true;
+//   const totalExcludedPensionCache = cache("total_excluded_pension");
 
-  if (typeof totalExcludedPensionCache !== "undefined") {
-    loading.value = false;
-    excludedData.value.length = 0;
-    excludedData.value = totalExcludedPensionCache;
-  }
-  const response = await request(employeeStore.index(), loading);
+//   if (typeof totalExcludedPensionCache !== "undefined") {
+//     loading.value = false;
+//     excludedData.value.length = 0;
+//     excludedData.value = totalExcludedPensionCache;
+//   }
+//   const response = await request(employeeStore.index(), loading);
 
-  const successResponse = handleSuccess(response);
+//   const successResponse = handleSuccess(response);
 
-  if (successResponse && typeof successResponse !== "undefined") {
-    excludedData.value.length = 0;
-    // console.log(successResponse.data);
+//   if (successResponse && typeof successResponse !== "undefined") {
+//     excludedData.value.length = 0;
+//     // console.log(successResponse.data);
 
-    successResponse.data.data.forEach((data: any) => {
-      data.meta.pension ? " " : excludedData.value.push(data);
-    });
+//     successResponse.data.data.forEach((data: any) => {
+//       data.meta.pension ? " " : excludedData.value.push(data);
+//     });
 
-    cache("total_excluded_pension", excludedData.value);
+//     cache("total_excluded_pension", excludedData.value);
 
-    // console.log(successResponse.data);
-  }
-};
-fetchEmployees();
+//     // console.log(successResponse.data);
+//   }
+// };
+// fetchEmployees();
 
 // watchers
 watch(showDepartment, (newValue, oldValue) => {

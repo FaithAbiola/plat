@@ -63,34 +63,34 @@ const fetchEmployeeByDepartment = async () => {
   data.value.department = "";
 };
 
-const fetchTax = async () => {
-  loading.value = true;
-  const totalEmployeeCached = cache("total_employees");
-  if (typeof totalEmployeeCached !== "undefined") {
-    loading.value = false;
+// const fetchTax = async () => {
+//   loading.value = true;
+//   const totalEmployeeCached = cache("total_employees");
+//   if (typeof totalEmployeeCached !== "undefined") {
+//     loading.value = false;
 
-    excludedData.value.length = 0;
+//     excludedData.value.length = 0;
 
-    totalEmployeeCached.forEach((data: any) => {
-      // console.log(data);
+//     totalEmployeeCached.forEach((data: any) => {
+//       // console.log(data);
 
-      data.meta.tax ? " " : excludedData.value.push(data);
-    });
-  }
-  const response = await request(employeeStore.index(), loading);
-  // console.log(loading.value);
+//       data.meta.tax ? " " : excludedData.value.push(data);
+//     });
+//   }
+//   const response = await request(employeeStore.index(), loading);
+//   // console.log(loading.value);
 
-  const successResponse = handleSuccess(response);
+//   const successResponse = handleSuccess(response);
 
-  if (successResponse && typeof successResponse !== "undefined") {
-    cache("total_employees", successResponse.data.data);
-    excludedData.value.length = 0;
-    successResponse.data.data.forEach((data: any) => {
-      data.meta.tax ? " " : excludedData.value.push(data);
-    });
-  }
-};
-fetchTax();
+//   if (successResponse && typeof successResponse !== "undefined") {
+//     cache("total_employees", successResponse.data.data);
+//     excludedData.value.length = 0;
+//     successResponse.data.data.forEach((data: any) => {
+//       data.meta.tax ? " " : excludedData.value.push(data);
+//     });
+//   }
+// };
+// fetchTax();
 
 // watchers
 watch(showDepartment, (newValue, oldValue) => {

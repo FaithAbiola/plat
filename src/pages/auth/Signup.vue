@@ -320,7 +320,7 @@ const gotoExternalRouteOnTab = (route:string) => {
       <p>
         Already have an account?
         <button
-          @click="$router.push('/login')"
+          @click="router.push('/login')"
           class="text-[#003b3d] underline underline-offset-4 font-semimedium"
           >Login</button
         >

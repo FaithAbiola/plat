@@ -279,7 +279,7 @@ const gotoExternalRouteOnTab = (route:string) => {
 
     <div class="mt-6">
       <a
-        @click="$router.push('/forgotten')"
+        @click="router.push('/forgotten')"
         class="text-[#003b3d] text-sm underline underline-offset-4 font-medium"
         >Forgot password?</a
       >

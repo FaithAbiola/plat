@@ -26,34 +26,34 @@ const remittanceData = ref<any>([]);
 const excludedData = ref<any>([]);
 
 // methods
-const fetchEmployee = async () => {
-  const totalExcludedPensionCache = cache("total_excluded_pension");
-  const totalEnrolledPensionCache = cache("total_enrolled_pension");
+// const fetchEmployee = async () => {
+//   const totalExcludedPensionCache = cache("total_excluded_pension");
+//   const totalEnrolledPensionCache = cache("total_enrolled_pension");
 
-  if (typeof totalExcludedPensionCache !== "undefined") {
-    excludedData.value = totalExcludedPensionCache;
-  }
-  if (typeof totalEnrolledPensionCache !== "undefined") {
-    enrolledData.value = totalEnrolledPensionCache;
-  }
+//   if (typeof totalExcludedPensionCache !== "undefined") {
+//     excludedData.value = totalExcludedPensionCache;
+//   }
+//   if (typeof totalEnrolledPensionCache !== "undefined") {
+//     enrolledData.value = totalEnrolledPensionCache;
+//   }
 
-  const response = await request(employeeStore.index(), loading);
+//   const response = await request(employeeStore.index(), loading);
 
-  const successResponse = handleSuccess(response);
+//   const successResponse = handleSuccess(response);
 
-  if (successResponse && typeof successResponse !== "undefined") {
-    // console.log(successResponse);
-    enrolledData.value.length = 0;
-    excludedData.value.length = 0;
-    successResponse.data.data.forEach((data: any) => {
-      data.meta.pension
-        ? enrolledData.value.push(data)
-        : excludedData.value.push(data);
-    });
-    cache("total_enrolled_pension", enrolledData.value);
-    cache("total_excluded_pension", excludedData.value);
-  }
-};
+//   if (successResponse && typeof successResponse !== "undefined") {
+//     // console.log(successResponse);
+//     enrolledData.value.length = 0;
+//     excludedData.value.length = 0;
+//     successResponse.data.data.forEach((data: any) => {
+//       data.meta.pension
+//         ? enrolledData.value.push(data)
+//         : excludedData.value.push(data);
+//     });
+//     cache("total_enrolled_pension", enrolledData.value);
+//     cache("total_excluded_pension", excludedData.value);
+//   }
+// };
 // fetchEmployee();
 </script>
 <template>

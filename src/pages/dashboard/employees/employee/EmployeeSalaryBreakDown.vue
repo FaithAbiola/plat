@@ -32,6 +32,7 @@ import { formatNumber, dateFormat } from "../../../../core/helpers/actions"
 import html2pdf from 'html2pdf.js';
 
 import { useRoute } from "vue-router";
+import { getItem } from "../../../../core/utils/storage.helper";
 
 // initialize route
 const route = useRoute();
@@ -47,7 +48,9 @@ const showBank = ref(false);
 const loading = ref(false);
 const fetchLoading = ref(true);
 const valid = ref(false);
-
+const userInfo = ref(getItem(import.meta.env.VITE_USERDETAILS));
+const parsedUserInfo = typeof userInfo.value === 'string' ? JSON.parse(userInfo.value) : userInfo.value;
+const organisationId = parsedUserInfo?.customerInfo?.organisationId;
 let data = ref<{
   firstname: string | null;
   lastname: string | null;
@@ -147,101 +150,101 @@ const validatePhone = () => {
   return valid.value;
 };
 
-const saveChanges = async () => {
-  // check if form is formattted correctly
-  const isFormCorrect = await v$.value.$validate();
+// const saveChanges = async () => {
+//   // check if form is formattted correctly
+//   const isFormCorrect = await v$.value.$validate();
 
-  if (isFormCorrect == true) {
-    const dataObj = {
-      email: v$.value.email.$model as string,
-      firstname: v$.value.firstname.$model as string,
-      lastname: v$.value.lastname.$model as string,
-      telephone: v$.value.telephone.$model as number,
-      active: 1,
-      department: data.value as object,
-      grade_id: data.value as object,
-      account_details: {
-        bank: data.value.account_details.bank as string,
-        account_name: data.value.account_details.account_name as string,
-        account_number: v$.value.account_details.account_number
-          .$model as number,
-      },
+//   if (isFormCorrect == true) {
+//     const dataObj = {
+//       email: v$.value.email.$model as string,
+//       firstname: v$.value.firstname.$model as string,
+//       lastname: v$.value.lastname.$model as string,
+//       telephone: v$.value.telephone.$model as number,
+//       active: 1,
+//       department: data.value as object,
+//       grade_id: data.value as object,
+//       account_details: {
+//         bank: data.value.account_details.bank as string,
+//         account_name: data.value.account_details.account_name as string,
+//         account_number: v$.value.account_details.account_number
+//           .$model as number,
+//       },
 
-      // photo: data.photo as any,
-    };
-    // console.log(dataObj, v$.value.account_details.account_number.$model);
+//       // photo: data.photo as any,
+//     };
+//     // console.log(dataObj, v$.value.account_details.account_number.$model);
 
-    loading.value = true;
-    const response = await request(
-      employeeStore.update(dataObj, employeeId.value),
-      loading
-    );
+//     loading.value = true;
+//     const response = await request(
+//       employeeStore.update(dataObj, employeeId.value),
+//       loading
+//     );
 
-    handleError(response, userStore);
-    const successResponse = handleSuccess(response, showSuccess);
+//     handleError(response, userStore);
+//     const successResponse = handleSuccess(response, showSuccess);
 
-    if (successResponse && typeof successResponse !== "undefined") {
-      responseData.value = successResponse;
-      getProfile();
-    }
-  }
-};
+//     if (successResponse && typeof successResponse !== "undefined") {
+//       responseData.value = successResponse;
+//       getProfile();
+//     }
+//   }
+// };
 
-const getProfile = async () => {
-  // console.log(employeeId.value);
-  const response = await request(
-    employeeStore.show(employeeId.value),
-    fetchLoading
-  );
+// const getProfile = async () => {
+//   // console.log(employeeId.value);
+//   const response = await request(
+//     employeeStore.show(organisationId ,employeeId.value), 
+//     fetchLoading
+//   );
 
-  // handleError(response, userStore);
-  const successResponse = handleSuccess(response);
+//   // handleError(response, userStore);
+//   const successResponse = handleSuccess(response);
 
-  if (successResponse && typeof successResponse !== "undefined") {
-    // console.log(successResponse.data);
-    data.value.email = successResponse.data.data.email;
-    data.value.firstname = successResponse.data.data.firstname;
-    data.value.lastname = successResponse.data.data.lastname;
-    data.value.telephone = successResponse.data.data.telephone;
-    data.value.active = successResponse.data.data.active;
-    data.value.group = successResponse.data.data.group ? successResponse.data.data.group : '---';
-    data.value.grade = successResponse.data.data.grade ? successResponse.data.data.grade : '---';
-    gradeName.value =
-      successResponse.data.data.grade && successResponse.data.data.grade.name;
-    departmentName.value = successResponse.data.data.group ?  successResponse.data.data.group.name : '---';
-    data.value.account_details.bank =
-      successResponse.data.data.bank_data &&
-      successResponse.data.data.bank_data.bank;
-    data.value.account_details.account_name =
-      successResponse.data.data.bank_data &&
-      successResponse.data.data.bank_data.account_name;
-    data.value.account_details.account_number =
-      successResponse.data.data.bank_data &&
-      successResponse.data.data.bank_data.account_number;
-    // data.value = successResponse.data;
-    responseData.value.data = successResponse.data;
-    // console.log(response.data.data);
+//   if (successResponse && typeof successResponse !== "undefined") {
+//     // console.log(successResponse.data);
+//     data.value.email = successResponse.data.data.email;
+//     data.value.firstname = successResponse.data.data.firstname;
+//     data.value.lastname = successResponse.data.data.lastname;
+//     data.value.telephone = successResponse.data.data.telephone;
+//     data.value.active = successResponse.data.data.active;
+//     data.value.group = successResponse.data.data.group ? successResponse.data.data.group : '---';
+//     data.value.grade = successResponse.data.data.grade ? successResponse.data.data.grade : '---';
+//     gradeName.value =
+//       successResponse.data.data.grade && successResponse.data.data.grade.name;
+//     departmentName.value = successResponse.data.data.group ?  successResponse.data.data.group.name : '---';
+//     data.value.account_details.bank =
+//       successResponse.data.data.bank_data &&
+//       successResponse.data.data.bank_data.bank;
+//     data.value.account_details.account_name =
+//       successResponse.data.data.bank_data &&
+//       successResponse.data.data.bank_data.account_name;
+//     data.value.account_details.account_number =
+//       successResponse.data.data.bank_data &&
+//       successResponse.data.data.bank_data.account_number;
+//     // data.value = successResponse.data;
+//     responseData.value.data = successResponse.data;
+//     // console.log(response.data.data);
 
-    responseData.value.data.data.payments.forEach((item:any) => { 
-      if(item.status == 'completed'){
-        grandTotal.value.gross_salary = item.meta && item.meta.salary.gross ? grandTotal.value.gross_salary + item.meta.salary.gross : 0;
-        grandTotal.value.net_salary = item.meta && item.meta.salary.total ? grandTotal.value.net_salary + item.meta.salary.total : 0;
-        grandTotal.value.bonus = item.meta ? grandTotal.value.bonus + item.meta.breakdown.bonus : 0;
-        grandTotal.value.deductions = item.meta ? grandTotal.value.deductions + item.meta.breakdown.deductions : 0;
-        grandTotal.value.tax = item.meta ? grandTotal.value.tax + item.meta.breakdown.tax : 0;
-      }
-     });
+//     responseData.value.data.data.payments.forEach((item:any) => { 
+//       if(item.status == 'completed'){
+//         grandTotal.value.gross_salary = item.meta && item.meta.salary.gross ? grandTotal.value.gross_salary + item.meta.salary.gross : 0;
+//         grandTotal.value.net_salary = item.meta && item.meta.salary.total ? grandTotal.value.net_salary + item.meta.salary.total : 0;
+//         grandTotal.value.bonus = item.meta ? grandTotal.value.bonus + item.meta.breakdown.bonus : 0;
+//         grandTotal.value.deductions = item.meta ? grandTotal.value.deductions + item.meta.breakdown.deductions : 0;
+//         grandTotal.value.tax = item.meta ? grandTotal.value.tax + item.meta.breakdown.tax : 0;
+//       }
+//      });
 
-    emit(
-      "setSingleEmployeeName",
-      `${data.value.firstname} ${data.value.lastname}`
-    );
-  } else {
-    errorResponse.value = response.data.message;
-  }
-};
+//     emit(
+//       "setSingleEmployeeName",
+//       `${data.value.firstname} ${data.value.lastname}`
+//     );
+//   } else {
+//     errorResponse.value = response.data.message;
+//   }
+// };
 
-getProfile();
+// getProfile();
 fetchBank();
 // validations rule
 const rules = computed(() => {
@@ -309,7 +312,7 @@ const v$ = useVuelidate(rules as any, data);
 
 // define emits
 defineExpose({
-  saveChanges,
+  // saveChanges,
   disabled,
   loading,
   v$,

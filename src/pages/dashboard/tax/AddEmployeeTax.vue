@@ -48,55 +48,55 @@ provide("selectedState", state);
 provide("showState", showState);
 
 // methods
-const createTax = async () => {
-  // console.log(dataObj);
-  sending.value = true;
-  const response = await request(taxStore.create(dataObj.value), sending);
-  // console.log(loading.value);
+// const createTax = async () => {
+//   // console.log(dataObj);
+//   sending.value = true;
+//   const response = await request(taxStore.create(dataObj.value), sending);
+//   // console.log(loading.value);
 
-  handleError(response, userStore);
-  const successResponse = handleSuccess(response, showSuccess);
+//   handleError(response, userStore);
+//   const successResponse = handleSuccess(response, showSuccess);
 
-  if (successResponse && typeof successResponse !== "undefined") {
-    // console.log(successResponse.data);
-    successResponse.message = "Employee enrolled for tax successfully ";
-    responseData.value = successResponse;
-    // successResponse.data.data.forEach((data: any) => {
-    //   data.meta.tax && excludedData.value.push(data);
-    // });
-    index();
-  }
-};
-const index = async () => {
-  loading.value = true;
-  const totalEmployeeCached = cache("total_employees");
+//   if (successResponse && typeof successResponse !== "undefined") {
+//     // console.log(successResponse.data);
+//     successResponse.message = "Employee enrolled for tax successfully ";
+//     responseData.value = successResponse;
+//     // successResponse.data.data.forEach((data: any) => {
+//     //   data.meta.tax && excludedData.value.push(data);
+//     // });
+//     index();
+//   }
+// };
+// const index = async () => {
+//   loading.value = true;
+//   const totalEmployeeCached = cache("total_employees");
 
-  if (typeof totalEmployeeCached !== "undefined") {
-    loading.value = false;
+//   if (typeof totalEmployeeCached !== "undefined") {
+//     loading.value = false;
 
-    excludedData.value.length = 0;
+//     excludedData.value.length = 0;
 
-    totalEmployeeCached.forEach((data: any) => {
-      // console.log(data);
+//     totalEmployeeCached.forEach((data: any) => {
+//       // console.log(data);
 
-      data.meta.tax ? " " : excludedData.value.push(data);
-    });
-  }
-  const response = await request(employeeStore.index(), loading);
-  // console.log(loading.value);
+//       data.meta.tax ? " " : excludedData.value.push(data);
+//     });
+//   }
+//   const response = await request(employeeStore.index(), loading);
+//   // console.log(loading.value);
 
-  const successResponse = handleSuccess(response);
+//   const successResponse = handleSuccess(response);
 
-  if (successResponse && typeof successResponse !== "undefined") {
-    cache("total_employees", successResponse.data.data);
+//   if (successResponse && typeof successResponse !== "undefined") {
+//     cache("total_employees", successResponse.data.data);
 
-    excludedData.value.length = 0;
+//     excludedData.value.length = 0;
 
-    successResponse.data.data.forEach((data: any) => {
-      data.meta.tax ? " " : excludedData.value.push(data);
-    });
-  }
-};
+//     successResponse.data.data.forEach((data: any) => {
+//       data.meta.tax ? " " : excludedData.value.push(data);
+//     });
+//   }
+// };
 
 const add = (id: any, valueId: string) => {
   disabled.value = false;
@@ -148,7 +148,7 @@ const hideStateComp = (id: any) => {
 };
 
 // hookes
-index();
+// index();
 </script>
 <template>
   <div class="px-6 py-10 space-y-6">
@@ -175,7 +175,7 @@ index();
           >
         </div>
         <div class="flex">
-          <ButtonBlue @click="createTax" :disabled="disabled">
+          <ButtonBlue :disabled="disabled">
             <template v-slot:placeholder>
               <spinner v-if="sending == true" />
               <span v-else>Done</span></template
