@@ -24,39 +24,39 @@ const enrolledData = ref<any>([]);
 const remittanceData = ref<any>([]);
 const excludedData = ref<any>([]);
 // methods
-const fetchEmployee = async () => {
-  loading.value = true;
-  const totalEmployeeCached = cache("total_employees");
-  if (typeof totalEmployeeCached !== "undefined") {
-    loading.value = false;
+// const fetchEmployee = async () => {
+//   loading.value = true;
+//   const totalEmployeeCached = cache("total_employees");
+//   if (typeof totalEmployeeCached !== "undefined") {
+//     loading.value = false;
 
-    enrolledData.value.length = 0;
-    excludedData.value.length = 0;
+//     enrolledData.value.length = 0;
+//     excludedData.value.length = 0;
 
-    totalEmployeeCached.forEach((data: any) => {
-      data.meta.tax
-        ? enrolledData.value.push(data)
-        : excludedData.value.push(data);
-    });
-  }
+//     totalEmployeeCached.forEach((data: any) => {
+//       data.meta.tax
+//         ? enrolledData.value.push(data)
+//         : excludedData.value.push(data);
+//     });
+//   }
 
-  const response = await request(employeeStore.index(), loading);
+//   const response = await request(employeeStore.index(), loading);
 
-  const successResponse = handleSuccess(response);
+//   const successResponse = handleSuccess(response);
 
-  if (successResponse && typeof successResponse !== "undefined") {
-    cache("total_employees", successResponse.data.data);
+//   if (successResponse && typeof successResponse !== "undefined") {
+//     cache("total_employees", successResponse.data.data);
 
-    enrolledData.value.length = 0;
-    excludedData.value.length = 0;
+//     enrolledData.value.length = 0;
+//     excludedData.value.length = 0;
 
-    successResponse.data.data.forEach((data: any) => {
-      data.meta.tax
-        ? enrolledData.value.push(data)
-        : excludedData.value.push(data);
-    });
-  }
-};
+//     successResponse.data.data.forEach((data: any) => {
+//       data.meta.tax
+//         ? enrolledData.value.push(data)
+//         : excludedData.value.push(data);
+//     });
+//   }
+// };
 // fetchEmployee();
 </script>
 <template>

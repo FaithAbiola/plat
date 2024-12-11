@@ -155,8 +155,8 @@ const uploadCsv = async () => {
       successMessage.value = 'CSV imported successfully!';
     } catch (error) {
       console.error('Error uploading CSV:', error);
-      if (error.response) {
-        console.error('Error details:', error.response.data);
+      if (error) {
+        console.error('Error details:', error);
       }
     }
     clearInput();

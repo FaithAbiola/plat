@@ -92,30 +92,30 @@ const successResponse = handleSuccess(response);
   }data.value.department=""
 }
 
-const fetchTax = async () => {
-  loading.value = true;
-  const totalEmployeeCached = cache("total_employees");
-  if (typeof totalEmployeeCached !== "undefined") {
-    loading.value = false;
+// const fetchTax = async () => {
+//   loading.value = true;
+//   const totalEmployeeCached = cache("total_employees");
+//   if (typeof totalEmployeeCached !== "undefined") {
+//     loading.value = false;
 
-    enrolledData.value.length = 0;
-    totalEmployeeCached.forEach((data: any) => {
-      data.meta.tax ? enrolledData.value.push(data) : " ";
-    });
-  }
-  const response = await request(employeeStore.index(), loading);
+//     enrolledData.value.length = 0;
+//     totalEmployeeCached.forEach((data: any) => {
+//       data.meta.tax ? enrolledData.value.push(data) : " ";
+//     });
+//   }
+//   const response = await request(employeeStore.index(), loading);
 
-  const successResponse = handleSuccess(response);
+//   const successResponse = handleSuccess(response);
 
-  if (successResponse && typeof successResponse !== "undefined") {
-    enrolledData.value.length = 0;
-    cache("total_employees", successResponse.data.data);
-    successResponse.data.data.forEach((data: any) => {
-      data.meta.tax ? enrolledData.value.push(data) : " ";
-    });
-  }
-};
-fetchTax();
+//   if (successResponse && typeof successResponse !== "undefined") {
+//     enrolledData.value.length = 0;
+//     cache("total_employees", successResponse.data.data);
+//     successResponse.data.data.forEach((data: any) => {
+//       data.meta.tax ? enrolledData.value.push(data) : " ";
+//     });
+//   }
+// };
+// fetchTax();
 
 // watchers
 watch(showDepartment,(newValue,oldValue)=>{

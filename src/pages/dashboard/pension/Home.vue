@@ -18,6 +18,7 @@ import {
   useUserStore,
   useEmployeeStore,
 } from "../../../store/index";
+import { getItem } from "../../../core/utils/storage.helper";
 
 // initialize store
 const pensionStore = usePensionStore();
@@ -38,8 +39,12 @@ const issuers = ref<any>([]);
 const enrolledData = ref<any>([]);
 const excludedData = ref<any>([]);
 const responseData = ref<any>();
+  const userInfo = ref(getItem(import.meta.env.VITE_USERDETAILS));
+
 
 // methods
+const parsedUserInfo = typeof userInfo.value === 'string' ? JSON.parse(userInfo.value) : userInfo.value;
+const organisationId = parsedUserInfo?.customerInfo?.organisationId;
 
 const fetchIssuer = async () => {
   loading.value = true;
@@ -66,7 +71,7 @@ const showIssuer = (id: any) => {
 const createPension = async () => {
   if (dataObj.value[0]) {
     sending.value = true;
-    const response = await request(pensionStore.create(dataObj), sending);
+    const response = await request(pensionStore.create(dataObj.value), sending);
 
     // console.log(response);
     handleError(response, userStore);
@@ -125,9 +130,9 @@ const add = (id: any, valueId: string, type?: string) => {
   }
 };
 
-const fetchEmployees = async () => {
+const fetchEmployees = async (page = 1) => {
   loading.value = true;
-  const response = await request(employeeStore.index(), loading);
+  const response = await request(employeeStore.index(organisationId, 10, page), loading);
 
   const successResponse = handleSuccess(response);
 

@@ -2,8 +2,10 @@
 import { ref } from "vue";
 import { useBrowserStore } from "../store";
 import IClose from "./icons/IClose.vue";
+import { useRouter, useRoute } from "vue-router";
 
 const browserStore = useBrowserStore();
+const route = useRoute();
 
 const updateClosedSlide = () => {
   browserStore.isClosedAuthSide = !browserStore.isClosedAuthSide;
@@ -17,7 +19,7 @@ const updateClosedSlide = () => {
     :duration="400"
   >
     <div
-      v-if="!browserStore.isClosedAuthSide && ($route.name !== 'auth.forgotten' && $route.name !== 'auth.change')"
+      v-if="!browserStore.isClosedAuthSide && (route.name !== 'auth.forgotten' && route.name !== 'auth.change')"
       class="w-4.5/10 p-18 bg-[#003b3d] bg-slide-carousel-image"
     >
       <!-- carousel -->
