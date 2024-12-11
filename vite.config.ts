@@ -8,4 +8,15 @@ export default defineConfig({
   resolve: {
     dedupe: ["vue"],
   },
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['vue'],
+        },
+      },
+    },
+  },
 });
