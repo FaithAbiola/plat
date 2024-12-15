@@ -86,8 +86,8 @@ const updateProfile = async () => {
 
       const data = JSON.stringify({
         customerInfo: {
-          firstName: successResponse.data.data.firstname,
-          lastName: successResponse.data.data.lastname,
+          firstName: successResponse.data.data.firstName,
+          lastName: successResponse.data.data.lastName,
           email: successResponse.data.data.email,
           phone: successResponse.data.data.phone,
         },
@@ -113,7 +113,7 @@ const getProfile = async () => {
   }
 };
 
-getProfile();
+// getProfile();
 // validations rule
 const rules = computed(() => {
   return {
@@ -254,11 +254,11 @@ const v$ = useVuelidate(rules as any, data);
             </div>
             <div>
               <div class="relative">
-                <vue-tel-input
+                <!-- <vue-tel-input
                   :value="data.telephone"
                   @input="onInput"
                   class="text-black text-sm border py-2 telinput"
-                ></vue-tel-input>
+                ></vue-tel-input> -->
                 <label
                   for="Telephone"
                   class="input-float-label peer-focus:text-black-100 peer-placeholder-shown:scale-75 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-1 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:px-2"

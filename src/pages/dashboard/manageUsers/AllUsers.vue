@@ -84,24 +84,24 @@ const fetchUsers = async (page: number) => {
 const removeUser = async (id: string) => {
   loading.value = true;
 
-  const response = await request(userStore.delete(id), loading);
-  handleError(response, userStore);
-  const successResponse = handleSuccess(response, showSuccess);
-
-  if (typeof successResponse !== "undefined") {
-    responseData.value = responseData.value.filter((data: any) => {
-      return data.id !== id;
-    });
-    successMessage.value = `User with id '${id}' was successfully deleted`;
+  try {
+    const response = await userStore.deleteUser(id);
+    if (response) {
+      responseData.value = responseData.value.filter((data: any) => data.id !== id);
+      successMessage.value = `User was successfully deleted`;
+    }
+  } catch (error) {
+    handleError(error, "Error deleting user");
+  } finally {
+    loading.value = false;
   }
 };
 
 const confirmRemoveUser = (id: string) => {
-  confirmMessage.value.message = `So you really  want to delete user with id '${id}' `;
+  confirmMessage.value.message = `Do you really want to delete this user `;
   confirmMessage.value.id = id;
   showConfirm.value = true;
 };
-
 defineExpose({ fetchUsers, loading, responseData, handleSuccess });
 
 fetchUsers(currentPage.value);
@@ -211,7 +211,7 @@ const updatePage = (page: number) => {
                         <div class="font-normal flex text-left">
                           <ButtonLightBlue
                             textColor="text-red"
-                            @click="confirmRemoveUser(user.id)"
+                            @click="confirmRemoveUser(user.userId)"
                           >
                             <template v-slot:placeholder>Remove</template>
                           </ButtonLightBlue>

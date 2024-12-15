@@ -46,7 +46,7 @@ const walletStore = useWalletStore();
 const disabled = ref(true);
 const showBank = ref(false);
 const loading = ref(false);
-const fetchLoading = ref(true);
+const fetchLoading = ref(false);
 const valid = ref(false);
 const userInfo = ref(getItem(import.meta.env.VITE_USERDETAILS));
 const parsedUserInfo = typeof userInfo.value === 'string' ? JSON.parse(userInfo.value) : userInfo.value;
@@ -245,7 +245,7 @@ const validatePhone = () => {
 // };
 
 // getProfile();
-fetchBank();
+// fetchBank();
 // validations rule
 const rules = computed(() => {
   return {

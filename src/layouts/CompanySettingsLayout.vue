@@ -46,7 +46,7 @@ const save = () => {
               >Company Information</span
             >
 
-            <!-- <span
+            <span
               @click="
                 router.push({
                   path: '/dashboard/company-settings/contact-information',
@@ -59,9 +59,9 @@ const save = () => {
               "
               class="font-normal"
               >Contact Information
-            </span> -->
+            </span>
 
-            <!-- <span
+            <span
               @click="
                 router.push({
                   path: '/dashboard/company-settings/admin-logs',
@@ -86,7 +86,7 @@ const save = () => {
               "
               class="font-normal"
               >Employee Logs
-            </span> -->
+            </span>
             <span
               @click="
                 router.push({

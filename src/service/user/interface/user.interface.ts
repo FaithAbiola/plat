@@ -16,3 +16,9 @@ export interface Update {
   password?: string;
   confirmPassword?: string;
 }
+export interface UserData {
+  firstName: string;
+  lastName: string;
+  role: string;
+  userId?: string; 
+}

@@ -83,7 +83,7 @@ const deleteCompany = async () => {
   }
 };
 
-getProfile();
+// getProfile();
 </script>
 <template>
   <div class="sm:flex px-6">

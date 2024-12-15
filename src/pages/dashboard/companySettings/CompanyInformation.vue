@@ -214,7 +214,7 @@ const rules = computed(() => {
   };
 });
 
-getProfile();
+// getProfile();
 const v$ = useVuelidate(rules as any, data);
 
 // define expose
@@ -289,12 +289,12 @@ defineExpose({
             </div>
 
             <div class="relative">
-              <vue-tel-input
+              <!-- <vue-tel-input
                 :value="data.telephone"
                 @click="disabled = false"
                 @input="onInput"
                 class="text-black text-sm border py-2 telinput"
-              ></vue-tel-input>
+              ></vue-tel-input> -->
               <label
                 for="Telephone"
                 class="input-float-label peer-focus:text-black-100 peer-placeholder-shown:scale-75 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-1 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:px-2"

@@ -1,52 +1,28 @@
 <script setup lang="ts">
-import { reactive, inject, ref, computed } from "vue";
+import { reactive, inject, ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import useVuelidate from "@vuelidate/core";
-import {
-  required,
-  email,
-  helpers,
-  minLength,
-  sameAs,
-} from "@vuelidate/validators";
 import { request } from "../composables/request.composable";
 import handleSuccess from "../composables/handle_success.composable";
 import handleError from "../composables/handle_error.composable";
 import { useAuthStore, useUserStore } from "../store/index";
 import spinner from "../components/timer/Spinner.vue";
-import { stringValidate, numberValidate } from "../validations/validate";
 import ButtonBlue from "../components/buttons/ButtonBlue.vue";
 import { IClose } from "../core/icons";
 import { IArrowDown } from "../core/icons";
+import { useEmployeeStore } from "../store/index";
+import { getItem } from "../core/utils/storage.helper";
 
 // initialize store
 const authStore = useAuthStore();
 const userStore = useUserStore();
+const employeeStore = useEmployeeStore();
+
 
 // variables
 const loading = ref(false);
 const showSuccess = ref(false);
 const responseData = ref<any>({ message: "Signup successful" });
-const valid = ref(false);
-
-const data = reactive<{
-  email: string | null;
-
-  password: string | null;
-  confirmPassword: string | null;
-  firstname: string | null;
-  lastname: string | null;
-  telephone: number | null;
-  role_id: number | null;
-}>({
-  email: null,
-  password: null,
-  firstname: null,
-  confirmPassword: null,
-  lastname: null,
-  telephone: null,
-  role_id: null,
-});
+const userInfo = ref(getItem(import.meta.env.VITE_USERDETAILS));
 
 // emit
 const emit = defineEmits<{ (e: "fetchUsers"): void }>();
@@ -55,100 +31,88 @@ const emit = defineEmits<{ (e: "fetchUsers"): void }>();
 const openCreateUser = inject<any>("openCreateUser");
 
 // methods
+const employeeData = ref<any>([]);
+const employees = ref<any[]>([]);
+const roles = ref<any[]>([]);
+const selectedEmployee = ref("");
+const showEmployeeDropdown = ref(false);
+const selectedRole = ref("");
+const showRoleDropdown = ref(false);
+const parsedUserInfo = typeof userInfo.value === 'string' ? JSON.parse(userInfo.value) : userInfo.value;
+const organisationId = parsedUserInfo?.customerInfo?.organisationId
 
-const onInput = (phone: number, phoneObject: any, input: any) => {
-  if (phoneObject?.formatted) {
-    data.telephone = phoneObject.number;
-    valid.value = phoneObject.valid;
+const fetchEmployees = async () => {
+  loading.value = true;
+  try {
+    const response = await employeeStore.index(organisationId, 10, 1);
+    if (response.data && response.data.succeeded) {
+      employees.value = response.data.data.pageItems;
+      console.log("1111111", employees.value)
+    }
+    loading.value = false;
+  } catch (error) {
+    console.log(error);
+    loading.value = false;
   }
 };
 
-const validatePhone = () => {
-  return valid.value;
+const selectEmployee = (employee: any) => {
+  selectedEmployee.value = `${employee.firstName} ${employee.lastName}`;
+  showEmployeeDropdown.value = false; 
+};
+const fetchRoles = async () => {
+  loading.value = true;
+  try {
+    const response = await userStore.fetchRoles(); 
+    console.log("0000", response)
+    // if (response.data && response.data.succeeded) {
+      roles.value = response;
+    // }
+    console.log("(((((((", roles.value)
+
+    loading.value = false;
+  } catch (error) {
+    console.log(error);
+    loading.value = false;
+  }
+};
+const selectRole = (role: any) => {
+  selectedRole.value = `${role.name}`;
+  showRoleDropdown.value = false; 
 };
 
-const handleCreate = async (): Promise<void> => {
-  // check if form is formattted correctly
-  const isFormCorrect = await v$.value.$validate();
+const assignRole = async () => {
+  loading.value = true;
+  const selectedEmployeeData = employees.value.find(emp => `${emp.firstName} ${emp.lastName}` === selectedEmployee.value);
+  const selectedRoleData = roles.value.find(role => role.name === selectedRole.value);
 
-  if (isFormCorrect == true) {
-    const dataObj = {
-      email: v$.value.email.$model as string,
-      password: v$.value.password.$model as string,
-      confirmPassword: v$.value.confirmPassword.$model as string,
-      // role_id: data.role_id as number,
-      firstname: v$.value.firstname.$model as string,
-      lastname: v$.value.lastname.$model as string,
-      telephone: v$.value.telephone.$model as number,
-
-      // company: { name: v$.value.company.name.$model as string },
+  if (selectedEmployeeData && selectedRoleData) {
+    const requestBody = {
+      userId: selectedEmployeeData.userId,
+      roleId: selectedRoleData.id
     };
 
-    loading.value = true;
-    const response = await request(userStore.create(dataObj), loading);
-    handleError(response, userStore);
-
-    const successResponse = handleSuccess(response, showSuccess);
-    // console.log(showSuccess.value);
-
-    if (successResponse && typeof successResponse !== "undefined") {
-      responseData.value = successResponse;
-      openCreateUser.value = false;
-      emit("fetchUsers");
+    console.log("!!!!!!!", requestBody)
+    try {
+      const response = await userStore.assignRole(requestBody.userId, requestBody.roleId);
+      if (response) {
+        showSuccess.value = true;
+        responseData.value.message = "Role assigned successfully!";
+      }
+    } catch (error) {
+      console.error(error);
+      responseData.value.message = "Failed to assign role.";
     }
+  } else {
+    responseData.value.message = "Please select both employee and role.";
   }
+  loading.value = false;
 };
 
-const firstValidation = () => stringValidate(data.firstname);
-const lastValidation = () => stringValidate(data.lastname);
 
-// validations rule
-const rules = computed(() => {
-  return {
-    email: {
-      required: helpers.withMessage("Email address is required", required),
-      email: helpers.withMessage("Must be a valid email", email),
-    },
 
-    password: {
-      required: helpers.withMessage("Password is required", required),
-      min: helpers.withMessage(
-        "Password cannot be less than 8 characters",
-        minLength(8)
-      ),
-    },
-
-    confirmPassword: {
-      required: helpers.withMessage(" Confirm Password is required", required),
-      sameAsPassword: sameAs(data.password, "password"),
-    },
-    firstname: {
-      required: helpers.withMessage("First name  is required", required),
-
-      firstValidate: helpers.withMessage(
-        "First name can only include alphabets",
-        firstValidation as any
-      ),
-    },
-    lastname: {
-      required: helpers.withMessage("Last name  is required", required),
-
-      lastValidate: helpers.withMessage(
-        "Last name can only include alphabets",
-        lastValidation as any
-      ),
-    },
-    telephone: {
-      required: helpers.withMessage("Telephone is required", required),
-      validatePhone: helpers.withMessage("Invalid Phone Number", validatePhone),
-    },
-    // role_id: {
-    //   required: helpers.withMessage("Role id is required", required),
-    // },
-  };
-});
-
-const v$ = useVuelidate(rules as any, data);
+fetchEmployees();
+fetchRoles();
 </script>
 
 <template>
@@ -158,7 +122,7 @@ const v$ = useVuelidate(rules as any, data);
     leave-active-class="animate__animated animate__fadeOutRight"
     :duration="400"
   >
-    <form @submit.prevent="handleCreate">
+    <form>
       <successAlert
         v-if="showSuccess == true"
         @closeSuccess="showSuccess = false"
@@ -175,7 +139,7 @@ const v$ = useVuelidate(rules as any, data);
             <div class="flex justify-between items-center">
               <div>
                 <h3 class="text-black-rgba font-medium text-2xl">
-                  Create new user
+                  Add new user
                 </h3>
                 <span class="text-sm font-semimedium text-black-rgba-100"
                   >Enter details</span
@@ -190,124 +154,74 @@ const v$ = useVuelidate(rules as any, data);
             </div>
             <!--  -->
             <div class="space-y-6">
-              <!--  -->
-              <div>
-                <div
-                  class="font-normal text-left rounded-xl pl-4 h-[48px] my-4 border text-gray-rgba-3 mb-1"
-                >
-                  <input
-                    type="text"
-                    v-model="data.firstname"
-                    class="rounded-lg text-sm placeholder-strong text-black bg-transparent outline-none border-none h-full focus:outline-none focus:border-none"
-                    placeholder="First name"
-                  />
-                </div>
-                <div v-if="v$.firstname.$error" class="text-red-600 text-xs">
-                  {{ "* " + v$.firstname.$errors[0].$message }}
-                </div>
-              </div>
-              <!--  -->
-              <!--  -->
-              <div>
-                <div
-                  class="font-normal text-left rounded-xl pl-4 h-[48px] my-4 border text-gray-rgba-3 mb-1"
-                >
-                  <input
-                    type="text"
-                    v-model="data.lastname"
-                    class="rounded-lg text-sm placeholder-strong text-black bg-transparent outline-none border-none h-full focus:outline-none focus:border-none"
-                    placeholder="Last name"
-                  />
-                </div>
-                <div v-if="v$.lastname.$error" class="text-red-600 text-xs">
-                  {{ "* " + v$.lastname.$errors[0].$message }}
-                </div>
-              </div>
-              <!--  -->
 
-              <!-- <div
-                class="font-normal text-left rounded-xl px-4 h-[48px] relative text-gray-rgba-3 border text-black"
-              >
+              <div class="font-normal relative w-auto text-left rounded-xl px-4 h-[48px] text-gray-rgba-3 border text-black">
                 <div class="flex justify-between items-center h-full">
-                  <span class="text-sm text-grey-rgba-3"
-                    >Select access role</span
-                  >
+                  <input
+                    @click="showEmployeeDropdown = !showEmployeeDropdown; if (!employees.length) fetchEmployees()"
+                    type="text"
+                    v-model="selectedEmployee"
+                    class="text-sm text-black w-full border-none outline-none focus:outline-none"
+                    placeholder="Select Employee"
+                  />
                   <span>
-                    <IArrowDown />
+                    <IArrowDown @click="showEmployeeDropdown = !showEmployeeDropdown" />
                   </span>
                 </div>
-              </div> -->
-              <div>
-                <div
-                  class="font-normal text-left rounded-xl pl-4 h-[48px] my-4 border text-gray-rgba-3 mb-1"
-                >
-                  <input
-                    type="email"
-                    v-model="data.email"
-                    class="rounded-lg text-sm placeholder-strong text-black bg-transparent outline-none border-none h-full focus:outline-none focus:border-none"
-                    placeholder="Email"
-                  />
-                </div>
-                <div v-if="v$.email.$error" class="text-red-600 text-xs">
-                  {{ "* " + v$.email.$errors[0].$message }}
-                </div>
-              </div>
-              <!--  -->
-              <div>
-                <!-- <div class="relative">
-                  <vue-tel-input
-                    :value="data.telephone"
-                    @input="onInput"
-                    class="text-black text-sm border py-2 telinput"
-                  ></vue-tel-input>
-
-                  <div v-if="v$.telephone.$error" class="text-red-600 text-xs">
-                    {{ "* " + v$.telephone.$errors[0].$message }}
+                <div class="absolute z-50 h-56 right-0 shadow-lg scrollbar-hide overflow-auto top-15 w-full" v-if="showEmployeeDropdown == true">
+                  <!-- <ul class="bg-white border border-gray-300 max-h-48 overflow-y-auto">
+                    <li v-for="employee in employees" :key="employee.id" @click="selectEmployee(employee)" class="cursor-pointer p-2 hover:bg-gray-200">
+                      {{ employee.firstName }} {{ employee.lastName }}
+                    </li>
+                  </ul> -->
+                  <div class="space-y-5 p-6 shadow-rgba text-black bg-white text-sm font-bold rounded-lg w-auto h-auto">
+                  <div v-if="employees[0]">
+                    <div v-for="employee in employees" :key="employee.id">
+                      <p @click="selectEmployee(employee)" class="cursor-pointer">
+                        {{ employee.firstName }} {{ employee.lastName }}
+                      </p>
+                    </div>
                   </div>
-                </div> -->
+                </div>
+                  <!--  -->
+                </div>
+              </div>
+
+              <div class="font-normal relative w-auto text-left rounded-xl px-4 h-[48px] text-gray-rgba-3 border text-black">
+                <div class="flex justify-between items-center h-full">
+                  <input
+                    @click="showRoleDropdown = !showRoleDropdown; if (!roles.length) fetchRoles()"
+                    type="text"
+                    v-model="selectedRole"
+                    class="text-sm text-black w-full border-none outline-none focus:outline-none"
+                    placeholder="Select access role"
+                  />
+                  <span>
+                    <IArrowDown @click="showRoleDropdown = !showRoleDropdown" />
+                  </span>
+                </div>
+                <div class="absolute z-50 h-56 right-0 shadow-lg scrollbar-hide overflow-auto top-15 w-full" v-if="showRoleDropdown == true">
+                  <div class="space-y-5 p-6 shadow-rgba text-black bg-white text-sm font-bold rounded-lg w-auto h-auto">
+                  <div v-if="roles.length > 0">
+                    <div v-for="role in roles" :key="role.id">
+                      <p @click="selectRole(role)" class="cursor-pointer">
+                        {{ role.name }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                  <!--  -->
+                </div>
               </div>
               <!--  -->
               <div>
-                <div
-                  class="font-normal text-left rounded-xl pl-4 h-[48px] my-4 border text-gray-rgba-3 mb-1"
-                >
-                  <input
-                    type="password"
-                    v-model="data.password"
-                    class="rounded-lg text-sm placeholder-strong text-black outline-none border-none h-full focus:outline-none focus:border-none"
-                    placeholder="Password"
-                  />
-                </div>
-                <div v-if="v$.password.$error" class="text-red-600 text-xs">
-                  {{ "* " + v$.password.$errors[0].$message }}
-                </div>
               </div>
-              <!--  -->
-              <div>
-                <div
-                  class="font-normal text-left rounded-xl pl-4 h-[48px] my-4 border text-gray-rgba-3 mb-1"
-                >
-                  <input
-                    type="password"
-                    v-model="data.confirmPassword"
-                    class="rounded-lg text-sm placeholder-strong text-black outline-none border-none h-full focus:outline-none focus:border-none"
-                    placeholder="Password"
-                  />
-                </div>
-                <div
-                  v-if="v$.confirmPassword.$error"
-                  class="text-red-600 text-xs"
-                >
-                  {{ "* " + v$.confirmPassword.$errors[0].$message }}
-                </div>
-              </div>
-              <!--  -->
             </div>
             <div class="flex pb-5">
-              <ButtonBlue>
+              <ButtonBlue @click="assignRole">
                 <template v-slot:placeholder>
                   <spinner v-if="loading == true" />
-                  <span v-else>Create User</span>
+                  <span v-else>Add User</span>
                 </template>
               </ButtonBlue>
             </div>

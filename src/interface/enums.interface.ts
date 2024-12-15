@@ -41,6 +41,7 @@ enum State {
   Taraba = " Taraba",
   Yobe = " Yobe",
   Zamfara = "Zamfara",
+  DefaultState = "DefaultState",
 }
 
 enum Industry {

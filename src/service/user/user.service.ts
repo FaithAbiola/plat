@@ -55,7 +55,56 @@ class UserService {
         return err;
       });
   }
-  
+
+  async getUserRoleById(userId: number): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+    return await customRequest
+        .get(`/Role/get-user-role/${userId}`, {
+            headers: authhHeader(),
+        })
+        .then((res) => {
+            return res.data;
+        })
+        .catch((err) => {
+            return err;
+        });
+      }
+  async fetchRoles(): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+    return await customRequest
+      .get("/Role/fetch-all", {
+        headers: authhHeader(),
+      })
+      .then((res) => res)
+      .catch((err) => err);
+  }  
+
+  async assignRole(requestBody: { userId: number; roleId: number }): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+    return await customRequest
+      .post("/Role/assign-role", requestBody, {
+        headers: authhHeader(),
+      })
+      .then((res) => res)
+      .catch((err) => {
+        console.error("Error assigning role:", err);
+        throw err; 
+      });
+  }
+
+async deleteUser(userId: string): Promise<any> {
+  const customRequest = this.createAxiosInstance();
+  return await customRequest
+    .delete(`/Role/remove-user/${userId}`, {
+      headers: authhHeader(),
+    })
+    .then((res) => res)
+    .catch((err) => {
+      console.error("Error removing user:", err);
+      throw err; 
+    });
+}
+
   async create(data: Create): Promise<any> {
     return await this.request
       .post(
