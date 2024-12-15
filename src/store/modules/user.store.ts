@@ -98,8 +98,62 @@ const userStore = defineStore("user", {
       } catch (error: any) {
         return await Promise.reject(error);
       }
-    },   
-     
+    },  
+    async getUserRole(userId: number): Promise<any> {
+      try {
+          const response = await userService.getUserRoleById(userId);
+          console.log("Response from service:", response); // Debugging line
+          if (response.succeeded) {
+              return response.data; // No need for Promise.resolve here
+          } else {
+              throw new Error(response.message); // Throw an error if not succeeded
+          }
+      } catch (error: any) {
+          console.error("Error in getUserRole:", error); // Debugging line
+          throw error; // Rethrow the error for handling in the component
+      }
+  },     
+    async fetchRoles(): Promise<any> {
+      try {
+        const response = await userService.fetchRoles();
+        if (response.data) {
+          return await Promise.resolve(response.data.data);
+        } else if (response.response) {
+          return await Promise.reject(response.response);
+        } else {
+          return await Promise.reject(response.message);
+        }
+      } catch (error: any) {
+        return await Promise.reject(error);
+      }
+    },
+    
+    async assignRole(userId: number, roleId: number): Promise<any> {
+      try {
+        const response = await userService.assignRole({ userId, roleId });
+        if (response.data) {
+          return await Promise.resolve(response.data);
+        } else if (response.response) {
+          return await Promise.reject(response.response);
+        } else {
+          return await Promise.reject(response.message);
+        }
+      } catch (error: any) {
+        return await Promise.reject(error);
+      }
+    },
+    async deleteUser(userId: string): Promise<any> {
+      try {
+        const response = await userService.deleteUser(userId);
+        if (response.data) {
+          return await Promise.resolve(response.data);
+        } else {
+          return await Promise.reject(response.message);
+        }
+      } catch (error: any) {
+        return await Promise.reject(error);
+      }
+    },
     async create(data: Create): Promise<any> {
       try {
         const response = await userService.create(data);
