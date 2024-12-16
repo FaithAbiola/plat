@@ -102,15 +102,15 @@ const userStore = defineStore("user", {
     async getUserRole(userId: number): Promise<any> {
       try {
           const response = await userService.getUserRoleById(userId);
-          console.log("Response from service:", response); // Debugging line
+          console.log("Response from service:", response); 
           if (response.succeeded) {
-              return response.data; // No need for Promise.resolve here
+              return response.data; 
           } else {
-              throw new Error(response.message); // Throw an error if not succeeded
+              throw new Error(response.message);
           }
       } catch (error: any) {
-          console.error("Error in getUserRole:", error); // Debugging line
-          throw error; // Rethrow the error for handling in the component
+          console.error("Error in getUserRole:", error); 
+          throw error; 
       }
   },     
     async fetchRoles(): Promise<any> {
@@ -142,6 +142,20 @@ const userStore = defineStore("user", {
         return await Promise.reject(error);
       }
     },
+    async updateRole(userId: number, roleId: number): Promise<any> {
+      try {
+          const response = await userService.updateRole(userId, roleId);
+          if (response.data) {
+              return await Promise.resolve(response.data);
+          } else if (response.response) {
+              return await Promise.reject(response.response);
+          } else {
+              return await Promise.reject(response.message);
+          }
+      } catch (error: any) {
+          return await Promise.reject(error);
+      }
+  },  
     async deleteUser(userId: string): Promise<any> {
       try {
         const response = await userService.deleteUser(userId);

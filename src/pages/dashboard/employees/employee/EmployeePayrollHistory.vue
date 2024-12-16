@@ -282,14 +282,14 @@ const router = useRouter()
     class="flex justify-center items-center lg:h-[400px] h-[300px]"
   />
   <div v-else class="w-full overflow-auto">
-    <EmptyState v-if="!responseData?.data && !responseData?.data?.payments?.length">
+    <!-- <EmptyState v-if="!responseData?.data && !responseData?.data?.payments?.length">
       <template #icon>
         <IUserThree />
       </template>
       <template #heading> Payment details </template>
       <template #desc> No payment found </template>
-    </EmptyState>
-    <div v-else class="align-middle inline-block min-w-full">
+    </EmptyState> -->
+    <div class="align-middle inline-block min-w-full">
       <div class="overflow-hidden sm:rounded-lg">
         <table class="min-w-full table-fixed">
           <thead class="text-black-200 text-sm text-left">
@@ -309,53 +309,60 @@ const router = useRouter()
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-grey-200">
-            <tr v-for="(item, index) in payments" :key="index" class="text-black-100">
+            <!-- <tr v-for="(item, index) in payments" :key="index" class="text-black-100"> -->
+            <tr class="text-black-100">
               <td class="py-4 whitespace-nowrap">
                 <div class="flex items-center space-x-3">
                   <div class="flex flex-col">
-                    <span class="text-sm font-semimedium">{{ item.narration }}</span>
-                    <!-- <span class="text-sm font-semimedium">April 2022</span>
-                    <span class="text-xs text-gray-rgba-3">₦800,000/yr</span> -->
+                    <!-- <span class="text-sm font-semimedium">{{ item.narration }}</span> -->
+                    <span class="text-sm font-semimedium">April 2022</span>
+                    <span class="text-xs text-gray-rgba-3">₦800,000/yr</span>
                   </div>
                 </div>
               </td>
               <td class="py-4 whitespace-nowrap">
                 <div class="text-left flex flex-col">
-                  <span class="text-sm font-semimedium">{{ item.payroll ? dateFormat(item.payroll.created_at) : '--/--/---- --:-- --' }}</span>
+                  <!-- <span class="text-sm font-semimedium">{{ item.payroll ? dateFormat(item.payroll.created_at) : '--/--/---- --:-- --' }}</span> -->
+                  <span class="text-sm font-semimedium">Jan 12, 2022 15:32</span>
                   <span class="text-xs text-green">Direct deposit</span>
                 </div>
               </td>
               <td class="py-4 whitespace-nowrap">
                 <div class="font-normal text-left flex flex-col">
-                  <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.salary.gross) : 0 }}</span>
+                  <!-- <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.salary.gross) : 0 }}</span> -->
+                  <span class="text-sm font-semimedium">₦72,900</span>
                 </div>
               </td>
               <td class="py-4 whitespace-nowrap">
                 <div class="font-normal text-left flex flex-col">
-                  <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.breakdown.bonus) : 0 }}</span>
-                  <!-- <span class="text-xs text-gray-rgba-3">Commissions</span> -->
+                  <!-- <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.breakdown.bonus) : 0 }}</span> -->
+                  <span class="text-sm font-semimedium">₦2,300</span>
+                  <span class="text-xs text-gray-rgba-3">Commissions</span>
                 </div>
               </td>
               <td class="py-4 text-left whitespace-nowrap">
                 <div class="font-normal flex flex-col">
-                  <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.breakdown.deductions) : 0 }}</span>
-                  <!-- <span class="text-xs text-gray-rgba-3">Pensions, Health</span> -->
+                  <!-- <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.breakdown.deductions) : 0 }}</span> -->
+                  <span class="text-sm font-semimedium">₦230,000</span>
+                  <span class="text-xs text-gray-rgba-3">Pensions, Health</span>
                 </div>
               </td>
               <td class="py-4 text-left whitespace-nowrap">
                 <div class="font-normal flex flex-col">
-                  <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.breakdown.tax) : 0 }}</span>
-                  <!-- <span class="text-xs text-gray-rgba-3">PAYEE</span> -->
+                  <!-- <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.breakdown.tax) : 0 }}</span> -->
+                  <span class="text-sm font-semimedium">₦1,300</span>
+                  <span class="text-xs text-gray-rgba-3">PAYEE</span>
                 </div>
               </td>
               <td class="py-4 text-left whitespace-nowrap">
                 <div class="font-normal flex flex-col">
-                  <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.salary.total) : 0 }}</span>
+                  <!-- <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.salary.total) : 0 }}</span> -->
+                  <span class="text-sm font-semimedium">₦72,900</span>
                 </div>
               </td>
               <td class="py-4 px-8 text-left whitespace-nowrap w-[18%]">
                 <div class="flex items-center justify-between">
-                  <button @click="slipInfo(item)"
+                  <button
                     class="text-[#003b3d] bg-red-light text-sm text-bold px-4+1 py-2 rounded-full">
                     Download Payslip
                   </button>
