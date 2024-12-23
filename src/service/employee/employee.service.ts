@@ -157,6 +157,7 @@ class Employee {
         return err;
       });
   }
+
   async create(data: Create): Promise<any> {
     return await this.request
       .post(

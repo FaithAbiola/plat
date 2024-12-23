@@ -32,6 +32,8 @@ const fetchUserRole = async (userId: number) => {
       console.log("User Role:", userRoleData.value.roleId);
       const userRoleId = userRoleData.value.roleId;
       const fetchedRole = roles.value.find(role => role.id === userRoleId);
+      console.log("User Role:", fetchedRole);
+      console.log("User Role:", userRoleId);
       selectedRole.value = fetchedRole ? fetchedRole.name : '';
     } else {
       console.error("No role data returned");
@@ -62,10 +64,10 @@ onMounted(() => {
     userId.value = JSON.parse(storedUserId);
     if (userId.value !== null) {
       fetchUserRole(userId.value);
+      fetchRoles(); 
     } else {
       console.error("User ID is null");
     }
-    fetchRoles(); 
   }
 });
 const selectRole = (role: any) => {

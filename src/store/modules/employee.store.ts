@@ -209,6 +209,7 @@ const employeeStore = defineStore('employee', {
         return await Promise.reject(error);
       }
     },
+
     async employeesInDepartment(id: string): Promise<any> {
       try {
         const response = await employeeService.employeesInDepartment(id);

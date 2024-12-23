@@ -3,6 +3,7 @@ import { ref, provide, reactive, onMounted, inject } from "vue";
 import successAlert from "../../../components/alerts/SuccessAlert.vue";
 import spinner from "../../../components/timer/Spinner.vue";
 import ButtonBlue from "../../../components/buttons/ButtonBlue.vue";
+import ButtonLightBlue from "../../../components/buttons/ButtonLightBlue.vue";
 import { useRouter } from "vue-router";
 import Grade from "../../../components/dropdowns/grades.vue";
 import useVuelidate from "@vuelidate/core";
@@ -142,7 +143,7 @@ const v$ = useVuelidate(rules as any, data);
       <div class=" h-full space-y-6">
         <div class="flex justify-between">
             <div class="flex space-x-5">
-                <div v-on:click="$emit('close')" class="pt-1">
+                <div @click="router.back()" class="pt-1">
                   <IArrowLeftTail/>
                 </div>
                 <div>
@@ -171,78 +172,60 @@ const v$ = useVuelidate(rules as any, data);
       />
       <!-- table -->
       <div v-else>
-        <div class="border-t border-grey h-full">
+        <div class=" h-full">
           <div class="">
             <div class="align-middle inline-block min-w-full">
               <div class="overflow-hidden sm:rounded-lg">
-                <div class=" h-full space-y-6">
-                    <div
-                      class="font-normal text-left rounded-xl px-4 h-[48px] relative border border-grey-300"
-                    >
-                      <p
-                        class="absolute -top-2 font-normal text-xs left-5 text-[#000000] bg-white"
-                      >
-                        Full name
-                      </p>
-                      <div class="flex justify-between items-center h-full w-full">
-                        <input
-                          type="text"
-                          required
-                          v-model="data.name"
-                          placeholder="Full name of employee"
-                          class="placeholder-strong rounded-lg w-full text-sm outline-none border-none h-full focus:outline-none focus:border-none"
-                        />
-                      </div>
-                      <div v-if="v$.name.$error" class="!text-red-100 text-xs">
-                        {{ "* " + v$.name.$errors[0].$message }}
-                      </div>
-                    </div>
-      
-                    <!--  -->
-      
-                    <div>
+                <template v-for="i in 5">
+                  <div class="flex items-start gap-4 py-6 pl-6 pr-20">
+                    <span class="text-md font-normal">{{ i }}</span>
+                    <div class="grid lg:grid-cols-3 gap-4 w-full">
+                    
                       <div
                         class="font-normal text-left rounded-xl px-4 h-[48px] relative border border-grey-300"
                       >
-                        <input
-                          required
-                          type="email"
-                          v-model="data.email"
-                          class="rounded-lg placeholder-strong text-black text-sm outline-none border-none h-full focus:outline-none focus:border-none w-full overflow-x-auto"
-                          placeholder="Employee's email"
-                        />
+                        <p
+                          class="absolute -top-2 font-normal text-xs left-5 text-[#000000] bg-white"
+                        >
+                          Name
+                        </p>
+                        <div class="flex justify-between items-center h-full w-full">
+                          <input
+                            type="text"
+                            required
+                            v-model="data.name"
+                            placeholder="Full name of employee"
+                            class="placeholder-strong rounded-lg w-full text-sm outline-none border-none h-full focus:outline-none focus:border-none"
+                          />
+                        </div>
+                        <div v-if="v$.name.$error" class="!text-red-100 text-xs">
+                          {{ "* " + v$.name.$errors[0].$message }}
+                        </div>
                       </div>
-                      <div v-if="v$.email.$error" class="!text-red-100 text-xs">
-                        {{ "* " + v$.email.$errors[0].$message }}
+        
+                      <!--  -->
+        
+                      <div>
+                        <div
+                          class="font-normal text-left rounded-xl px-4 h-[48px] relative border border-grey-300"
+                        >
+                          <input
+                            required
+                            type="email"
+                            v-model="data.email"
+                            class="rounded-lg placeholder-strong text-black text-sm outline-none border-none h-full focus:outline-none focus:border-none w-full overflow-x-auto"
+                            placeholder="Employee's email"
+                          />
+                        </div>
+                        <div v-if="v$.email.$error" class="!text-red-100 text-xs">
+                          {{ "* " + v$.email.$errors[0].$message }}
+                        </div>
+                        <div v-if="invalidDomain" class="!text-red-100 text-xs">
+                          Emal address
+                        </div>
                       </div>
-                      <div v-if="invalidDomain" class="!text-red-100 text-xs">
-                        Invalid Email Address.
-                      </div>
-                    </div>
-                    <!--  -->
-                    <div class="flex space-x-2">
-                      <div class="font-normal text-left rounded-xl px-4 h-[48px] w-[25%] relative border border-grey-300">
-                        <input
-                          type="text"
-                          v-model="data.countryCode"
-                          placeholder="Mobile"
-                          class="rounded-lg w-full placeholder-strong text-black text-sm outline-none border-none h-full focus:outline-none focus:border-none"
-                        />
-                      </div>
-                      <div class="font-normal text-left rounded-xl px-4 h-[48px] w-[75%] relative border border-grey-300">
-                        <input
-                          type="text"
-                          v-model="data.phoneNumber"
-                          placeholder="Employee phone number"
-                          class="w-full rounded-lg placeholder-strong text-black text-sm outline-none border-none h-full focus:outline-none focus:border-none"
-                        />
-                      </div>
-                    </div>
-                   <!--  -->
-                  
-                   <!--  -->
-      
-                    <div
+                      <!--  -->
+                      <div
                       class="font-normal relative w-auto text-left rounded-xl px-4 h-[48px] text-gray-rgba-3 border text-black"
                     >
                       <div class="flex justify-between items-center h-full">
@@ -270,51 +253,80 @@ const v$ = useVuelidate(rules as any, data);
                         </div>
                       </div>
                     </div>
-      
-      
-                    <!--  -->
-                    <div
-                    class="font-normal text-left rounded-xl px-4 h-[48px] relative border border-grey-300"
-                  >
-                    <input
-                      required
-                      type="text"
-                      v-model="data.employmentType"
-                      class="w-full rounded-lg placeholder-strong text-black text-sm outline-none border-none h-full focus:outline-none focus:border-none \"
-                      placeholder="Select employment type"
-                    />
-                  </div>
-                    <!--  -->
-      
-                    <div
-                      class="font-normal relative w-auto text-left rounded-xl px-4 h-[48px] text-gray-rgba-3 border text-black"
-                    >
-                      <div class="flex justify-between items-center h-full">
-                        <input
-                          @click="showGrade = !showGrade"
-                          type="text"
-                          v-model="gradeName"
-                          class="text-sm text-black w-full border-none outline-none focus:outline-none focus:border:none"
-                          placeholder="Select grade"
-                        />
-      
-                        <span>
-                          <IArrowDown @click="showGrade = !showGrade" />
-                        </span>
-                      </div>
-                      <div
-                        class="absolute z-50 h-56 right-0 shadow-lg scrollbar-hide overflow-auto top-15 w-full"
-                        v-if="showGrade == true"
-                      >
-                        <div>
-                          <component :is="Grade">
-                            {{ grades }}
-                          </component>
+                      <!--  -->
+                      <!-- <div class="flex space-x-2"> -->
+                      <div >
+                        <!-- <div class="font-normal text-left rounded-xl px-4 h-[48px] w-[25%] relative border border-grey-300">
+                          <input
+                            type="text"
+                            v-model="data.countryCode"
+                            placeholder="Mobile"
+                            class="rounded-lg w-full placeholder-strong text-black text-sm outline-none border-none h-full focus:outline-none focus:border-none"
+                          />
+                        </div> -->
+                        <div class="font-normal text-left rounded-xl px-4 h-[48px] relative border border-grey-300">
+                          <input
+                            type="text"
+                            v-model="data.phoneNumber"
+                            placeholder="Phone number"
+                            class="w-full rounded-lg placeholder-strong text-black text-sm outline-none border-none h-full focus:outline-none focus:border-none"
+                          />
                         </div>
+                      </div>
+                    <!--  -->
+                    
+                    <!--  -->
+        
+                    <div
+                    class="font-normal relative w-auto text-left rounded-xl px-4 h-[48px] text-gray-rgba-3 border text-black"
+                  >
+                    <div class="flex justify-between items-center h-full">
+                      <input
+                        @click="showGrade = !showGrade"
+                        type="text"
+                        v-model="gradeName"
+                        class="text-sm text-black w-full border-none outline-none focus:outline-none focus:border:none"
+                        placeholder="Enter grade"
+                      />
+    
+                      <span>
+                        <IArrowDown @click="showGrade = !showGrade" />
+                      </span>
+                    </div>
+                    <div
+                      class="absolute z-50 h-56 right-0 shadow-lg scrollbar-hide overflow-auto top-15 w-full"
+                      v-if="showGrade == true"
+                    >
+                      <div>
+                        <component :is="Grade">
+                          {{ grades }}
+                        </component>
                       </div>
                     </div>
                   </div>
+                    <!--  -->
+                      <div
+                      class="font-normal text-left rounded-xl px-4 h-[48px] relative border border-grey-300"
+                    >
+                      <input
+                        required
+                        type="text"
+                        v-model="data.employmentType"
+                        class="w-full rounded-lg placeholder-strong text-black text-sm outline-none border-none h-full focus:outline-none focus:border-none \"
+                        placeholder="Select employment type"
+                      />
+                    </div>
+                      <!--  -->
+                    </div>
+                  </div>
+              </template>
               </div>
+              <div class="px-10 flex space-x-4 mt-4 ">
+                <ButtonLightBlue @click="router.back()">
+                <template v-slot:placeholder>
+                    <span>Cancel</span></template>
+                </ButtonLightBlue>
+               </div>
             </div>
           </div>
         </div>

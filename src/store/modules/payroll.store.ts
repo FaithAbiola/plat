@@ -96,6 +96,20 @@ const payrollStore = defineStore("payroll", {
       }
     },    
 
+    async getPayrollHistory(userId: number, transactionMonth?: number, transactionYear?: number, pageSize: number = 10, pageNumber: number = 1): Promise<any> {
+      try {
+          const response = await payrollService.getPayrollHistory(userId, transactionMonth, transactionYear, pageSize, pageNumber);
+          if (response.data) {
+              return await Promise.resolve(response);
+          } else if (response.response) {
+              return await Promise.reject(response.response);
+          } else {
+              return await Promise.reject(response.message);
+          }
+      } catch (error: any) {
+          return await Promise.reject(error);
+      }
+    },
     async draft(): Promise<any> {
       try {
         const response = await payrollService.draft();

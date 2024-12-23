@@ -24,3 +24,22 @@ export function dateFormat(date:any){
     
     return formattedDate;
 }
+
+export const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long' };
+    return date.toLocaleDateString('en-US', options);
+};
+
+export function formatDatee(date: any): string {
+    const currentDate = new Date(date);
+
+    const year = currentDate.getFullYear();
+    const month = currentDate.toLocaleString('default', { month: 'short' });
+    const day = currentDate.getDate().toString().padStart(2, '0'); 
+    const hours = currentDate.getHours().toString().padStart(2, '0'); 
+    const minutes = currentDate.getMinutes().toString().padStart(2, '0'); 
+
+    return `${month} ${day}, ${year} ${hours}:${minutes}`;
+}
+

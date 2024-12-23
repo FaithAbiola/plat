@@ -57,6 +57,28 @@ class Payroll {
       });
   }
 
+  async getPayrollHistory(userId: number, transactionMonth?: number, transactionYear?: number, pageSize: number = 10, pageNumber: number = 1): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+  
+    return await customRequest      
+    .get('/Transaction/get-user-transactions', {
+        headers: authhHeader(),
+        params: {
+            UserId: userId,
+            TransactionMonth: transactionMonth,
+            TransactionYear: transactionYear,
+            PageSize: pageSize,
+            PageNumber: pageNumber
+        }
+    })
+    .then((res) => {
+        return res;
+    })
+    .catch((err) => {
+        return err;
+    });
+  }
+
   async getEmployeePayroll(organisationId: number, employeeId: number, pageSize: number = 10, pageNumber: number = 1): Promise<any> {
     const customRequest = this.createAxiosInstance();
   
