@@ -66,7 +66,7 @@ const fetchEmployeeByDepartment = async () => {
 };
 
 // hooks
-fetchEmployeeByDepartment();
+// fetchEmployeeByDepartment();
 </script>
 <template>
   <div class="space-y-4">

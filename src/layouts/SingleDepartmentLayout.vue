@@ -23,6 +23,7 @@ const childComponent = ref<any>();
 const isEditForm = ref(false);
 const loading = ref(false);
 const responseData = ref<any>({ data: {} });
+const errorResponse = ref("");
 
 // computed
 const groupId = computed(() => {
@@ -35,7 +36,7 @@ const save = async () => {
   loading.value = false;
 };
 
-const fetchEmployee = async () => {
+const fetchDepartment = async () => {
   if ((route.params.id as string) !== "") {
     const response = await request(groupStore.show(groupId.value));
 
@@ -44,13 +45,15 @@ const fetchEmployee = async () => {
 
     if (successResponse && typeof successResponse !== "undefined") {
       responseData.value.data = successResponse.data;
-      // console.log(successResponse.data);
+      console.log(successResponse.data);
+    } else {
+        errorResponse.value = response.message;
     }
   }
 };
 
 // hooks
-// fetchEmployee();
+fetchDepartment();
 </script>
 <template>
   <div>
@@ -94,7 +97,7 @@ const fetchEmployee = async () => {
         <div
           class="flex items-center space-x-8 text-blue-900 w-full overflow-auto scrollbar-hide"
         >
-          <!-- <div
+          <div
             @click="
               router.push({
                 name: 'dashboard.employees.departments.single.payroll-settings',
@@ -111,7 +114,7 @@ const fetchEmployee = async () => {
             ]"
           >
             <span> Payroll Settings </span>
-          </div> -->
+          </div>
           <div
             @click="
               router.push({

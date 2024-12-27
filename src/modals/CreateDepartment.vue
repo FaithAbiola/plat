@@ -41,6 +41,12 @@ const updateLoading = ref([false]);
 const parsedUserInfo = typeof userInfo.value === 'string' ? JSON.parse(userInfo.value) : userInfo.value;
 
 const organisationId = parsedUserInfo?.customerInfo?.organisationId;
+
+const capitalizeFirstLetter = (message: string) => {
+  if (!message) return message;
+  return message.charAt(0).toUpperCase() + message.slice(1);
+};
+
 // const data = ref<any>({
 //   name: null,
 //   supportingName: null,
@@ -82,6 +88,7 @@ const setField = async (page = 1) => {
     departmentData.map((department: any) => {
       if (props.departmentId && department.id === props.departmentId) {
         data.value.name = department.name;
+        data.value.supportingName = department.supportingName;
         data.value.settings = { ...department.settings };
         if (department.grades[0]) {
           gradesArr.value.length = 0;
@@ -107,6 +114,7 @@ const setField = async (page = 1) => {
     successResponse.data.data.pageItems.map((department: any) => {
       if (props.departmentId && department.id === props.departmentId) {
         data.value.name = department.name;
+        data.value.supportingName = department.supportingName;
         data.value.settings = { ...department.settings };
         if (department.grades[0]) {
           gradesArr.value.length = 0;
@@ -232,34 +240,61 @@ const createGroup = async () => {
       }
   loading.value = false;
 };
+// const updateGroup = async () => {
+//   // set grades
+//   // gradesArr.value.forEach((grade) => {
+//   //   data.value.grades[grade.key] = grade.value;
+//   // });
+
+//   data.value.grades = gradesArr.value.map(grade => ({
+//   name: grade.key,
+//   code: grade.value,
+//   grossPay: Number(grade.grossPay) || 0
+// }));
+
+
+//   loading.value = true;
+//   const response = await request(
+//     groupStore.update(data.value, props.departmentId),
+//     loading
+//   );
+
+//   handleError(response, userStore);
+//   const successResponse = handleSuccess(response, showSuccess);
+
+//   if (successResponse && typeof successResponse !== "undefined") {
+//     responseData.value = successResponse;
+//     render.value = true;
+//     emit("close");
+//   }
+// };
+
 const updateGroup = async () => {
-  // set grades
-  // gradesArr.value.forEach((grade) => {
-  //   data.value.grades[grade.key] = grade.value;
-  // });
+    const updateData = {
+        name: data.value.name,
+        supportingName: data.value.supportingName,
+    };
 
-  data.value.grades = gradesArr.value.map(grade => ({
-  name: grade.key,
-  code: grade.value,
-  grossPay: Number(grade.grossPay) || 0
-}));
+    loading.value = true;
+    const response = await request(
+        groupStore.update(updateData, props.departmentId),
+        loading
+    );
 
-
-  loading.value = true;
-  const response = await request(
-    groupStore.update(data.value, props.departmentId),
-    loading
-  );
-
-  handleError(response, userStore);
-  const successResponse = handleSuccess(response, showSuccess);
-
-  if (successResponse && typeof successResponse !== "undefined") {
-    responseData.value = successResponse;
-    render.value = true;
-    emit("close");
-  }
+    handleError(response, userStore);
+    const successResponse = handleSuccess(response, showSuccess);
+    console.log("====", response)
+    if (successResponse && typeof successResponse !== "undefined") {
+        responseData.value = successResponse;
+        showSuccess.value = true;
+        setTimeout(() => {
+        render.value = true; 
+        emit("close");
+    }, 3000); 
+    }
+    loading.value = false;
 };
+
 const updateDepartmentGroup = async () => {
 
   // set grades
@@ -309,7 +344,7 @@ onBeforeUnmount(() => {
       v-if="showSuccess == true"
     >
       <template #otherMessage>CLOSE</template>
-      {{ responseData.message }}</successAlert
+      {{ capitalizeFirstLetter(responseData.message) }}</successAlert
     >
     <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
 
@@ -405,8 +440,8 @@ onBeforeUnmount(() => {
                   <h2 class="text-sm font-medium text-black-200">Grades</h2>
                   <!-- inputs -->
                   <div
-                    class="grid grid-cols-2 gap-2"
-                    id="grade"
+                  :class="['grid', props.departmentId ? 'grid-cols-4' : 'grid-cols-3', 'gap-2']"
+                  id="grade"
                     v-for="(grade, i) in gradesArr"
                     :key="i"
                   > 
@@ -417,7 +452,6 @@ onBeforeUnmount(() => {
                       placeholder="name"
                     />
   
-                    <div class="flex items-center gap-3">
                       <!-- <input
                         v-model.number="grade.value"
                         type="number"
@@ -427,7 +461,7 @@ onBeforeUnmount(() => {
                        <input
                         v-model="grade.value"
                         type="text"
-                        class="rounded-xl border px-4 h-[48px] w-[120px] font-normal text-left placeholder-strong text-black text-sm outline-none focus:outline-none"
+                        class="rounded-xl border px-4 h-[48px] font-normal text-left placeholder-strong text-black text-sm outline-none focus:outline-none"
                         placeholder="code"
                       />
                       <input
@@ -436,29 +470,30 @@ onBeforeUnmount(() => {
                       class="rounded-xl border px-4 h-[48px] font-normal text-left placeholder-strong text-black text-sm outline-none focus:outline-none"
                       placeholder="gross pay"
                     />
-                      
-                      <div v-if="props.departmentId">
-                        <button type="button" v-if="!updateLoading[i]" @click="updateGrade(i, grade.key)" class="flex items-center cursor-pointer space-x-2.5 bg-[#003b3d] p-3 rounded-full px-2+1 flex-shrink-0">
+                    <div class="flex items-center gap-3">
+
+                      <div v-if="props.departmentId" >
+                        <button disabled=true type="button" v-if="!updateLoading[i]" @click="updateGrade(i, grade.key)" class="flex items-center cursor-pointer space-x-2.5 bg-[#003b3d] p-3 rounded-full px-2+1 flex-shrink-0">
                           <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M17 17H17.01M15.6 14H18C18.9319 14 19.3978 14 19.7654 14.1522C20.2554 14.3552 20.6448 14.7446 20.8478 15.2346C21 15.6022 21 16.0681 21 17C21 17.9319 21 18.3978 20.8478 18.7654C20.6448 19.2554 20.2554 19.6448 19.7654 19.8478C19.3978 20 18.9319 20 18 20H6C5.06812 20 4.60218 20 4.23463 19.8478C3.74458 19.6448 3.35523 19.2554 3.15224 18.7654C3 18.3978 3 17.9319 3 17C3 16.0681 3 15.6022 3.15224 15.2346C3.35523 14.7446 3.74458 14.3552 4.23463 14.1522C4.60218 14 5.06812 14 6 14H8.4M12 15V4M12 4L15 7M12 4L9 7" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
                         </button>
                         <spinner v-else />
                       </div>
-                      <div v-if="props.departmentId">
+                      <!-- <div v-if="props.departmentId">
                         <div v-if="removeLoading[i] == false">
                           <span
                             v-if="gradesArr.length > 1"
-                            class="font-extrabold cursor-pointer"
-                            @click="removeField(i, grade.key)"
+                            class="font-extrabold cursor-not-allowed text-red"
+                            @click.stop.prevent="removeField(i, grade.key)"
                             >X</span
                           >
                         </div>
                         <spinner v-else />
-                      </div>
+                      </div> -->
                       <div v-else>
                         <span
                             v-if="gradesArr.length > 1"
                             class="font-extrabold cursor-pointer"
-                            @click="removeFieldWIthoutLoading(i)"
+                            @click.prevent="removeFieldWIthoutLoading(i)"
                             >X</span
                           >
                       </div>

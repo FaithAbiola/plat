@@ -97,17 +97,39 @@ class Group {
       });
   }
   async show(id: string): Promise<any> {
-    return await this.request
-      .get(`/groups/${id}`, {
-        headers: authHeader(),
-      })
+    const customRequest = this.createAxiosInstance();
+    return await customRequest
+    .get(`/Department/Fetch-department`, {
+      params: { DepartmentId: id },
+      headers: authhHeader(),
+  })
       .then((res) => {
+        console.log("Fetch department response:", res);
         return res;
       })
       .catch((err) => {
+        console.error("Error occurred during fetch:", err);
         return err;
       });
   }
+
+  async fetchDepartment(departmentId: number): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+
+    return await customRequest
+        .get(`/Department/Fetch-department`, {
+            params: { DepartmentId: departmentId },
+            headers: authhHeader(),
+        })
+        .then((res) => {
+            console.log("Fetch department response:", res);
+            return res;
+        })
+        .catch((err) => {
+            console.error("Error occurred during fetch:", err);
+            return err;
+        });
+}
 
   /** =============Create Start==================**/
   // async create(data: Create): Promise<any> {
@@ -160,22 +182,44 @@ class Group {
   }
 
   /** =============Create End==================**/
-  async update(data: Update, id: string): Promise<any> {
-    return await this.request
-      .post(
-        `/groups/${id}`,
-        { ...data },
-        {
-          headers: authHeader(),
-        }
-      )
-      .then((res) => {
-        return res;
-      })
-      .catch((err) => {
-        return err;
-      });
-  }
+  // async update(data: Update, id: string): Promise<any> {
+  //   return await this.request
+  //     .post(
+  //       `/groups/${id}`,
+  //       { ...data },
+  //       {
+  //         headers: authHeader(),
+  //       }
+  //     )
+  //     .then((res) => {
+  //       return res;
+  //     })
+  //     .catch((err) => {
+  //       return err;
+  //     });
+  // }
+
+  async update(departmentId: number, data: { name: string; supportingName: string }): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+
+    return await customRequest
+        .put(`/Department/update/${departmentId}`, null, {
+            params: {
+                name: data.name,
+                supportingName: data.supportingName,
+            },
+            headers: authhHeader(),
+        })
+        .then((res) => {
+            console.log("Update response:", res);
+            return res;
+        })
+        .catch((err) => {
+            console.error("Error occurred during update:", err);
+            return err;
+        });
+}
+
   async updateGrade(data: Update, id: string, store_id: string): Promise<any> {
     return await this.request
       .post(
@@ -221,18 +265,34 @@ class Group {
       });
   }
 
-  async delete(id: string): Promise<any> {
-    return await this.request
-      .delete(`/groups/${id}`, {
-        headers: authHeader(),
-      })
-      .then((res) => {
-        return res;
-      })
-      .catch((err) => {
-        return err;
-      });
+  // async delete(id: string): Promise<any> {
+  //   return await this.request
+  //     .delete(`/groups/${id}`, {
+  //       headers: authHeader(),
+  //     })
+  //     .then((res) => {
+  //       return res;
+  //     })
+  //     .catch((err) => {
+  //       return err;
+  //     });
+  // }
+  async delete(departmentId: string): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+    return await customRequest
+        .delete(`/Department/Delete/${departmentId}`, {
+            headers: authhHeader(),
+        })
+        .then((res) => {
+            console.log("Delete response:", res);
+            return res; 
+        })
+        .catch((err) => {
+            console.error("Error occurred during delete:", err);
+            return err;
+        });
   }
+
 }
 
 export default new Group(http);

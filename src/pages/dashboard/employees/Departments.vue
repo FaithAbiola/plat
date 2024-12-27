@@ -236,7 +236,7 @@ const confirmRemoveGroup = () => {
           >
             Download Data
           </button> -->
-          <button
+          <!-- <button
             @click="confirmRemoveGroup"
             :disabled="disabled"
             :class="disabled == true ? 'disabled:opacity-75' : ' '"
@@ -244,7 +244,7 @@ const confirmRemoveGroup = () => {
           >
             <spinner v-if="deleting == true" />
             <span v-else>Remove Department</span>
-          </button>
+          </button> -->
         </div>
       </div>
       <!--  -->
@@ -360,7 +360,7 @@ const confirmRemoveGroup = () => {
                   <td class="py-4 text-left whitespace-nowrap w-[18%]">
                     <div class="flex items-center justify-between space-x-2">
                       <button
-                        :disabled="true"
+                        :disabled="false"
                         @click="
                           router.push(
                             `/dashboard/employees/departments/${department.id}`
@@ -372,7 +372,7 @@ const confirmRemoveGroup = () => {
                       </button>
 
                       <button
-                          :disabled="true"
+                          :disabled="false"
                           @click="
                               [
                                 $emit('showCreateDepartment'),
