@@ -152,6 +152,7 @@ const fetchUsers = () => {
     : " ";
 };
 
+
 // methods
 const confirmLogout = () => {
   confirmMessage.value.message = `Are you sure you want to logout? `;
@@ -342,7 +343,7 @@ onMounted(() => {
     <!-- create user modal-->
     <CreateUser v-if="openCreateUser == true" @fetchUsers="fetchUsers()" />
     <!-- Update user modal-->
-    <UpdateUser v-if="openUpdateUser == true" />
+    <UpdateUser v-if="openUpdateUser == true" :fetchUsers="fetchUsers" />
     <!-- side nav -->
     <SideNav class="hidden lg:block" ref="sideNav" />
     <!-- bottom nav -->

@@ -22,6 +22,7 @@ import {
   useEmployeeStore,
   useUserStore,
   useWalletStore,
+  usePayrollStore
 } from "../../../../store/index";
 import {
   stringValidate,
@@ -29,17 +30,20 @@ import {
 } from "../../../../validations/validate";
 import html2pdf from 'html2pdf.js';
 
-import { formatNumber, dateFormat } from "../../../../core/helpers/actions"
+import { formatNumber, dateFormat, formatDate, formatDatee } from "../../../../core/helpers/actions"
 
 import { useRoute } from "vue-router";
+import { getItem } from "../../../../core/utils/storage.helper";
 
 // initialize route
 const route = useRoute();
 
 // initialize store
 const employeeStore = useEmployeeStore();
+const payrollStore = usePayrollStore();
 const userStore = useUserStore();
 const walletStore = useWalletStore();
+const userInfo = ref(getItem(import.meta.env.VITE_USERDETAILS));
 
 // variables
 const disabled = ref(true);
@@ -47,7 +51,8 @@ const showBank = ref(false);
 const loading = ref(false);
 const fetchLoading = ref(false);
 const valid = ref(false);
-
+const parsedUserInfo = typeof userInfo.value === 'string' ? JSON.parse(userInfo.value) : userInfo.value;
+const organisationId = parsedUserInfo?.customerInfo?.organisationId;
 let data = ref<{
   firstname: string | null;
   lastname: string | null;
@@ -105,6 +110,9 @@ const showSuccess = ref(false);
 
 const errorResponse = ref("");
 const responseData = ref<any>({ data: null, message: "" });
+const userId = ref<number | null>(null);
+const payrollData = ref<any[]>([]); 
+
 const slip = ref({
   name: "",
   narration: "",
@@ -131,7 +139,7 @@ const emit = defineEmits<{
 const employeeId = computed(() => {
   return route.params.id as string;
 });
-
+console.log("====", employeeId.value)
 // methods
 
 const parseBank = (item: any) => {
@@ -234,7 +242,10 @@ const rules = computed(() => {
 });
 
 const v$ = useVuelidate(rules as any, data);
-
+const capitalizeFirstLetter = (name: string | null) => {
+  if (!name) return "";
+  return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+};
 // define emits
 defineExpose({
   // saveChanges,
@@ -244,6 +255,16 @@ defineExpose({
 });
 
 const exportToPDF = () => {
+  slip.value = {
+        name: "Praise Patrick",
+        narration: "January Payslip",
+        paymentDate: "12/09/2024",
+        grossPay: 200000,
+        bonus: 0,
+        deductions: 0,
+        tax: 10000,
+        netPay: 198000,
+    };
     var element = document.getElementById('element-to-print');
     var opt = {
         orientation: 'p',
@@ -254,8 +275,8 @@ const exportToPDF = () => {
         image: { type: 'jpeg', quality: 1.50 },
         html2canvas:  { scale: 4 },
     };
-
-    html2pdf().set(opt).from(element).save(`${responseData.value.data.data.firstname+' '+responseData.value.data.data.lastname+slip.value.narration}-${slip.value.paymentDate}`);
+    html2pdf().set(opt).from(element).save(`${slip.value.name}-${slip.value.paymentDate}`);
+    // html2pdf().set(opt).from(element).save(`${responseData.value.data.data.firstname+' '+responseData.value.data.data.lastname+slip.value.narration}-${slip.value.paymentDate}`);
 }
 
 const slipInfo = (item:any) => {
@@ -273,6 +294,50 @@ const slipInfo = (item:any) => {
   exportToPDF();
 }
 
+const getProfile = async () => {
+  console.log(employeeId.value);
+  const response = await request(
+    employeeStore.show(employeeId.value, organisationId),
+    fetchLoading
+  );
+  const successResponse = handleSuccess(response);
+
+  if (successResponse && typeof successResponse !== "undefined") {
+    const employeeData = successResponse.data.data.employee;
+    console.log("*****", employeeData);
+    data.value.firstname = capitalizeFirstLetter(employeeData.user.firstname);
+    data.value.lastname = capitalizeFirstLetter(employeeData.user.lastname);
+    responseData.value.data = successResponse.data;
+    userId.value = employeeData.userId;
+    await fetchPayrollHistory();
+    console.log("/////", userId.value);
+
+    emit(
+      "setSingleEmployeeName",
+      `${data.value.firstname} ${data.value.lastname}`
+    );
+  } else {
+    errorResponse.value = response.data.data.message;
+  }
+};
+
+const fetchPayrollHistory = async () => {
+    if (userId.value) {
+      fetchLoading.value = true; 
+        try {
+            const response = await payrollStore.getPayrollHistory(userId.value);
+            payrollData.value = response.data.data.pageItems; 
+        } catch (error) {
+            console.error("Error fetching payroll history:", error);
+        } finally {
+            fetchLoading.value = false; 
+        }
+    } else {
+        console.error("User ID is not available.");
+    }
+};
+
+getProfile();
 
 const router = useRouter()
 </script>
@@ -282,14 +347,14 @@ const router = useRouter()
     class="flex justify-center items-center lg:h-[400px] h-[300px]"
   />
   <div v-else class="w-full overflow-auto">
-    <EmptyState v-if="!responseData?.data && !responseData?.data?.payments?.length">
+    <!-- <EmptyState v-if="!responseData?.data && !responseData?.data?.payments?.length">
       <template #icon>
         <IUserThree />
       </template>
       <template #heading> Payment details </template>
       <template #desc> No payment found </template>
-    </EmptyState>
-    <div v-else class="align-middle inline-block min-w-full">
+    </EmptyState> -->
+    <div class="align-middle inline-block min-w-full">
       <div class="overflow-hidden sm:rounded-lg">
         <table class="min-w-full table-fixed">
           <thead class="text-black-200 text-sm text-left">
@@ -309,53 +374,61 @@ const router = useRouter()
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-grey-200">
-            <tr v-for="(item, index) in payments" :key="index" class="text-black-100">
+            <tr v-for="(item, index) in payrollData" :key="index" class="text-black-100">
+            <!-- <tr class="text-black-100"> -->
               <td class="py-4 whitespace-nowrap">
                 <div class="flex items-center space-x-3">
                   <div class="flex flex-col">
-                    <span class="text-sm font-semimedium">{{ item.narration }}</span>
-                    <!-- <span class="text-sm font-semimedium">April 2022</span>
-                    <span class="text-xs text-gray-rgba-3">₦800,000/yr</span> -->
+                    <!-- <span class="text-sm font-semimedium">{{ item.narration }}</span> -->
+                    <span class="text-sm font-semimedium">{{ item.payroll ? formatDate(item.payroll.createdAt) : '--' }}</span>
+                    <span class="text-xs text-gray-rgba-3">₦{{ item.payroll ? item.payroll.totalSalaries : '--' }}/yr</span>
                   </div>
                 </div>
               </td>
               <td class="py-4 whitespace-nowrap">
                 <div class="text-left flex flex-col">
-                  <span class="text-sm font-semimedium">{{ item.payroll ? dateFormat(item.payroll.created_at) : '--/--/---- --:-- --' }}</span>
-                  <span class="text-xs text-green">Direct deposit</span>
+                  <!-- <span class="text-sm font-semimedium">{{ item.payroll ? dateFormat(item.payroll.created_at) : '--/--/---- --:-- --' }}</span> -->
+                  <!-- <span class="text-sm font-semimedium">Jan 12, 2022 15:32</span> -->
+                  <span class="text-sm font-semimedium">{{ item.transaction ? formatDatee(item.transaction.createdAt) : '--' }}</span>
+                  <span class="text-xs text-green">{{ item.transaction ? capitalizeFirstLetter(item.transaction.transactionType) : '--' }}</span>
                 </div>
               </td>
               <td class="py-4 whitespace-nowrap">
                 <div class="font-normal text-left flex flex-col">
-                  <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.salary.gross) : 0 }}</span>
+                  <!-- <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.salary.gross) : 0 }}</span> -->
+                  <span class="text-sm font-semimedium">₦{{ formatNumber(item.employeeDetails?.grossPay) || 0 }}</span>
                 </div>
               </td>
               <td class="py-4 whitespace-nowrap">
                 <div class="font-normal text-left flex flex-col">
-                  <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.breakdown.bonus) : 0 }}</span>
-                  <!-- <span class="text-xs text-gray-rgba-3">Commissions</span> -->
+                  <!-- <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.breakdown.bonus) : 0 }}</span> -->
+                  <span class="text-sm font-semimedium">₦{{ formatNumber(item.employeeDetails?.bonus?.amount) || 0 }}</span>
+                  <span class="text-xs text-gray-rgba-3">{{ capitalizeFirstLetter(item.employeeDetails?.bonus?.reason) || " " }}</span>
                 </div>
               </td>
               <td class="py-4 text-left whitespace-nowrap">
                 <div class="font-normal flex flex-col">
-                  <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.breakdown.deductions) : 0 }}</span>
-                  <!-- <span class="text-xs text-gray-rgba-3">Pensions, Health</span> -->
+                  <!-- <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.breakdown.deductions) : 0 }}</span> -->
+                  <span class="text-sm font-semimedium">₦{{ formatNumber(item.employeeDetails?.deduction?.amount) || 0 }}</span>
+                  <span class="text-xs text-gray-rgba-3">{{ capitalizeFirstLetter(item.employeeDetails?.deduction?.reason) || " " }}</span>
                 </div>
               </td>
               <td class="py-4 text-left whitespace-nowrap">
                 <div class="font-normal flex flex-col">
-                  <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.breakdown.tax) : 0 }}</span>
-                  <!-- <span class="text-xs text-gray-rgba-3">PAYEE</span> -->
+                  <!-- <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.breakdown.tax) : 0 }}</span> -->
+                  <span class="text-sm font-semimedium">₦{{ formatNumber(item.employeeDetails?.taxAmount) || 0 }}</span>
+                  <span class="text-xs text-gray-rgba-3">PAYEE</span>
                 </div>
               </td>
               <td class="py-4 text-left whitespace-nowrap">
                 <div class="font-normal flex flex-col">
-                  <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.salary.total) : 0 }}</span>
+                  <!-- <span class="text-sm font-semimedium">₦{{ item.meta ? formatNumber(item.meta.salary.total) : 0 }}</span> -->
+                  <span class="text-sm font-semimedium">₦{{ formatNumber(item.employeeDetails?.netPay) || 0 }}</span>
                 </div>
               </td>
               <td class="py-4 px-8 text-left whitespace-nowrap w-[18%]">
                 <div class="flex items-center justify-between">
-                  <button @click="slipInfo(item)"
+                  <button @click="exportToPDF"
                     class="text-[#003b3d] bg-red-light text-sm text-bold px-4+1 py-2 rounded-full">
                     Download Payslip
                   </button>
@@ -382,7 +455,7 @@ const router = useRouter()
       </div>
     </div>
 
-    <div class="hidden">
+    <!-- <div class="">
       <div class="bg-[#dcf7e6]" id="element-to-print">
         <div class="grid place-content-center h-[100px] w-full px-[60px] bg-[#ffffff]">
           <div class="mx-auto pt-[30px]">
@@ -414,6 +487,105 @@ const router = useRouter()
           <div class="text-base flex items-center justify-between py-4">
             <span class="font-semi-medium text-gray-rgba-3">Tax</span>
             <span class="text-black-100 font-semi-medium">N{{ slip.tax }}</span>
+          </div>
+        </div>
+      </div>
+    </div> -->
+    <div class="hidden">
+      <div id="element-to-print">   
+        <div class="p-6 bg-white shadow-md rounded-md w-full max-w-3xl mx-auto">
+          <!-- Header -->
+          <div class="flex justify-between items-center pb-4 mb-4">
+            <img src="/images/png/logo.png" alt="logo" class="h-12">
+            <div class="text-left text-sm">
+              <p class="font-bold">Platoon.co</p>
+              <p>132 Westwood, Ajah</p>
+              <p>Lagos</p>
+            </div>
+          </div>
+      
+          <!-- Payslip Title -->
+          <h1 class="text-2xl text-center font-bold mb-6">Payslip</h1>
+      
+          <!-- Employee Details -->
+          <div class="flex justify-between px-8 mb-4">
+            <div>
+              <p class="font-semibold py-1">Employee Name</p>
+              <p class="font-semibold py-1">Employment Status</p>
+              <p class="font-semibold py-1">Month</p>
+              <p class="font-semibold py-1">Pay Date</p>
+            </div>
+            <div class="text-left">
+              <p class="py-1">Praise Patrick</p>
+              <p class="py-1">Full Time</p>
+              <p class="py-1">January</p>
+              <p class="py-1">12/09/2024</p>
+            </div>
+          </div>
+      
+          <!-- Payment Details -->
+          <div class="flex justify-between mx-5 px-3 py-2 font-semibold bg-white-smoke">
+            <span>Description</span>
+            <span class="mr-4">Amount</span>
+          </div>
+          <div class="flex justify-between px-8">
+            <div>
+              <p class="py-2">Gross Pay</p>
+              <p class="py-2">Bonus</p>
+              <p class="py-2">Deduction</p>
+              <p class="py-2">Tax</p>
+              <p class="py-2">Pension</p>
+            </div>
+            <div class="text-left">
+              <p class="py-2">₦200,000</p>
+              <p class="py-2">₦0.00</p>
+              <p class="py-2">₦0.00</p>
+              <p class="py-2">₦10,000</p>
+              <p class="py-2">₦10,000</p>
+            </div>
+          </div>
+          <div class="flex justify-between mx-5 px-3 py-2 mb-4 font-semibold bg-white-smoke">
+            <span>Net Pay</span>
+            <span>₦198,000</span>
+          </div>
+          <!-- Payment Details -->
+          <!-- <div class="bg-gray-200 px-8 py-4 mb-4 text-left">
+            <div class="flex justify-between">
+              <span>Description</span>
+              <span>Amount</span>
+            </div>
+            <div class="flex justify-between py-2">
+              <span>Gross Pay</span>
+              <span>₦200,000</span>
+            </div>
+            <div class="flex justify-between py-2">
+              <span>Bonus</span>
+              <span>₦0.00</span>
+            </div>
+            <div class="flex justify-between py-2">
+              <span>Deductions</span>
+              <span>₦0.00</span>
+            </div>
+            <div class="flex justify-between py-2">
+              <span>Tax</span>
+              <span>₦10,000</span>
+            </div>
+            <div class="flex justify-between py-2">
+              <span>Pension</span>
+              <span>₦10,000</span>
+            </div>
+            <div class="flex justify-between font-bold py-2">
+              <span>Net Pay</span>
+              <span>₦198,000</span>
+            </div>
+          </div> -->
+      
+          <!-- Account Details -->
+          <div class="px-8 mb-4 mt-5">
+            <h3 class="font-bold">Account Details</h3>
+            <p>Account Name: Praise Namudi</p>
+            <p>Account Number: 1234567890</p>
+            <p>Bank Name: Opay</p>
           </div>
         </div>
       </div>

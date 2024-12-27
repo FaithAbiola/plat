@@ -122,7 +122,6 @@ const employeeId = computed(() => {
 // methods
 
 const parsedUserInfo = typeof userInfo.value === 'string' ? JSON.parse(userInfo.value) : userInfo.value;
-// Access the organisationId safely
 const organisationId = parsedUserInfo?.customerInfo?.organisationId;
 
 const capitalizeFirstLetter = (name: string | null) => {

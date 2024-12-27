@@ -92,6 +92,20 @@ class UserService {
       });
   }
 
+  async updateRole(userId: number, roleId: number): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+    return await customRequest
+      .put(`/Role/update/${userId}/${roleId}`, null, {
+        headers: authhHeader(),
+      })
+      .then((res) => res)
+      .catch((err) => {
+        console.error("Error assigning role:", err);
+        throw err; 
+      });
+}
+
+
 async deleteUser(userId: string): Promise<any> {
   const customRequest = this.createAxiosInstance();
   return await customRequest

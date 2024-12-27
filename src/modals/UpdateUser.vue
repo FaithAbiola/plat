@@ -1,10 +1,120 @@
 <script setup lang="ts">
-import { inject } from "vue";
+import { inject, onMounted, ref, Ref } from "vue";
 import ButtonBlue from "../components/buttons/ButtonBlue.vue";
 import { IClose } from "../core/icons";
 import { IArrowDown } from "../core/icons";
+import { useUserStore } from "../store";
 
-const openUpdateUser = inject("openUpdateUser");
+const openUpdateUser = inject<Ref<boolean>>("openUpdateUser", ref(false));
+const userId = ref<number | null>(null);
+const userStore = useUserStore(); 
+const userRoleData = ref<any>(null); 
+const selectedRole = ref("");
+const showRoleDropdown = ref(false);
+const loading = ref(false);
+const roles = ref<any[]>([]);
+const props = defineProps({
+    fetchUsers: {
+        type: Function,
+        required: true, 
+    },
+});
+
+const fetchUserRole = async (userId: number) => {
+  try {
+    const roleData = await userStore.getUserRole(userId);
+    console.log("Fetched role data:", roleData);
+    if (roleData) {
+      userRoleData.value = roleData;
+      console.log("Fetched role data:", userRoleData.value);
+      console.log("User Firstname:", userRoleData.value.user.firstname);
+      console.log("User Lastname:", userRoleData.value.user.lastname);
+      console.log("User Role:", userRoleData.value.roleId);
+      const userRoleId = userRoleData.value.roleId;
+      const fetchedRole = roles.value.find(role => role.id === userRoleId);
+      console.log("User Role:", fetchedRole);
+      console.log("User Role:", userRoleId);
+      selectedRole.value = fetchedRole ? fetchedRole.name : '';
+    } else {
+      console.error("No role data returned");
+    }
+  } catch (error) {
+    console.error("Error fetching user role:", error);
+  }
+};
+
+const fetchRoles = async () => {
+  loading.value = true;
+  try {
+    const response = await userStore.fetchRoles(); 
+    console.log("0000", response)
+      roles.value = response;
+    console.log("(((((((", roles.value)
+    loading.value = false;
+  } catch (error) {
+    console.log(error);
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  const storedUserId = localStorage.getItem("selectedUserId");
+  console.log("====", storedUserId);
+  if (storedUserId) {
+    userId.value = JSON.parse(storedUserId);
+    if (userId.value !== null) {
+      fetchUserRole(userId.value);
+      fetchRoles(); 
+    } else {
+      console.error("User ID is null");
+    }
+  }
+});
+const selectRole = (role: any) => {
+  selectedRole.value = `${role.name}`;
+  showRoleDropdown.value = false; 
+};
+
+const saveChanges = async () => {
+    if (userId.value !== null && selectedRole.value) {
+        const roleToUpdate = roles.value.find(role => role.name === selectedRole.value);
+        if (roleToUpdate) {
+            try {
+              console.log("Sending data:", {
+                    userId: userId.value,
+                    roleId: roleToUpdate.id
+                });
+                await userStore.updateRole(userId.value, roleToUpdate.id);
+                console.log("Role updated successfully");
+                localStorage.removeItem('selectedUserId');
+                openUpdateUser.value = false; 
+                props.fetchUsers();
+            } catch (error) {
+                console.error("Error updating role:", error);
+            }
+        } else {
+            console.error("Selected role not found");
+        }
+    } else {
+        console.error("User ID is null or no role selected");
+    }
+};
+
+// const fetchData = async () => {
+//   if (userId.value !== null) {
+//     await Promise.all([fetchUserRole(userId.value), fetchRoles()]);
+//   } else {
+//     console.error("User ID is null, cannot fetch user role.");
+//   }
+// };
+
+// onMounted(() => {
+//   const storedUserId = localStorage.getItem("selectedUserId");
+//   if (storedUserId) {
+//     userId.value = JSON.parse(storedUserId);
+//     fetchData(); // Call the fetch function
+//   }
+// });
 </script>
 
 <template>
@@ -22,7 +132,7 @@ const openUpdateUser = inject("openUpdateUser");
           <div class="flex justify-between items-center">
             <div>
               <h3 class="text-black-rgba font-medium text-2xl">
-                Ighayere Ehondor Jemima
+                {{ userRoleData ? `${userRoleData.user.firstname} ${userRoleData.user.lastname}` : ' ' }}
               </h3>
               <span class="text-sm font-semimedium text-black-rgba-100"
                 >Edit details</span
@@ -46,35 +156,54 @@ const openUpdateUser = inject("openUpdateUser");
                 First name
               </p>
               <div class="flex justify-between items-center">
-                <span class="text-sm text-black">Ighayere</span>
+                <span class="text-sm text-black">{{ userRoleData ? userRoleData.user.firstname : ' ' }}</span>
               </div>
             </div>
             <!--  -->
 
             <div
-              class="font-normal text-left rounded-xl pl-4 py-4 my-4 border text-gray-rgba-3 mb-1"
+              class="font-normal text-left rounded-xl px-4 py-4 relative border text-black"
             >
-              <input
-                type="text"
-                class="rounded-lg text-black placeholder-strong sm:text-sm text-xs outline-none border-none focus:outline-none docus:border-none"
-                placeholder="Ehondor-Jemima"
-              />
+              <p
+                class="absolute -top-2 font-normal text-xs left-5 text-[#000000] bg-white"
+              >
+                Last name
+              </p>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-black">{{ userRoleData ? userRoleData.user.lastname : ' ' }}</span>
+              </div>
             </div>
             <!--  -->
 
-            <div
-              class="font-normal text-left rounded-xl px-4 py-4 relative text-gray-rgba-3 border text-black"
-            >
-              <div class="flex justify-between items-center">
-                <span class="text-sm text-black">Super Admin</span>
+            <div class="font-normal relative w-auto text-left rounded-xl px-4 h-[48px] text-gray-rgba-3 border text-black">
+              <div class="flex justify-between items-center h-full">
+                <input
+                  @click="showRoleDropdown = !showRoleDropdown; if (!roles.length) fetchRoles()"
+                  type="text"
+                  v-model="selectedRole"
+                  class="text-sm text-black w-full border-none outline-none focus:outline-none"
+                  placeholder="Select access role"
+                />
                 <span>
-                  <IArrowDown />
+                  <IArrowDown @click="showRoleDropdown = !showRoleDropdown" />
                 </span>
+              </div>
+              <div class="absolute z-50 h-56 right-0 shadow-lg scrollbar-hide overflow-auto top-15 w-full" v-if="showRoleDropdown == true">
+                <div class="space-y-5 p-6 shadow-rgba text-black bg-white text-sm font-bold rounded-lg w-auto h-auto">
+                <div v-if="roles.length > 0">
+                  <div v-for="role in roles" :key="role.id">
+                    <p @click="selectRole(role)" class="cursor-pointer">
+                      {{ role.name }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+                <!--  -->
               </div>
             </div>
           </div>
           <div class="flex pb-5">
-            <ButtonBlue>
+            <ButtonBlue @click="saveChanges">
               <template v-slot:placeholder>Save Changes</template>
             </ButtonBlue>
           </div>

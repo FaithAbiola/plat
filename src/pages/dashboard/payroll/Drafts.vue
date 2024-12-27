@@ -423,7 +423,7 @@ const updatePage = (page: number) => {
                       <td class="py-4 text-left whitespace-nowrap">
                         <div class="flex items-center space-x-2">
                           <div class="flex w-full justify-between">
-                            <ButtonLightBlue>
+                            <ButtonLightBlue @click="router.push('/dashboard/payroll/add-new')">
                               <template v-slot:placeholder
                                 >Continue Edit</template
                               >

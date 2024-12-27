@@ -16,6 +16,7 @@ import { useUserStore } from "../../../store/index";
 import cache from "../../../composables/swr_cache";
 import { getItem } from "../../../core/utils/storage.helper";
 import Pagination from "../../../components/Pagination.vue";
+import { Ref } from "vue";
 
 const router = useRouter();
 
@@ -41,27 +42,15 @@ const userInfo = ref(getItem(import.meta.env.VITE_USERDETAILS));
 const parsedUserInfo = typeof userInfo.value === 'string' ? JSON.parse(userInfo.value) : userInfo.value;
 const organisationId = parsedUserInfo?.customerInfo?.organisationId;
 
-const openUpdateUser = inject("openUpdateUser");
+const selectedUserId = ref<number | null>(null);
+const openUpdateUser = inject<Ref<boolean>>("openUpdateUser", ref(false));
 
-// const fetchUsers = async () => {
-//   loading.value = true;
+const openUpdateUserModal = (userId: number) => {
+  selectedUserId.value = userId;
+  localStorage.setItem('selectedUserId', JSON.stringify(userId)); 
+  openUpdateUser.value = true;
+};
 
-//   const totalUsersCached = cache("total_users");
-//   if (typeof totalUsersCached !== "undefined") {
-//     loading.value = false;
-//     responseData.value = totalUsersCached;
-//   }
-
-//   const response = await request(userStore.getUsers(), loading);
-
-//   const successResponse = handleSuccess(response);
-
-//   if (successResponse && typeof successResponse !== "undefined") {
-//     responseData.value = successResponse.data.data;
-//     cache("total_users", successResponse.data.data);
-//     // console.log(successResponse.data);
-//   }
-// };
 const fetchUsers = async (page: number) => {
   loading.value = true;
   try {
@@ -204,7 +193,7 @@ const updatePage = (page: number) => {
                       </td>
                       <td class="whitespace-nowrap flex space-x-3 mt-3">
                         <div class="font-normal flex text-left">
-                          <ButtonLightBlue @click="openUpdateUser = true">
+                          <ButtonLightBlue @click="openUpdateUserModal(user.userId)">
                             <template v-slot:placeholder>Edit Role</template>
                           </ButtonLightBlue>
                         </div>
