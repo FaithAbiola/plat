@@ -29,7 +29,7 @@ const loading = ref(false);
 const updateLoading = ref(false);
 const deleteLoading = ref(false);
 const fetchLoading = ref(false);
-let data = ref<Update>({ name: "" });
+let data = ref<any>({ name: "" });
 const disabled = ref(true);
 const errorResponse = ref("");
 const responseData = ref<any>({ message: "Action successful" });
@@ -39,19 +39,32 @@ const render = inject<any>("render");
 
 // methods
 
+
+const capitalizeFirstLetter = (message: string) => {
+  if (!message) return message;
+  return message.charAt(0).toUpperCase() + message.slice(1);
+};
+
 const updateGroup = async () => {
   // check if form is formattted correctly
-  loading.value = true;
-  const response = await request(
-    groupStore.update(data.value as Update, groupId.value),
-    updateLoading
-  );
+  const updateData = {
+        name: data.value.name,
+        supportingName: data.value.supportingName,
+    };
+
+    loading.value = true;
+    const response = await request(
+        groupStore.update(updateData, Number(groupId.value)),
+        updateLoading
+    );
 
   handleError(response, userStore);
   const successResponse = handleSuccess(response, showSuccess);
 
   if (successResponse && typeof successResponse !== "undefined") {
     responseData.value.message = successResponse.message;
+    render.value = true;
+    router.push("/dashboard/employees/departments");
     getGroup();
   }
 };
@@ -69,28 +82,52 @@ const getGroup = async () => {
   }
 };
 
+// const deleteGroup = async () => {
+//   // console.log(groupId.value);
+//   const response = await request(
+//     groupStore.delete(groupId.value),
+//     deleteLoading
+//   );
+
+//   // handleError(response, userStore);
+//   const successResponse = handleSuccess(response);
+
+//   if (successResponse && typeof successResponse !== "undefined") {
+//     render.value = true;
+//     router.push("/dashboard/employees/departments");
+//   } else {
+//     errorResponse.value = response.data.message;
+//   }
+// };
+
 const deleteGroup = async () => {
-  // console.log(groupId.value);
-  const response = await request(
-    groupStore.delete(groupId.value),
-    deleteLoading
-  );
+    loading.value = true; 
+    const response = await request(
+        groupStore.delete(groupId.value),
+        deleteLoading
+    );
 
-  // handleError(response, userStore);
-  const successResponse = handleSuccess(response);
+    // handleError(response, userStore);
+    const successResponse = handleSuccess(response);
 
-  if (successResponse && typeof successResponse !== "undefined") {
-    render.value = true;
-    router.push("/dashboard/employees/departments");
-  } else {
-    errorResponse.value = response.data.message;
-  }
+    if (successResponse && typeof successResponse !== "undefined") {
+        responseData.value = successResponse;
+        showSuccess.value = true;
+        setTimeout(() => {
+        render.value = true; 
+        router.push("/dashboard/employees/departments");
+    }, 3000);
+    } else {
+        errorResponse.value = response.message;
+    }
+    loading.value = false; 
 };
+
 
 const saveChanges = async () => {
   await updateGroup();
 };
-getGroup();
+// getGroup();
 
 // define expose
 defineExpose({
@@ -106,7 +143,7 @@ defineExpose({
       v-if="showSuccess == true"
     >
       <template #otherMessage>CLOSE</template>
-      {{ responseData.message }}</successAlert
+      {{ capitalizeFirstLetter(responseData.message) }}</successAlert
     >
 
     <div class="flex-1 space-y-12">

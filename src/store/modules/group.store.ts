@@ -101,20 +101,35 @@ const groupStore = defineStore("group", {
       }
     },
 
-    async update(data: Update, id: string): Promise<any> {
+    // async update(data: Update, id: string): Promise<any> {
+    //   try {
+    //     const response = await groupService.update(data, id);
+    //     if (response.data) {
+    //       return await Promise.resolve(response);
+    //     } else if (response.response) {
+    //       return await Promise.reject(response.response);
+    //     } else {
+    //       return await Promise.reject(response.message);
+    //     }
+    //   } catch (error: any) {
+    //     return await Promise.reject(error);
+    //   }
+    // },
+
+    async update(data: { name: string; supportingName: string }, departmentId: number): Promise<any> {
       try {
-        const response = await groupService.update(data, id);
-        if (response.data) {
-          return await Promise.resolve(response);
-        } else if (response.response) {
-          return await Promise.reject(response.response);
-        } else {
-          return await Promise.reject(response.message);
-        }
+          const response = await groupService.update(departmentId, data);
+          if (response.data) {
+              return Promise.resolve(response);
+          } else if (response.response) {
+              return Promise.reject(response.response);
+          } else {
+              return Promise.reject(response.message);
+          }
       } catch (error: any) {
-        return await Promise.reject(error);
+          return Promise.reject(error);
       }
-    },
+  },  
     async updateGradeList(data: Update, id: string): Promise<any> {
       try {
         const response = await groupService.updateMultiple(data, id);
@@ -157,20 +172,32 @@ const groupStore = defineStore("group", {
         return await Promise.reject(error);
       }
     },
-    async delete(id: string): Promise<any> {
+    // async delete(id: string): Promise<any> {
+    //   try {
+    //     const response = await groupService.delete(id);
+    //     if (response.data) {
+    //       return await Promise.resolve(response);
+    //     } else if (response.response) {
+    //       return await Promise.reject(response.response);
+    //     } else {
+    //       return await Promise.reject(response.message);
+    //     }
+    //   } catch (error: any) {
+    //     return await Promise.reject(error);
+    //   }
+    // },
+    async delete(departmentId: string): Promise<any> {
       try {
-        const response = await groupService.delete(id);
-        if (response.data) {
-          return await Promise.resolve(response);
-        } else if (response.response) {
-          return await Promise.reject(response.response);
-        } else {
-          return await Promise.reject(response.message);
-        }
+          const response = await groupService.delete(departmentId);
+          if (response.data) {
+              return Promise.resolve(response);
+          } else {
+              return Promise.reject("No response received");
+          }
       } catch (error: any) {
-        return await Promise.reject(error);
+          return Promise.reject(error);
       }
-    },
+    }  
   },
 });
 
