@@ -380,12 +380,15 @@ async removeEmployeeFromPayroll(payrollId: number, employeeId: number, informalP
   
   
 
-  async getOrganisationPayrollCount(organisationId: number): Promise<any> {
+  async getOrganisationPayrollCount(organisationId: number, status: string | null,): Promise<any> {
     const customRequest = this.createAxiosInstance();
   
     return await customRequest
       .get(`/Payroll/organisation-payroll-count/${organisationId}`, {
         headers: authhHeader(),
+        params: {
+          status: status
+        },
       })
       .then((res) => res)
       .catch((err) => err);
