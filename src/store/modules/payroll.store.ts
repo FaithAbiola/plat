@@ -188,9 +188,9 @@ const payrollStore = defineStore("payroll", {
       }
     },
     
-    async fetchOrganisationPayrollCount(organisationId: number): Promise<any> {
+    async fetchOrganisationPayrollCount(organisationId: number, status: string | null): Promise<any> {
       try {
-        const response = await payrollService.getOrganisationPayrollCount(organisationId);
+        const response = await payrollService.getOrganisationPayrollCount(organisationId, status);
         if (response.data) {
           return await Promise.resolve(response);
         } else if (response.response) {

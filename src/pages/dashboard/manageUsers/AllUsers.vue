@@ -87,7 +87,7 @@ const removeUser = async (id: string) => {
 };
 
 const confirmRemoveUser = (id: string) => {
-  confirmMessage.value.message = `Do you really want to delete this user `;
+  confirmMessage.value.message = `Do you really want to delete this user?`;
   confirmMessage.value.id = id;
   showConfirm.value = true;
 };

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, inject } from "vue";
 import CalenderInterface from "../../../layouts/CalenderLayout.vue";
-import { IIncDec, IIncDecBlue, IMenuVertical } from "../../../core/icons";
+import { IIncDec, IIncDecBlue, IMenuVertical, IUserThree } from "../../../core/icons";
 import FCheckedComponent from "../../../components/forms/FCheckBox.vue";
 import ButtonLightBlue from "../../../components/buttons/ButtonLightBlue.vue";
 import ButtonBlue from "../../../components/buttons/ButtonBlue.vue";
@@ -214,33 +214,41 @@ const confirmRemovePayrolls = () => {
 };
 
 const fetchPayroll = async (page = 1) => {
+ 
+  // const totalPayrollCached = cache("total_payroll");
+
+  // if (typeof totalPayrollCached !== "undefined") {
+  //   loading.value = false;
+  //   responseData.value.data = totalPayrollCached;
+  //   // @ts-ignore comment above the problematic line
+  //   responseData.value.sort(function(a, b){return b.id - a.id})
+  // }
   loading.value = true;
-  const totalPayrollCached = cache("total_payroll");
+  try {
+    const response = await request(payrollStore.index(organisationId,null, null, 10, page), loading);
 
-  if (typeof totalPayrollCached !== "undefined") {
+    const successResponse = handleSuccess(response);
+
+    if (successResponse && typeof successResponse !== "undefined") {
+      // cache("total_payroll", successResponse.data.data.pageItems);
+      responseData.value.data = successResponse.data.data.pageItems;
+      currentPage.value = successResponse.data.data.currentPage;
+      totalPages.value = successResponse.data.data.numberOfPages;
+      totalItems.value = successResponse.data.data.pageSize * totalPages.value; 
+      // @ts-ignore comment above the problematic line
+      responseData.value.data.sort(function(a, b){return b.id - a.id})
+
+      // @ts-ignore comment above the problematic line
+      // const sorted = responseData.value.sort(function(a, b){return b.id - a.id})
+      // console.log(responseData.value, sorted);
+      console.log("********",  responseData.value.data);
+    }
+  } catch (error) {
+    console.error("Error fetching payroll history:", error);
+  } finally {
     loading.value = false;
-    responseData.value.data = totalPayrollCached;
-    // @ts-ignore comment above the problematic line
-    responseData.value.sort(function(a, b){return b.id - a.id})
   }
-  const response = await request(payrollStore.index(organisationId,null, null, 10, page), loading);
-
-  const successResponse = handleSuccess(response);
-
-  if (successResponse && typeof successResponse !== "undefined") {
-    cache("total_payroll", successResponse.data.data.pageItems);
-    responseData.value.data = successResponse.data.data.pageItems;
-    currentPage.value = successResponse.data.data.currentPage;
-    totalPages.value = successResponse.data.data.numberOfPages;
-    totalItems.value = successResponse.data.data.pageSize * totalPages.value; 
-    // @ts-ignore comment above the problematic line
-    responseData.value.data.sort(function(a, b){return b.id - a.id})
-
-    // @ts-ignore comment above the problematic line
-    // const sorted = responseData.value.sort(function(a, b){return b.id - a.id})
-    // console.log(responseData.value, sorted);
-    console.log("********",  responseData.value.data);
-  }
+ 
 }; 
 // fetchPayroll();
 fetchPayroll(currentPage.value);
@@ -408,7 +416,11 @@ const fetchAllPayrolls = async () => {
             </div>
             <div class="align-middle inline-block min-w-full">
               <div class="overflow-hidden sm:rounded-lg">
-                <table class="min-w-full table-fixed">
+                <spinner
+                  v-if="loading == true"
+                  class="flex justify-center items-center lg:h-[400px] h-[300px]"
+                />
+                <table v-else class="min-w-full table-fixed">
                   <thead
                     v-if="responseData && responseData.data"
                     class="text-black-200 text-sm text-left"
@@ -459,7 +471,7 @@ const fetchAllPayrolls = async () => {
                     </tr>
                   </thead>
                   <tbody
-                    v-if="responseData && responseData.data[0]"
+                    v-if="responseData && responseData.data"
                     class="bg-white divide-y divide-grey-200"
                   >
                     <!--  -->

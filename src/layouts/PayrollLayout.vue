@@ -39,6 +39,7 @@ const showSuccess = ref(false);
 
 const loading = ref(false);
 const payrollData = ref<any>([]);
+const pendingData = ref<any>([]);
 const draftData = ref<any>([]);
 const parsedUserInfo = typeof userInfo.value === 'string' ? JSON.parse(userInfo.value) : userInfo.value;
 const organisationId = parsedUserInfo?.customerInfo?.organisationId;
@@ -187,12 +188,12 @@ const importCsv = async () => {
 };
 const fetchDraftPayrollCount = async () => {
   loading.value = true;
-  const draftPayrollCountCached = cache("draft_payroll_count");
+  // const draftPayrollCountCached = cache("draft_payroll_count");
 
-  if (typeof draftPayrollCountCached !== "undefined") {
-    loading.value = false;
-    draftData.value = draftPayrollCountCached;
-  }
+  // if (typeof draftPayrollCountCached !== "undefined") {
+  //   loading.value = false;
+  //   draftData.value = draftPayrollCountCached;
+  // }
 
     const response = await payrollStore.fetchDraftPayrollCount(organisationId);
     const successResponse = handleSuccess(response);
@@ -200,27 +201,44 @@ const fetchDraftPayrollCount = async () => {
     if (successResponse && typeof successResponse !== "undefined") {
       draftData.value = successResponse.data.data;
       console.log("AAAAAAAAA", draftData.value)
-      cache("draft_payroll_count", successResponse.data.data);
+      // cache("draft_payroll_count", successResponse.data.data);
     }
 };
 
 const fetchOrganisationPayrollCount = async () => {
   loading.value = true;
-  const totalPayrollCached = cache("organisation_payroll_count");
+  // const totalPayrollCached = cache("organisation_payroll_count");
 
-  if (typeof totalPayrollCached !== "undefined") {
-    loading.value = false;
-    payrollData.value = totalPayrollCached;
-    return;
-  }
+  // if (typeof totalPayrollCached !== "undefined") {
+  //   loading.value = false;
+  //   payrollData.value = totalPayrollCached;
+  //   return; 
+  // }
 
   try {
-    const response = await payrollStore.fetchOrganisationPayrollCount(organisationId);
+    const response = await payrollStore.fetchOrganisationPayrollCount(organisationId, null);
     const successResponse = handleSuccess(response);
 
     if (successResponse && typeof successResponse !== "undefined") {
       payrollData.value = successResponse.data.data;
-      cache("organisation_payroll_count", successResponse.data.data);
+      // cache("organisation_payroll_count", successResponse.data.data);
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const fetchPendingPayrollCount = async () => {
+  loading.value = true;
+  try {
+    const response = await payrollStore.fetchOrganisationPayrollCount(organisationId, "Pending");
+    const successResponse = handleSuccess(response);
+
+    if (successResponse && typeof successResponse !== "undefined") {
+      pendingData.value = successResponse.data.data;
+      // cache("organisation_payroll_count", successResponse.data.data);
     }
   } catch (error) {
     console.error(error);
@@ -230,8 +248,7 @@ const fetchOrganisationPayrollCount = async () => {
 };
 
 fetchOrganisationPayrollCount(); 
-
-// fetchPayroll();
+fetchPendingPayrollCount();
 
 // fetchDraft();
 fetchDraftPayrollCount();
@@ -451,7 +468,7 @@ fetchDraftPayrollCount();
           <template v-slot:icon>
             <IMemory />
           </template>
-          <template v-slot:other-informations>0</template>
+          <template v-slot:other-informations>{{ pendingData }}</template>
         </Card>
       </router-link>
       <router-link to="/dashboard/payroll/drafts">

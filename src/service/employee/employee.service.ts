@@ -207,16 +207,28 @@ class Employee {
     });
 }
 
+  // async delete(id: string): Promise<any> {
+  //   return await this.request
+  //     .delete(`/employee/${id}`, {
+  //       headers: authHeader(),
+  //     })
+  //     .then((res) => {
+  //       return res;
+  //     })
+  //     .catch((err) => {
+  //       return err;
+  //     });
+  // }
   async delete(id: string): Promise<any> {
-    return await this.request
-      .delete(`/employee/${id}`, {
-        headers: authHeader(),
+    const customRequest = this.createAxiosInstance();
+    return await customRequest
+      .delete(`/Invite/delete/${id}`, {
+        headers: authhHeader(),
       })
-      .then((res) => {
-        return res;
-      })
+      .then((res) => res)
       .catch((err) => {
-        return err;
+        console.error("Error removing employee:", err);
+        throw err; 
       });
   }
   async deleteEmployee(employeeId: string, organisationId: number): Promise<any> {

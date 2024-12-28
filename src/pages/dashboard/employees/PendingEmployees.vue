@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref } from "vue";
+import { inject, ref } from "vue";
 import successAlert from "../../../components/alerts/SuccessAlert.vue";
 import confirmAlert from "../../../components/alerts/ConfirmAlert.vue";
 import spinner from "../../../components/timer/Spinner.vue";
@@ -33,6 +33,7 @@ const totalPages = ref(1);
 const pageSize = ref(10);  // Make sure this is set to the page size used in the API
 const totalItems = ref(0);
 
+const render = inject<any>("render");
 
 // emit
 // const emit = defineEmits<{ (e: "refetchEmployee"): void }>();
@@ -73,27 +74,28 @@ const capitalizeName = (name: string) => {
 const fetchAllEmployees = async (page = 1) => {
   loading.value = true;
 
-  const totalPendingEmployeeAllCached = cache("total_pending_all_employees");
-  // console.log(totalPendingEmployeeCached);
+  // const totalPendingEmployeeAllCached = cache("total_pending_all_employees");
+  // // console.log(totalPendingEmployeeCached);
 
-  if (typeof totalPendingEmployeeAllCached !== "undefined") {
+  // if (typeof totalPendingEmployeeAllCached !== "undefined") {
     
-    responseData.value.data = totalPendingEmployeeAllCached;
-    loading.value = false;
-  }
+  //   responseData.value.data = totalPendingEmployeeAllCached;
+  //   loading.value = false;
+  // }
 
   const response = await request(employeeStore.pendingInvitationIndex(10, page), loading);
 
   console.log("........",  responseData.value.data);
 
   const successResponse = handleSuccess(response);
+  console.log("....0000....",  response);
 
   if (successResponse && typeof successResponse !== "undefined") {
     responseData.value.data = successResponse.data.data.pageItems;
     currentPage.value = successResponse.data.data.currentPage;
     totalPages.value = successResponse.data.data.numberOfPages;
     totalItems.value = successResponse.data.data.pageSize * totalPages.value; 
-    cache("total_pending_all_employees", successResponse.data.data.pageItems);
+    // cache("total_pending_all_employees", successResponse.data.data.pageItems);
     console.log("Pending TABLE",successResponse.data);
   }
 };
@@ -103,25 +105,43 @@ const updatePage = (page: number) => {
 }
 // fetchEmployees();
 
+// const removeEmployee = async (id: string) => {
+//   // console.log("removeEmployee hit");
+//   loading.value = true;
+
+//   const response = await request(employeeStore.delete(id), loading);
+//   handleError(response, userStore);
+//   const successResponse = handleSuccess(response, showSuccess);
+
+//   if (typeof successResponse !== "undefined") {
+//     responseData.value = responseData.value.filter((data: any) => {
+//       return data.id !== id;
+//     });
+//     successMessage.value = `Employee with id '${id}' was successfully deleted`;
+//     emit("refetchEmployee");
+//   }
+// };
+
 const removeEmployee = async (id: string) => {
-  // console.log("removeEmployee hit");
-  loading.value = true;
+  // loading.value = true;
 
-  const response = await request(employeeStore.delete(id), loading);
-  handleError(response, userStore);
-  const successResponse = handleSuccess(response, showSuccess);
-
-  if (typeof successResponse !== "undefined") {
-    responseData.value = responseData.value.filter((data: any) => {
-      return data.id !== id;
-    });
-    successMessage.value = `Employee with id '${id}' was successfully deleted`;
-    emit("refetchEmployee");
-  }
+  try {
+    const response = await employeeStore.delete(id);
+    if (response) {
+      responseData.value.data = responseData.value.data.filter((data: any) => data.id !== id);
+      showSuccess.value = true;
+      successMessage.value = `Employee was successfully deleted`;
+        setTimeout(() => {
+        render.value = true; 
+    }, 2000);
+    }
+  } catch (error) {
+    handleError(error, "Error deleting employee");
+  } 
 };
 
 const confirmRemoveEmployee = (id: string) => {
-  confirmMessage.value.message = `Do you really  want to delete employee with id '${id}' `;
+  confirmMessage.value.message = `Do you really want to delete this employee?`;
   confirmMessage.value.id = id;
   showConfirm.value = true;
 };
@@ -236,6 +256,7 @@ const copyLink = (link:string) => {
                 v-if="responseData && responseData.data[0]"
                 class="bg-white divide-y divide-grey-200"
               >
+              <!-- v-for="employee in responseData.data.filter((emp: null) => emp !== null)" -->
                 <tr
                   v-for="employee in responseData.data"
                   :key="employee.id"
@@ -309,7 +330,7 @@ const copyLink = (link:string) => {
                       </button>
                       <button
                         @click="confirmRemoveEmployee(employee.id)"
-                        :disabled="true"
+                        :disabled="false"
                         class="text-red bg-red-light text-sm text-bold px-4+1 py-2 rounded-full"
                       >
                         Remove Employee
