@@ -677,7 +677,7 @@ const checkTable = (index:number, key:string) => {
         >
         + Create Department
         </button>
-        <button
+        <!-- <button
         @click="
         router.push({
           name: 'dashboard.employees.multiple',
@@ -686,7 +686,7 @@ const checkTable = (index:number, key:string) => {
           class="bg-[#003b3d] text-white px-4+1 py-2.5+1 rounded-full text-sm"
         >
         + Invite Multiple Users
-        </button>
+        </button> -->
         <!-- <button
           v-if="isActiveRoute('dashboard.employees.departments')"
           @click="isCreateDepartment = !isCreateDepartment"

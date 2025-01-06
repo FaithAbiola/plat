@@ -88,11 +88,11 @@ console.log("Organisation ID:", organisationId);
 const fetchGroups = async (page = 1) => {
   loading.value = true;
 
-  const departmentData = cache("departments");
-  if (typeof departmentData !== "undefined") {
-    responseData.value.data = departmentData;
-    loading.value = false;
-  }
+  // const departmentData = cache("departments");
+  // if (typeof departmentData !== "undefined") {
+  //   responseData.value.data = departmentData;
+  //   loading.value = false;
+  // }
 
   const response = await request(groupStore.index(organisationId, 10, page), loading);
   const successResponse = handleSuccess(response);

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, provide, reactive, onMounted } from "vue";
+import { ref, provide, reactive, onMounted, inject } from "vue";
 import successAlert from "../../../components/alerts/SuccessAlert.vue";
 import spinner from "../../../components/timer/Spinner.vue";
 import {
@@ -17,6 +17,7 @@ import { getItem } from "../../../core/utils/storage.helper";
 
 // initialize router
 const router = useRouter();
+const render = inject<any>("render");
 
 // initialize store
 const payrollStore = usePayrollStore();
@@ -146,6 +147,7 @@ const submitPayroll = async () => {
 };
 const navigateToCreateNew = () => {
   router.push({ name: "dashboard.payroll.add" });
+  render.value = true;
 };
 
 onMounted(() => {

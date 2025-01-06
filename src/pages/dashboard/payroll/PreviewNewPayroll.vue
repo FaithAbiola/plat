@@ -271,7 +271,7 @@ const handleNetSave = (netPayData: { amount: number }) => {
       <div class="space-y-6">
         <div class="flex justify-between">
             <div class="flex space-x-5">
-                <div class="pt-1">
+                <div class="pt-1" @click="router.back()">
                   <IArrowLeftTail />
                 </div>
                 <div>
