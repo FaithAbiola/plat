@@ -149,8 +149,15 @@ const uploadCsv = async () => {
     }
 
     try {
-      const response = await payrollStore.uploadPayrollCsv(file, organisationId, scheduledMonth.value);
+      const response: any = await payrollStore.uploadPayrollCsv(file, organisationId, scheduledMonth.value);
       console.log('CSV uploaded successfully:', response);
+
+      if (response && response.succeeded) {
+      const payrollId = response.data.payrollId; 
+      await fetchOrganisationPayrollCount();
+      console.log("----", payrollId)
+      router.push({ name: 'dashboard.payroll.confirm', query: { payrollId } });
+    }
       showModal.value = false;
       showSuccess.value = true;
       successMessage.value = 'CSV imported successfully!';

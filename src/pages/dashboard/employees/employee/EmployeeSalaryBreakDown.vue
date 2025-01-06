@@ -22,6 +22,7 @@ import {
   useEmployeeStore,
   useUserStore,
   useWalletStore,
+  usePayrollStore
 } from "../../../../store/index";
 import {
   stringValidate,
@@ -39,6 +40,7 @@ const route = useRoute();
 
 // initialize store
 const employeeStore = useEmployeeStore();
+const payrollStore = usePayrollStore();
 const userStore = useUserStore();
 const walletStore = useWalletStore();
 
@@ -98,6 +100,8 @@ const showSuccess = ref(false);
 
 const errorResponse = ref("");
 const responseData = ref<any>({ data: null, message: "" });
+const salaryData = ref<any>({ data: null, message: "" });
+
 
 // provide and inject
 provide("showDepartment", showDepartment);
@@ -150,6 +154,10 @@ const validatePhone = () => {
   return valid.value;
 };
 
+const capitalizeFirstLetter = (name: string | null) => {
+  if (!name) return "";
+  return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+};
 // const saveChanges = async () => {
 //   // check if form is formattted correctly
 //   const isFormCorrect = await v$.value.$validate();
@@ -244,7 +252,40 @@ const validatePhone = () => {
 //   }
 // };
 
-// getProfile();
+const getProfile = async () => {
+  console.log(employeeId.value);
+  const response = await request(
+    employeeStore.show(employeeId.value, organisationId),
+    fetchLoading
+  );
+  const successResponse = handleSuccess(response);
+
+  if (successResponse && typeof successResponse !== "undefined") {
+    const employeeData = successResponse.data.data.employee;
+    console.log("*****", employeeData);
+    data.value.firstname = capitalizeFirstLetter(employeeData.user.firstname);
+    data.value.lastname = capitalizeFirstLetter(employeeData.user.lastname);
+    responseData.value.data = successResponse.data;
+
+    emit(
+      "setSingleEmployeeName",
+      `${data.value.firstname} ${data.value.lastname}`
+    );
+  } else {
+    errorResponse.value = response.data.data.message;
+  }
+};
+const fetchSalaryBreakdown = async () => {
+    try {
+        const response = await payrollStore.getSalaryBreakdown(Number(employeeId.value));
+        salaryData.value = response.data.data;
+    } catch (error) {
+        console.error("Error fetching salary breakdown:", error);
+    }
+};
+
+fetchSalaryBreakdown();
+getProfile();
 // fetchBank();
 // validations rule
 const rules = computed(() => {
@@ -344,10 +385,11 @@ defineExpose({
   <div class="pt-6 pb-24 lg:px-16+2" v-else>
     <div class="mx-auto lg:w-[500px] space-y-18">
       <div class="space-y-9 lg:px-[30px] px-[20px]" id="element-to-print">
-        <!-- <div v-if="responseData.data"> -->
-        <div>
+        <div v-if="salaryData.data">
+        <!-- <div> -->
           <!-- <h3 class="text-black-rgba text-2xl font-black">NGN {{ formatNumber(responseData.data.data.grade.salary) }}</h3> -->
           <h3 class="text-black-rgba text-2xl font-black">NGN 1,500,000</h3>
+          <!-- <span class="text-sm text-gray-rgba-3">NGN{{ salaryData.grossPay }}</span> -->
           <span class="text-sm text-gray-rgba-3">Gross Salary</span>
         </div>
 
@@ -355,41 +397,41 @@ defineExpose({
           <div class="text-base flex items-center justify-between py-4">
             <span class="font-semi-medium text-gray-rgba-3">Basic/Net</span>
             <!-- <span class="text-black-100 font-semi-medium">N{{ formatNumber(responseData.data.data.grade.salary) }}</span> -->
-            <span class="text-black-100 font-semi-medium">N 990,000.32</span>
-            <!-- <span class="text-black-100 font-semi-medium">n/a</span> -->
+            <!-- <span class="text-black-100 font-semi-medium">N{{ salaryData.netPay }}</span> -->
+            <span class="text-black-100 font-semi-medium">N24,500</span>
             <!-- <span class="text-black-100 font-semi-medium">n/a</span> -->
           </div>
           <div class="text-base flex items-center justify-between py-4">
             <span class="font-semi-medium text-gray-rgba-3">Pension</span>
             <!-- <span class="text-black-100 font-semi-medium">N{{ formatNumber(grandTotal.bonus) }}</span> -->
-            <span class="text-black-100 font-semi-medium">N19,000</span>
-            <!-- <span class="text-black-100 font-semi-medium">n/a</span> -->
+            <!-- <span class="text-black-100 font-semi-medium">N19,000</span> -->
+            <span class="text-black-100 font-semi-medium">N/A</span>
           </div>
           <div class="text-base flex items-center justify-between py-4">
             <span class="font-semi-medium text-gray-rgba-3">Health</span>
             <!-- <span class="text-black-100 font-semi-medium">N{{ formatNumber(responseData.data.data.grade.salary) }}</span> -->
-            <span class="text-black-100 font-semi-medium">N32,000</span>
-            <!-- <span class="text-black-100 font-semi-medium">n/a</span> -->
+            <!-- <span class="text-black-100 font-semi-medium">N32,000</span> -->
+            <span class="text-black-100 font-semi-medium">N/A</span>
             <!-- <span class="text-black-100 font-semi-medium">n/a</span> -->
           </div>
           <div class="text-base flex items-center justify-between py-4">
             <span class="font-semi-medium text-gray-rgba-3">Housing</span>
             <!-- <span class="text-black-100 font-semi-medium">N{{ formatNumber(responseData.data.data.grade.salary) }}</span> -->
-            <span class="text-black-100 font-semi-medium">N24,000</span>
-            <!-- <span class="text-black-100 font-semi-medium">n/a</span> -->
+            <!-- <span class="text-black-100 font-semi-medium">N24,000</span> -->
+            <span class="text-black-100 font-semi-medium">N/A</span>
             <!-- <span class="text-black-100 font-semi-medium">n/a</span> -->
           </div>
           <div class="text-base flex items-center justify-between py-4">
             <span class="font-semi-medium text-gray-rgba-3">Transport</span>
             <!-- <span class="text-black-100 font-semi-medium">N{{ formatNumber(grandTotal.deductions) }}</span> -->
-            <span class="text-black-100 font-semi-medium">N16,800</span>
-            <!-- <span class="text-black-100 font-semi-medium">n/a</span> -->
+            <!-- <span class="text-black-100 font-semi-medium">N16,800</span> -->
+            <span class="text-black-100 font-semi-medium">N/A</span>
           </div>
           <div class="text-base flex items-center justify-between py-4">
             <span class="font-semi-medium text-gray-rgba-3">Tax</span>
             <!-- <span class="text-black-100 font-semi-medium">N{{ formatNumber(grandTotal.tax) }}</span> -->
-            <span class="text-black-100 font-semi-medium">N150,000</span>
-            <!-- <span class="text-black-100 font-semi-medium">n/a</span> -->
+            <!-- <span class="text-black-100 font-semi-medium">{{ salaryData.taxAmount }}</span> -->
+            <span class="text-black-100 font-semi-medium">N500</span>
           </div>
         </div>
       </div>

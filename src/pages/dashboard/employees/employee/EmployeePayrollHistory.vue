@@ -256,14 +256,14 @@ defineExpose({
 
 const exportToPDF = () => {
   slip.value = {
-        name: "Praise Patrick",
-        narration: "January Payslip",
-        paymentDate: "12/09/2024",
-        grossPay: 200000,
-        bonus: 0,
-        deductions: 0,
-        tax: 10000,
-        netPay: 198000,
+        name: "Adebayoowa Temifayowa",
+        narration: "October Payslip",
+        paymentDate: "20/08/2024",
+        grossPay: 0,
+        bonus: 30000,
+        deductions: 5000,
+        tax: 500,
+        netPay: 24500,
     };
     var element = document.getElementById('element-to-print');
     var opt = {
@@ -277,21 +277,6 @@ const exportToPDF = () => {
     };
     html2pdf().set(opt).from(element).save(`${slip.value.name}-${slip.value.paymentDate}`);
     // html2pdf().set(opt).from(element).save(`${responseData.value.data.data.firstname+' '+responseData.value.data.data.lastname+slip.value.narration}-${slip.value.paymentDate}`);
-}
-
-const slipInfo = (item:any) => {
-  slip.value = {
-    name: responseData.value.data.data.firstname+' '+responseData.value.data.data.lastname,
-    narration: item.narration,
-    paymentDate: item.payroll ? dateFormat(item.payroll.created_at) : '--/--/---- --:-- --',
-    grossPay: item.meta ? formatNumber(item.meta.salary.gross) : 0,
-    bonus: item.meta ? formatNumber(item.meta.breakdown.bonus) : 0,
-    deductions: item.meta ? formatNumber(item.meta.breakdown.deductions) : 0,
-    tax: item.meta ? formatNumber(item.meta.breakdown.tax) : 0,
-    netPay: item.meta ? formatNumber(item.meta.salary.total) : 0,
-  }
-
-  exportToPDF();
 }
 
 const getProfile = async () => {
@@ -336,6 +321,72 @@ const fetchPayrollHistory = async () => {
         console.error("User ID is not available.");
     }
 };
+
+const downloadPayslip = async () => {
+    const startDate = "2025-01-06T07:58:29.599Z"; 
+    const endDate = "2025-01-06T07:58:29.599Z"; 
+    try {
+        const payslipData = await payrollStore.generatePayslip(Number(employeeId.value), organisationId, startDate, endDate);
+
+        console.log("Payslip generated successfully:", payslipData);
+    } catch (error) {
+        console.error("Error generating payslip:", error);
+    }
+};
+
+// const slipInfo = (item:any) => {
+//   slip.value = {
+//     name: responseData.value.data.data.firstname+' '+responseData.value.data.data.lastname,
+//     narration: item.narration,
+//     paymentDate: item.payroll ? dateFormat(item.payroll.created_at) : '--/--/---- --:-- --',
+//     grossPay: item.meta ? formatNumber(item.meta.salary.gross) : 0,
+//     bonus: item.meta ? formatNumber(item.meta.breakdown.bonus) : 0,
+//     deductions: item.meta ? formatNumber(item.meta.breakdown.deductions) : 0,
+//     tax: item.meta ? formatNumber(item.meta.breakdown.tax) : 0,
+//     netPay: item.meta ? formatNumber(item.meta.salary.total) : 0,
+//   }
+
+//   exportToPDF();
+// }
+const slipInfoo = (item:any) => {
+  slip.value = {
+    name: responseData.value.data.data.firstname+' '+responseData.value.data.data.lastname,
+    narration: item.narration,
+    paymentDate: item.payroll ? dateFormat(item.payroll.created_at) : '--/--/---- --:-- --',
+    grossPay: item.meta ? formatNumber(item.meta.salary.gross) : 0,
+    bonus: item.meta ? formatNumber(item.meta.breakdown.bonus) : 0,
+    deductions: item.meta ? formatNumber(item.meta.breakdown.deductions) : 0,
+    tax: item.meta ? formatNumber(item.meta.breakdown.tax) : 0,
+    netPay: item.meta ? formatNumber(item.meta.salary.total) : 0,
+  }
+
+  exportToPDF();
+}
+
+const slipInfo = async (item: any) => {
+    const startDate = "2025-01-06T07:58:29.599Z";
+    const endDate = "2025-01-06T07:58:29.599Z";
+
+    try {
+        const payslipData = await payrollStore.generatePayslip(Number(employeeId.value), organisationId, startDate, endDate);
+
+        slip.value = {
+            name: payslipData.data.firstname + ' ' + payslipData.data.lastname, 
+            narration: item.narration,
+            paymentDate: payslipData.data.paymentDate || '--/--/---- --:-- --', 
+            grossPay: formatNumber(payslipData.data.salary.gross || 0), 
+            bonus: formatNumber(payslipData.data.breakdown.bonus || 0), 
+            deductions: formatNumber(payslipData.data.breakdown.deductions || 0), 
+            tax: formatNumber(payslipData.data.breakdown.tax || 0), 
+            netPay: formatNumber(payslipData.data.salary.total || 0) 
+        };
+
+        exportToPDF();
+    } catch (error) {
+        console.error("Error generating payslip:", error);
+    }
+};
+
 
 getProfile();
 
@@ -428,6 +479,10 @@ const router = useRouter()
               </td>
               <td class="py-4 px-8 text-left whitespace-nowrap w-[18%]">
                 <div class="flex items-center justify-between">
+                  <!-- <button @click="slipInfo(item)"
+                  class="text-[#003b3d] bg-red-light text-sm text-bold px-4+1 py-2 rounded-full">
+                  Download Payslip
+                </button> -->
                   <button @click="exportToPDF"
                     class="text-[#003b3d] bg-red-light text-sm text-bold px-4+1 py-2 rounded-full">
                     Download Payslip
@@ -498,9 +553,9 @@ const router = useRouter()
           <div class="flex justify-between items-center pb-4 mb-4">
             <img src="/images/png/logo.png" alt="logo" class="h-12">
             <div class="text-left text-sm">
-              <p class="font-bold">Platoon.co</p>
-              <p>132 Westwood, Ajah</p>
-              <p>Lagos</p>
+              <p class="font-bold">String-Land</p>
+              <p>P20a Alakinde Street, Osogbo</p>
+              <p>Osun</p>
             </div>
           </div>
       
@@ -516,10 +571,10 @@ const router = useRouter()
               <p class="font-semibold py-1">Pay Date</p>
             </div>
             <div class="text-left">
-              <p class="py-1">Praise Patrick</p>
+              <p class="py-1">Adebayoowa Temifayowa</p>
               <p class="py-1">Full Time</p>
-              <p class="py-1">January</p>
-              <p class="py-1">12/09/2024</p>
+              <p class="py-1">October</p>
+              <p class="py-1">20/08/2024</p>
             </div>
           </div>
       
@@ -537,16 +592,16 @@ const router = useRouter()
               <p class="py-2">Pension</p>
             </div>
             <div class="text-left">
-              <p class="py-2">₦200,000</p>
-              <p class="py-2">₦0.00</p>
-              <p class="py-2">₦0.00</p>
-              <p class="py-2">₦10,000</p>
-              <p class="py-2">₦10,000</p>
+              <p class="py-2">₦0</p>
+              <p class="py-2">₦30,000</p>
+              <p class="py-2">₦5,000</p>
+              <p class="py-2">₦500</p>
+              <p class="py-2">₦0</p>
             </div>
           </div>
           <div class="flex justify-between mx-5 px-3 py-2 mb-4 font-semibold bg-white-smoke">
             <span>Net Pay</span>
-            <span>₦198,000</span>
+            <span>₦24,500</span>
           </div>
           <!-- Payment Details -->
           <!-- <div class="bg-gray-200 px-8 py-4 mb-4 text-left">
@@ -583,7 +638,7 @@ const router = useRouter()
           <!-- Account Details -->
           <div class="px-8 mb-4 mt-5">
             <h3 class="font-bold">Account Details</h3>
-            <p>Account Name: Praise Namudi</p>
+            <p>Account Name: Adebayoowa Temifayowa</p>
             <p>Account Number: 1234567890</p>
             <p>Bank Name: Opay</p>
           </div>

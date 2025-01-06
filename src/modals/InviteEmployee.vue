@@ -12,6 +12,7 @@ import { stringValidate, numberValidate } from "../validations/validate";
 import { storeItem, getItem } from "../core/utils/storage.helper";
 import useVuelidate from "@vuelidate/core";
 import Departments from "../components/dropdowns/department.vue";
+import CountryCode from "../components/dropdowns/countryCode.vue";
 import { required, email, helpers } from "@vuelidate/validators";
 import Grade from "../components/dropdowns/grades.vue";
 // store initializaion
@@ -56,6 +57,8 @@ const data = ref<{
 
 const departmentName = ref("");
 const showDepartment = ref(false);
+const countryCodeName = ref("");
+const showCountryCode = ref(false); 
 const gradeName = ref("");
 const showGrade = ref(false);
 const showSuccess = ref(false);
@@ -68,6 +71,8 @@ provide("showDepartment", showDepartment);
 provide("selectedDepartment", [data, departmentName]);
 provide("showGrade", showGrade);
 provide("selectedGrade", [data, gradeName]);
+provide("showCountryCode", showCountryCode); 
+provide("selectedCountryCode", [data, countryCodeName]);
 const render = inject<any>("render");
 
 // methods
@@ -313,12 +318,18 @@ const v$ = useVuelidate(rules as any, data);
 
               <div class="flex space-x-2">
                 <div class="font-normal text-left rounded-xl px-4 h-[48px] w-[25%] relative border border-grey-300">
+                  <div class="flex justify-between items-center h-full">
                   <input
                     type="text"
-                    v-model="data.countryCode"
-                    placeholder="Mobile"
+                    v-model="countryCodeName"
+                    placeholder="Code"
+                    @click="showCountryCode = !showCountryCode"
                     class="rounded-lg w-full placeholder-strong text-black text-sm outline-none border-none h-full focus:outline-none focus:border-none"
                   />
+                  <span>
+                    <IArrowDown @click="showCountryCode = !showCountryCode" />
+                  </span>
+                </div>
                 </div>
                 <div class="font-normal text-left rounded-xl px-4 h-[48px] w-[75%] relative border border-grey-300">
                   <input
@@ -329,6 +340,16 @@ const v$ = useVuelidate(rules as any, data);
                   />
                 </div>
               </div>
+              <div
+              class="absolute z-50 h-56 right-0 shadow-lg scrollbar-hide overflow-auto top-15 w-full"
+              v-if="showCountryCode == true"
+            >
+              <div>
+                <component
+                  :is="CountryCode"
+                ></component>
+              </div>
+            </div>
              <!--  -->
             
              <!--  -->

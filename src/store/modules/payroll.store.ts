@@ -110,6 +110,34 @@ const payrollStore = defineStore("payroll", {
           return await Promise.reject(error);
       }
     },
+    async generatePayslip(employeeId: number, organisationId: number, startDate: string, endDate: string): Promise<any> {
+      try {
+          const response = await payrollService.generatePayslip(employeeId, organisationId, startDate, endDate);
+          if (response.data) {
+              return Promise.resolve(response.data);
+          } else if (response.response) {
+              return Promise.reject(response.response);
+          } else {
+              return Promise.reject(response.message);
+          }
+      } catch (error: any) {
+          return Promise.reject(error);
+      }
+  },  
+  async getSalaryBreakdown(employeeId: number): Promise<any> {
+    try {
+        const response = await payrollService.getSalaryBreakdown(employeeId);
+        if (response.data) {
+            return Promise.resolve(response);
+        } else if (response.response) {
+            return Promise.reject(response.response);
+        } else {
+            return Promise.reject(response.message);
+        }
+    } catch (error: any) {
+        return Promise.reject(error);
+    }
+},
     async draft(): Promise<any> {
       try {
         const response = await payrollService.draft();

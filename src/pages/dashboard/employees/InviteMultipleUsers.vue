@@ -29,7 +29,7 @@ const emit = defineEmits<{
 }>();
 // variables
 
-const departmentName = ref("");
+const departmentNames = ref(Array(5).fill("")); // Assuming there are 5 dropdowns
 const showDepartment = ref(false);
 const gradeName = ref("");
 const showGrade = ref(false);
@@ -41,6 +41,8 @@ const successMessage = ref("Action successful");
 const responseData = ref<any>({ data: [], message: "" });
 const valid = ref(false);
 const invalidDomain = ref(false);
+
+const numberOfUsers = 10;
 
 
 
@@ -67,13 +69,29 @@ const data = ref<{
   departmentId: null,
 });
 
+const dataList = ref(
+  Array.from({ length: numberOfUsers }, () => ({
+    name: "",
+    email: "",
+    phoneNumber: "",
+    countryCode: "",
+    employmentType: "",
+    gradeId: null,
+    departmentId: null,
+  }))
+);
+
 // inject and provide
 provide("showDepartment", showDepartment);
-provide("selectedDepartment", [data, departmentName]);
+provide("selectedDepartment", [data, departmentNames]);
 provide("showGrade", showGrade);
 provide("selectedGrade", [data, gradeName]);
 const render = inject<any>("render");
 // method
+
+const showDepartments = ref(Array(5).fill(false)); // Assuming there are 5 dropdowns
+const showGrades = ref(Array(5).fill(false)); // Assuming there are 5 dropdowns
+
 
 const { payrollId } = router.currentRoute.value.query;
 const parsedPayrollId = Number(payrollId);
@@ -101,7 +119,7 @@ const rules = computed(() => {
   };
 });
 
-const v$ = useVuelidate(rules as any, data);
+const v$ = useVuelidate(rules as any, dataList);
 
 </script>
 <template>
@@ -130,7 +148,7 @@ const v$ = useVuelidate(rules as any, data);
                 </div>
                 <!-- <div class="text-center text-sm text-gray-100 px-6">
                     Payroll payment for <span class="font-bold">{{ summaryData.executionMonth }}</span> was successful. Check the status of each transaction once completed.
-                </div> -->
+                </div> --> 
                 <ButtonBlue @click="navigateToCreateNew">
             <template v-slot:placeholder>
               <span>Done</span>
@@ -176,9 +194,9 @@ const v$ = useVuelidate(rules as any, data);
           <div class="">
             <div class="align-middle inline-block min-w-full">
               <div class="overflow-hidden sm:rounded-lg">
-                <template v-for="i in 5">
+                <template v-for="(data, index) in dataList" :key="index">
                   <div class="flex items-start gap-4 py-6 pl-6 pr-20">
-                    <span class="text-md font-normal">{{ i }}</span>
+                    <span class="text-md font-normal">{{ index + 1  }}</span>
                     <div class="grid lg:grid-cols-3 gap-4 w-full">
                     
                       <div
@@ -230,20 +248,20 @@ const v$ = useVuelidate(rules as any, data);
                     >
                       <div class="flex justify-between items-center h-full">
                         <input
-                          @click="showDepartment = !showDepartment"
+                           @click="showDepartments[index] = !showDepartments[index]"
                           type="text"
-                          v-model="departmentName"
+                         v-model="departmentNames[index]"
                           class="text-sm text-black w-full border-none outline-none focus:outline-none focus:border:none"
                           placeholder="Select department"
                         />
       
                         <span>
-                          <IArrowDown @click="showDepartment = !showDepartment" />
+                          <IArrowDown  @click="showDepartments[index] = !showDepartments[index]" />
                         </span>
                       </div>
                       <div
                         class="absolute z-50 h-56 right-0 shadow-lg scrollbar-hide overflow-auto top-15 w-full"
-                        v-if="showDepartment == true"
+                        v-if="showDepartments[index] == true"
                       >
                         <div>
                           <component
@@ -282,7 +300,7 @@ const v$ = useVuelidate(rules as any, data);
                   >
                     <div class="flex justify-between items-center h-full">
                       <input
-                        @click="showGrade = !showGrade"
+                        @click="showGrades[index] = !showGrades[index]"
                         type="text"
                         v-model="gradeName"
                         class="text-sm text-black w-full border-none outline-none focus:outline-none focus:border:none"
@@ -290,12 +308,12 @@ const v$ = useVuelidate(rules as any, data);
                       />
     
                       <span>
-                        <IArrowDown @click="showGrade = !showGrade" />
+                        <IArrowDown @click="showGrades[index] = !showGrades[index]" />
                       </span>
                     </div>
                     <div
                       class="absolute z-50 h-56 right-0 shadow-lg scrollbar-hide overflow-auto top-15 w-full"
-                      v-if="showGrade == true"
+                      v-if="showGrades[index] == true"
                     >
                       <div>
                         <component :is="Grade">

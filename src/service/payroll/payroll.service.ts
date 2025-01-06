@@ -78,6 +78,43 @@ class Payroll {
         return err;
     });
   }
+  async generatePayslip(employeeId: number, organisationId: number, startDate: string, endDate: string): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+    
+    const requestBody = {
+        employeeId,
+        organisationId,
+        startDate,
+        endDate
+    };
+
+    return await customRequest
+        .post('/Payslip/generate', requestBody, {
+            headers: authhHeader(),
+        })
+        .then((res) => {
+            return res;
+        })
+        .catch((err) => {
+            return err;
+        });
+}
+
+async getSalaryBreakdown(employeeId: number): Promise<any> {
+  const customRequest = this.createAxiosInstance();
+
+  return await customRequest
+      .get(`/salary-breakdown/${employeeId}`, {
+          headers: authHeader(),
+      })
+      .then((res) => {
+          return res;
+      })
+      .catch((err) => {
+          return err;
+      });
+}
+
 
   async getEmployeePayroll(organisationId: number, employeeId: number, pageSize: number = 10, pageNumber: number = 1): Promise<any> {
     const customRequest = this.createAxiosInstance();
