@@ -39,7 +39,7 @@ const userStore = defineStore("user", {
               lastName: response.data.data.organisation.user.lastname,
               email: response.data.data.organisation.user.email,
               phone: response.data.data.organisation.user.email,
-              wallet: response.data.data.organisation.wallet.balance,
+              // wallet: response.data.data.organisation.wallet.balance,
               organisationName: response.data.data.organisation.organisationName,
               organisationId: response.data.data.organisation.id,
             },

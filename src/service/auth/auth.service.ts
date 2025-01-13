@@ -89,19 +89,38 @@ class AuthService {
   //       return err;
   //     });
   // }
-  async updateProfile(data: Update): Promise<any> {
-    return await this.request
-      .post("/profile", data, { headers: authHeader() })
+  // async updateProfile(data: Update): Promise<any> {
+  //   return await this.request
+  //     .post("/profile", data, { headers: authHeader() })
+  //     .then((res) => {
+  //       // console.log(res);
+  //       return res;
+  //     })
+  //     .catch((err) => {
+  //       // console.log(err);
+  //       return err;
+  //     });
+  // }
+
+  async updateProfile(data: any): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+  
+    return await customRequest
+      .put("/Organisation/Update-Profile", data, {
+        headers: {
+          ...authhHeader(),
+          'Content-Type': 'application/json-patch+json',
+        },
+      })
       .then((res) => {
-        // console.log(res);
+        console.log("Update Profile Response:", res);
         return res;
       })
       .catch((err) => {
-        // console.log(err);
         return err;
       });
   }
-
+  
   // async login(data: Login): Promise<any> {
   //   return await this.request
   //     .post("/login", {
