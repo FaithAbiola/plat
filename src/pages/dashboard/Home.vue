@@ -149,7 +149,7 @@ const logout = async () => {
 
 
 const fetchUserDetails = async () => {
-  const userId = Number(localStorage.getItem('userId'));// Retrieve userId from storage
+  const userId = Number(localStorage.getItem('userId'));
    console.log("User ID:", userId); 
   if (userId) {
     const response = await request(userStore.show(userId)); 

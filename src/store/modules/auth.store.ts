@@ -110,7 +110,7 @@ const authStore = defineStore("auth", {
     
         if (response && response.data && response.data.data.token) {
           const token = response.data.data.token;
-          const userId = response.data.data.id; // Assuming you have an ID in the response
+          const userId = response.data.data.id; 
     
           storeItem(import.meta.env.VITE_ACCESSTOKEN, { rsa: token });
     
@@ -147,6 +147,24 @@ const authStore = defineStore("auth", {
         return await Promise.reject(error);
       }
     },
+ 
+    async updateProfile(data: any): Promise<any> {
+      try {
+        const response = await authService.updateProfile(data);
+    
+        if (response && response.data && response.data.succeeded) {
+          // Handle the success case
+          console.log(response.data.message); // Log success message
+    
+          // Optional: You can clear or refresh user details here if needed
+          return response; // Return the full response for further handling
+        } else {
+          return Promise.reject(response.data.message || "Update failed");
+        }
+      } catch (error: any) {
+        return Promise.reject(error);
+      }
+    },    
     
     // async userRegister(data: Register): Promise<any> {
     //   try {
@@ -327,21 +345,21 @@ const authStore = defineStore("auth", {
       }
     },
    
-    async updateProfile(data: Update): Promise<any> {
-      try {
-        const response = await authService.updateProfile(data);
+    // async updateProfile(data: Update): Promise<any> {
+    //   try {
+    //     const response = await authService.updateProfile(data);
 
-        if (response.data) {
-          return await Promise.resolve(response);
-        } else if (response.response) {
-          return await Promise.reject(response.response);
-        } else {
-          return await Promise.reject(response.message);
-        }
-      } catch (error: any) {
-        return await Promise.reject(error);
-      }
-    },
+    //     if (response.data) {
+    //       return await Promise.resolve(response);
+    //     } else if (response.response) {
+    //       return await Promise.reject(response.response);
+    //     } else {
+    //       return await Promise.reject(response.message);
+    //     }
+    //   } catch (error: any) {
+    //     return await Promise.reject(error);
+    //   }
+    // },
   },
 });
 
