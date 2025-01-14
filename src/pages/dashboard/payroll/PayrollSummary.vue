@@ -42,8 +42,15 @@ const dataObjj = reactive({
 const summaryData = ref({
   totalEmployees: "",
   totalSalaries: "",
+  totalGrossPay: "",
   executionDate: "", 
   executionMonth: "", 
+  processingFee: "", 
+  totalProcessingFee: "", 
+  totalDeductions: "",
+  totalBonus: "",
+  totalNetPay: "",
+  totalTaxAmount: "",
 
 });
 
@@ -98,6 +105,8 @@ const fetchPayrollSummary = async () => {
         organisationId,
         payrollId: parsedPayrollId
       });
+
+      console.log("RRRRRRR", response)
       if (response.succeeded) {
         payrollData.value = response.data;
         const scheduledDate = payrollData.value.pageItems.payroll.scheduledDate;
@@ -107,12 +116,19 @@ const fetchPayrollSummary = async () => {
         console.log("Formatted Execution Date:", formattedExecutionDate);
 
         summaryData.value = {
-          totalEmployees: payrollData.value.pageItems.totalEmployees,
-          totalSalaries: payrollData.value.pageItems.totalSalaries,
+          totalEmployees: payrollData.value.pageItems.payroll.totalEmployees,
+          totalSalaries: payrollData.value.pageItems.payroll.totalSalaries,
+          totalGrossPay: payrollData.value.pageItems.payroll.totalGrossPay,
+          processingFee: payrollData.value.pageItems.payroll.processingFee,
+          totalProcessingFee: payrollData.value.pageItems.payroll.totalProcessingFee,
           executionDate: formattedExecutionDate,
-          executionMonth: formattedExecutionMonthYear
+          executionMonth: formattedExecutionMonthYear,
+          totalDeductions: payrollData.value.pageItems.payroll.totalDeductions,
+          totalBonus: payrollData.value.pageItems.payroll.totalBonus,
+          totalNetPay: payrollData.value.pageItems.payroll.totalNetPay,
+          totalTaxAmount: payrollData.value.pageItems.payroll.totalTaxAmount,
         };
-        console.log(payrollData.value?.pageItems.totalEmployees )
+        console.log(payrollData.value?.pageItems.payroll.totalEmployees )
         console.log("-----", payrollData.value)
       } else {
         throw new Error(response.message);
@@ -312,7 +328,7 @@ onMounted(() => {
                         </td>
                         <td class="py-4 whitespace-nowrap">
                           <div class="text-left flex flex-col">
-                            <span class="text-sm font-semimedium">₦{{ summaryData.totalSalaries }}</span>
+                            <span class="text-sm font-semimedium">₦{{ summaryData.totalGrossPay }}</span>
                           </div>
                         </td>
                       </tr>
@@ -326,7 +342,7 @@ onMounted(() => {
                         </td>
                         <td class="py-4 whitespace-nowrap">
                           <div class="text-left flex flex-col">
-                            <span class="text-sm font-semimedium">₦5,000</span>
+                            <span class="text-sm font-semimedium">₦{{ summaryData.totalBonus }}</span>
                           </div>
                         </td>
                       </tr>
@@ -340,7 +356,7 @@ onMounted(() => {
                         </td>
                         <td class="py-4 whitespace-nowrap">
                           <div class="text-left flex flex-col">
-                            <span class="text-sm font-semimedium">₦2,300</span>
+                            <span class="text-sm font-semimedium">₦{{ summaryData.totalDeductions }}</span>
                           </div>
                         </td>
                       </tr>
@@ -354,7 +370,7 @@ onMounted(() => {
                         </td>
                         <td class="py-4 whitespace-nowrap">
                           <div class="text-left flex flex-col">
-                            <span class="text-sm font-semimedium">₦605,000</span>
+                            <span class="text-sm font-semimedium">₦{{ summaryData.totalTaxAmount }}</span>
                           </div>
                         </td>
                       </tr>
@@ -368,7 +384,7 @@ onMounted(() => {
                         </td>
                         <td class="py-4 whitespace-nowrap">
                           <div class="text-left flex flex-col">
-                            <span class="text-sm font-semimedium">₦800,000,000</span>
+                            <span class="text-sm font-semimedium">₦{{ summaryData.totalNetPay }}</span>
                           </div>
                         </td>
                       </tr>
@@ -396,7 +412,7 @@ onMounted(() => {
                         </td>
                         <td class="py-4 whitespace-nowrap">
                           <div class="text-left flex flex-col">
-                            <span class="text-sm font-semimedium">₦240,00</span>
+                            <span class="text-sm font-semimedium">₦{{ summaryData.processingFee }}</span>
                           </div>
                         </td>
                       </tr>
@@ -410,7 +426,7 @@ onMounted(() => {
                         </td>
                         <td class="py-4 whitespace-nowrap">
                           <div class="text-left flex flex-col">
-                            <span class="text-sm font-semimedium">₦405,00</span>
+                            <span class="text-sm font-semimedium">₦{{ summaryData.totalProcessingFee }}</span>
                           </div>
                         </td>
                       </tr>
