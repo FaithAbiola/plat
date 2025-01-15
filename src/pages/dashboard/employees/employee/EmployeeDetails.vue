@@ -269,14 +269,14 @@ const getProfile = async () => {
     data.value.email = employeeData.user.email;
     data.value.firstname = capitalizeFirstLetter(employeeData.user.firstname);
     data.value.lastname = capitalizeFirstLetter(employeeData.user.lastname);
-    data.value.gender = employeeData.user.gender.toLowerCase() === "male" ? "male" : "female";
+    data.value.gender = employeeData.user.gender && employeeData.user.gender.toLowerCase() === "male" ? "male" : "female"; 
     data.value.telephone = employeeData.user.phone.number;
     data.value.countryCode = getCountryCode(employeeData.user.phone.countryCode) || defaultCountryCode.value;   
     data.value.status = employeeData.isActive ? 'Active' : 'Inactive';     
     data.value.group_id = employeeData.department ? employeeData.department.id : '---';
     data.value.grade_id = employeeData.grade ? employeeData.grade.id : '---';
     gradeName.value = employeeData.grade ? employeeData.grade.name : '---';
-    departmentName.value = employeeData.department ? employeeData.department.name : '---';
+    departmentName.value = employeeData.department ? employeeData.department.departmentName : '---';
     data.value.account_details.bank = employeeData.bank_data?.bank ?? '---';
     data.value.account_details.account_name = employeeData.bank_data?.account_name ?? '---';
     data.value.account_details.account_number = employeeData.bank_data?.account_number || '';
