@@ -33,6 +33,8 @@ const userStore = defineStore("user", {
         const response = await userService.show(userId);
         if (response && response.data && response.data.data) {
           console.log("_____\\\\\\\\_____",response.data.data.organisation.user.email);
+          console.log("_____----_____",response.data.data);
+
           const data = JSON.stringify({
             customerInfo: {
               firstName: response.data.data.organisation.user.firstname,
@@ -42,6 +44,8 @@ const userStore = defineStore("user", {
               // wallet: response.data.data.organisation.wallet.balance,
               organisationName: response.data.data.organisation.organisationName,
               organisationId: response.data.data.organisation.id,
+              userId: response.data.data.organisation.userId,
+
             },
           });
           storeItem(import.meta.env.VITE_USERDETAILS, data);
@@ -99,6 +103,22 @@ const userStore = defineStore("user", {
         return await Promise.reject(error);
       }
     },  
+
+    async getNotifications(userId: number, pageSize: number, pageNumber: number): Promise<any> {
+      try {
+        const response = await userService.getNotifications(userId, pageSize, pageNumber);
+        if (response.data) {
+          return await Promise.resolve(response);
+        } else if (response.response) {
+          return await Promise.reject(response.response);
+        } else {
+          return await Promise.reject(response.message);
+        }
+      } catch (error: any) {
+        return await Promise.reject(error);
+      }
+    },
+
     async getUserRole(userId: number): Promise<any> {
       try {
           const response = await userService.getUserRoleById(userId);
@@ -131,6 +151,7 @@ const userStore = defineStore("user", {
     async assignRole(userId: number, roleId: number): Promise<any> {
       try {
         const response = await userService.assignRole({ userId, roleId });
+        console.log("Responseeeeeeee:", response);
         if (response.data) {
           return await Promise.resolve(response.data);
         } else if (response.response) {

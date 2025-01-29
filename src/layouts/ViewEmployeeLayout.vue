@@ -177,7 +177,7 @@ const confirmRemoveEmployee = () => {
           class="flex items-center justify-between py-8 overflow-auto scrollbar-hide lg:space-x-0 space-x-4"
         >
           <div class="flex items-start space-x-5-1">
-            <button @click="router.back()">
+            <button @click="router.push('/dashboard/employees')">
               <IArrowLeftTail />
             </button>
             <div>

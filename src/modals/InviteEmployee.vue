@@ -13,6 +13,7 @@ import { storeItem, getItem } from "../core/utils/storage.helper";
 import useVuelidate from "@vuelidate/core";
 import Departments from "../components/dropdowns/department.vue";
 import CountryCode from "../components/dropdowns/countryCode.vue";
+import EmploymentType from "../components/dropdowns/employmentType.vue";
 import { required, email, helpers } from "@vuelidate/validators";
 import Grade from "../components/dropdowns/grades.vue";
 // store initializaion
@@ -59,6 +60,8 @@ const departmentName = ref("");
 const showDepartment = ref(false);
 const countryCodeName = ref("");
 const showCountryCode = ref(false); 
+const employmentTypeName = ref("");
+const showEmploymentType = ref(false); 
 const gradeName = ref("");
 const showGrade = ref(false);
 const showSuccess = ref(false);
@@ -73,6 +76,8 @@ provide("showGrade", showGrade);
 provide("selectedGrade", [data, gradeName]);
 provide("showCountryCode", showCountryCode); 
 provide("selectedCountryCode", [data, countryCodeName]);
+provide("showEmploymentType", showEmploymentType); 
+provide("selectedEmploymentType", [data, employmentTypeName]);
 const render = inject<any>("render");
 
 // methods
@@ -196,10 +201,10 @@ const rules = computed(() => {
     //   required: helpers.withMessage("Notes is required", required),
     // },
 
-    // telephone: {
-    //   required: helpers.withMessage("Telephone is required", required),
-    //   validatePhone: helpers.withMessage("Invalid Phone Number", validatePhone),
-    // },
+    phoneNumber: {
+      required: helpers.withMessage("Phone Number is required", required),
+      // validatePhone: helpers.withMessage("Invalid Phone Number", validatePhone),
+    },
   };
 });
 
@@ -265,7 +270,7 @@ const v$ = useVuelidate(rules as any, data);
                 <p
                   class="absolute -top-2 font-normal text-xs left-5 text-[#000000] bg-white"
                 >
-                  Full name
+                  Full name <span class="text-red">*</span>
                 </p>
                 <div class="flex justify-between items-center h-full w-full">
                   <input
@@ -283,10 +288,15 @@ const v$ = useVuelidate(rules as any, data);
 
               <!--  -->
 
-              <div>
                 <div
                   class="font-normal text-left rounded-xl px-4 h-[48px] relative border border-grey-300"
                 >
+                <p
+                  class="absolute -top-2 font-normal text-xs left-5 text-[#000000] bg-white"
+                >
+                  Email <span class="text-red">*</span>
+                </p>
+                <div class="flex justify-between items-center h-full w-full">
                   <input
                     required
                     type="email"
@@ -333,11 +343,15 @@ const v$ = useVuelidate(rules as any, data);
                 </div>
                 <div class="font-normal text-left rounded-xl px-4 h-[48px] w-[75%] relative border border-grey-300">
                   <input
+                    required
                     type="text"
                     v-model="data.phoneNumber"
                     placeholder="Employee phone number"
                     class="w-full rounded-lg placeholder-strong text-black text-sm outline-none border-none h-full focus:outline-none focus:border-none"
                   />
+                  <div v-if="v$.phoneNumber.$error" class="!text-red-100 text-xs">
+                    {{ "* " + v$.phoneNumber.$errors[0].$message }}
+                  </div>
                 </div>
               </div>
               <div
@@ -401,7 +415,7 @@ const v$ = useVuelidate(rules as any, data);
             </div> -->
 
               <!--  -->
-              <div
+              <!-- <div
               class="font-normal text-left rounded-xl px-4 h-[48px] relative border border-grey-300"
             >
               <input
@@ -411,7 +425,38 @@ const v$ = useVuelidate(rules as any, data);
                 class="w-full rounded-lg placeholder-strong text-black text-sm outline-none border-none h-full focus:outline-none focus:border-none \"
                 placeholder="Select employment type"
               />
-            </div>
+            </div> -->
+            <div
+                class="font-normal relative w-auto text-left rounded-xl px-4 h-[48px] text-gray-rgba-3 border text-black"
+              >
+                <div class="flex justify-between items-center h-full">
+                  <input
+                    @click="showEmploymentType = !showEmploymentType"
+                    type="text"
+                    v-model="employmentTypeName"
+                    class="text-sm text-black w-full border-none outline-none focus:outline-none focus:border:none"
+                    placeholder="Select employment type"
+                  />
+
+                  <span>
+                    <IArrowDown @click="showEmploymentType = !showEmploymentType" />
+                  </span>
+                </div>
+                <div
+                  class="absolute z-50 h-56 right-0 shadow-lg scrollbar-hide overflow-auto top-15 w-full"
+                  v-if="showEmploymentType == true"
+                >
+                  <div>
+                    <component
+                      :is="EmploymentType"
+                    ></component>
+                  </div>
+                </div>
+<!-- 
+                <div v-if="v$.department.$error" class="!text-red-100 text-xs">
+                  {{ "* " + v$.department.$errors[0].$message }}
+                </div> -->
+              </div>
              <!-- <div
                 class="font-normal relative w-auto text-left rounded-xl px-4 h-[48px] text-gray-rgba-3 border text-black"
               >

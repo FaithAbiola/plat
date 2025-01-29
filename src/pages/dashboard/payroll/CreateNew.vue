@@ -132,6 +132,7 @@ provide("employeeMap", employeeMap);
 //   }
 // };
 
+
 const formatNumber = (number:number) => {
   return number.toLocaleString();
 }
@@ -194,7 +195,7 @@ const handleSaveAndContinue = async () => {
     if (response.succeeded) {
       const payrollId = response.data.payrollId; 
       console.log("----", payrollId)
-      localStorage.setItem("payrollTableData", JSON.stringify(responseData.value.data));
+      // localStorage.setItem("payrollTableData", JSON.stringify(responseData.value.data));
       // showSuccess.value = true;
       // successMessage.value = "Payroll created successfully!";
       // router.push({ name: "PreviewNewPayroll", query: { payrollId } });
@@ -209,12 +210,12 @@ const handleSaveAndContinue = async () => {
   }
 };
 
-const loadSavedData = () => {
-  const savedData = localStorage.getItem("payrollTableData");
-  if (savedData) {
-    responseData.value.data = JSON.parse(savedData);
-  }
-};
+// const loadSavedData = () => {
+//   const savedData = localStorage.getItem("payrollTableData");
+//   if (savedData) {
+//     responseData.value.data = JSON.parse(savedData);
+//   }
+// };
 
 const handleSaveToDraft = async () => {
   saving.value = true;
@@ -240,11 +241,10 @@ const handleSaveToDraft = async () => {
     const response = await payrollStore.savePayrollToDraft(payload);
 
     if (response.succeeded) {
-      localStorage.setItem("payrollTableData", JSON.stringify(responseData.value.data));
+      // localStorage.setItem("payrollTableData", JSON.stringify(responseData.value.data));
       showSuccess.value = true;
       successMessage.value = "Payroll saved to draft successfully!";
       console.log("Paaaay", response);
-      // Optionally, show a success message or navigate to another page
     } else {
       throw new Error(response.message);
     }
@@ -303,10 +303,7 @@ const handleNetSave = (netPayData: { amount: number }) => {
 
 
 onMounted(() => {
-  loadSavedData();
-  if (!responseData.value.data.length) {
     fetchEmployees();
-  }
 });
 // fetchEmployees();
 

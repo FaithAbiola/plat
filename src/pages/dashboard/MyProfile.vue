@@ -143,6 +143,7 @@ const updateProfile = async () => {
     };
 console.log("===========", dataObj)
     loading.value = true;
+    try {
     const response = await request(authStore.updateProfile(dataObj), loading);
 
     handleError(response, userStore);
@@ -155,11 +156,111 @@ console.log("===========", dataObj)
       };
       showSuccess.value = true; 
       render.value = true;
+
+      if (data.value.password && data.value.password === data.value.confirmPassword) {
+        const passwordResponse = await request(authStore.changeThePassword(data.value.password), loading);
+        handleError(passwordResponse, userStore);
+        const passwordSuccessResponse = handleSuccess(passwordResponse, showSuccess);
+
+        if (passwordSuccessResponse && passwordSuccessResponse.data && passwordSuccessResponse.data.succeeded) {
+          await authStore.logoutUser();
+          window.location.href = "/login"; 
+          responseData.value.message += " and password updated successfully.";
+        } else {
+          responseData.value.message += " but password update failed.";
+        }
+      }
       await fetchUserDetails();
+    }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      responseData.value.message = "An error occurred while updating the profile.";
+    } finally {
+      loading.value = false;
     }
   }
 };
 
+// {
+//   "succeeded": true,
+//   "message": null,
+//   "data": {
+//     "employee": {
+//       "userId": 70,
+//       "user": {
+//         "firstname": "Faith",
+//         "lastname": "Abiola",
+//         "phoneId": 72,
+//         "phone": {
+//           "number": "08148193733",
+//           "countryCode": "+234",
+//           "id": 72,
+//           "isActive": true,
+//           "isDeleted": false,
+//           "createdAt": "2025-01-13T22:34:15.736016Z",
+//           "modifiedAt": null
+//         },
+//         "gender": null,
+//         "imageUrl": null,
+//         "refreshToken": "be2ccc77-0073-466e-b204-6d842757a0d3",
+//         "refreshTokenExpiryTime": "2025-01-28T12:12:43.480305Z",
+//         "isActive": false,
+//         "isDeleted": false,
+//         "createdAt": "0001-01-01T00:00:00",
+//         "modifiedAt": null,
+//         "id": 70,
+//         "userName": "abiolafaith92@gmail.com",
+//         "normalizedUserName": "ABIOLAFAITH92@GMAIL.COM",
+//         "email": "abiolafaith92@gmail.com",
+//         "normalizedEmail": "ABIOLAFAITH92@GMAIL.COM",
+//         "emailConfirmed": true,
+//         "passwordHash": "AQAAAAIAAYagAAAAEP2Wo8sApfu0Wye+uBJr9R8aYdiMYyIgJP4hISY3VKSvRvISvR5Py8yM02cjPr4jWg==",
+//         "securityStamp": "BQUAPMR3XHVBNGJMFW7OYXTA7AMTMGOO",
+//         "concurrencyStamp": "692ca815-5561-43fa-97f9-4dfd277e5850",
+//         "phoneNumber": null,
+//         "phoneNumberConfirmed": false,
+//         "twoFactorEnabled": false,
+//         "lockoutEnd": null,
+//         "lockoutEnabled": true,
+//         "accessFailedCount": 0
+//       },
+//       "organisationId": 38,
+//       "organisation": {
+//         "userId": 0,
+//         "user": null,
+//         "addressId": null,
+//         "address": null,
+//         "organisationName": "string-Land",
+//         "id": 38,
+//         "isActive": false,
+//         "isDeleted": false,
+//         "createdAt": "0001-01-01T00:00:00",
+//         "modifiedAt": null
+//       },
+//       "departmentId": 21,
+//       "department": {
+//         "id": 21,
+//         "departmentName": "Dept",
+//         "supportingName": "Team"
+//       },
+//       "gradeId": 24,
+//       "grade": {
+//         "id": 24,
+//         "name": "JG2e8",
+//         "code": "Je3",
+//         "grossPay": 0
+//       },
+//       "type": "Full Time",
+//       "id": 29,
+//       "isActive": true,
+//       "isDeleted": false,
+//       "createdAt": "2025-01-13T22:34:16.015872Z",
+//       "modifiedAt": null
+//     },
+//     "organisation": null
+//   },
+//   "statusCode": 200
+// }
 const fetchUserDetails = async () => {
   const userId = Number(localStorage.getItem('userId'));
   console.log("User ID:", userId); 
@@ -413,16 +514,17 @@ const v$ = useVuelidate(rules as any, data);
             <div></div> -->
             <div class="relative">
               <input
-                :disabled="disabled"
+                @click="disabled = false"
                 :type="is_open ? 'text' : 'password'"
-                id="newpassword"
+                id="newPasswordInput"
                 v-model="data.password"
                 maxlength="54"
                 class="input-float peer text-black pr-10.5"
                 placeholder=""
+                autocomplete="new-password"  
               />
               <label
-                for="Password"
+                for="newPasswordInput"
                 class="input-float-label peer-focus:text-black-100 peer-placeholder-shown:scale-75 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-1 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:px-2"
               >
                 New Password</label
@@ -436,7 +538,7 @@ const v$ = useVuelidate(rules as any, data);
             </div>
             <div class="relative">
               <input
-                :disabled="disabled" 
+                @click="disabled = false" 
                 :type="is_open ? 'text' : 'password'"
                 id="confirmpassword"
                 v-model="data.confirmPassword"

@@ -51,6 +51,7 @@ const summaryData = ref({
   totalBonus: "",
   totalNetPay: "",
   totalTaxAmount: "",
+  totalPayrollAmount: "",
 
 });
 
@@ -127,6 +128,7 @@ const fetchPayrollSummary = async () => {
           totalBonus: payrollData.value.pageItems.payroll.totalBonus,
           totalNetPay: payrollData.value.pageItems.payroll.totalNetPay,
           totalTaxAmount: payrollData.value.pageItems.payroll.totalTaxAmount,
+          totalPayrollAmount: (parseFloat(payrollData.value.pageItems.payroll.totalSalaries) + parseFloat(payrollData.value.pageItems.payroll.totalProcessingFee)).toString()
         };
         console.log(payrollData.value?.pageItems.payroll.totalEmployees )
         console.log("-----", payrollData.value)
@@ -398,7 +400,7 @@ onMounted(() => {
                         </td>
                         <td class="py-4 whitespace-nowrap">
                           <div class="text-left flex flex-col">
-                            <span class="text-sm font-semimedium">₦1,200,00,000</span>
+                            <span class="text-sm font-semimedium">₦{{ summaryData.totalPayrollAmount }}</span>
                           </div>
                         </td>
                       </tr>

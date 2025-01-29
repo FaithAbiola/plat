@@ -5,13 +5,24 @@ import { Create, Update } from "./interface/user.interface";
 import authhHeader from "../../core/utils/authh.header";
 
 class UserService {
+  private readonly userBaseURL = "https://platoon-backend.onrender.com/api"; 
+  private readonly notificationBaseURL = "https://platoon-backend-1.onrender.com/api"; 
+
   constructor(private readonly request: Axios) {}
+  
   private createAxiosInstance() {
     return axios.create({
-      baseURL: "https://platoon-backend.onrender.com/api", // base URL here
+      baseURL: "https://platoon-backend.onrender.com/api", 
       headers: authhHeader(), 
     });
   }
+  private createNotificationAxiosInstance() {
+    return axios.create({
+      baseURL: this.notificationBaseURL,
+      headers: authhHeader(),
+    });
+  }
+  
   async show(userId: number): Promise<any> {
     const customRequest = this.createAxiosInstance();
     return await customRequest
@@ -43,6 +54,25 @@ class UserService {
       .get("/Role/retrieve-managers", {
         params: {
           OrganisationId: organisationId,
+          PageSize: pageSize,
+          PageNumber: pageNumber,
+        },
+        headers: authhHeader(),
+      })
+      .then((res) => {
+        return res;
+      })
+      .catch((err) => {
+        return err;
+      });
+  }
+
+  async getNotifications(userId: number, pageSize: number, pageNumber: number): Promise<any> {
+    const customRequest = this.createNotificationAxiosInstance();
+    return await customRequest
+      .get("/Notification/retrieve-notification", {
+        params: {
+          UserId: userId,
           PageSize: pageSize,
           PageNumber: pageNumber,
         },

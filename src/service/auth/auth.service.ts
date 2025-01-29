@@ -205,6 +205,25 @@ class AuthService {
       return err;
     });
   }
+  async changeThePassword(data: { newPassword: string }): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+  
+    return await customRequest
+      .put("/Authentication/change-password", data, {
+        headers: {
+          ...authHeader(),
+          'Content-Type': 'application/json-patch+json',
+        },
+      })
+      .then((res) => {
+        console.log("Change Password Response:", res);
+        return res;
+      })
+      .catch((err) => {
+        return err;
+      });
+  }
+  
 
   async forgotPasswordComplete(data: ForgotPasswordComplete): Promise<any> {
     return await this.request
@@ -260,8 +279,8 @@ class AuthService {
   async logout(): Promise<any> {
     const customRequest = this.createAxiosInstance();
     return await customRequest
-    .put("/Authentication/logout", {}, { // Send an empty object as the body
-      headers: authhHeader(), // Pass headers correctly
+    .put("/Authentication/logout", {}, { 
+      headers: authhHeader(), 
     })
       .then((res) => {
         return res;
@@ -272,10 +291,8 @@ class AuthService {
   }
   async registerEmployee(data: { inviteId: string; password: string }): Promise<any> {
     try {
-      // Create a custom Axios instance
       const customRequest = this.createAxiosInstance();
   
-      // Send the request to register the employee
       const response = await customRequest.post(
         "/Employee/Register",
         {
@@ -287,12 +304,10 @@ class AuthService {
         }
       );
   
-      // If successful, log and return the response
       console.log("Registration response:", response);
       return response;
   
     } catch (error: any) {
-      // Log the error and propagate it to the caller
       if (error.response) {
         console.error("Registration error (response):", error.response.data);
         return Promise.reject(error.response.data);

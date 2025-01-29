@@ -395,7 +395,7 @@ onBeforeUnmount(() => {
                   <p
                     class="absolute -top-2 font-normal text-xs left-5 text-[#000000] bg-white"
                   >
-                    Name of department
+                    Name of department<span class="text-red">*</span>
                   </p>
                   <div class="flex justify-between items-center h-full w-full">
                     <input
@@ -409,7 +409,7 @@ onBeforeUnmount(() => {
                 </div>
                 <div class="font-normal text-left rounded-xl px-4 h-[48px] relative border text-black border-grey-300">
                   <p class="absolute -top-2 font-normal text-xs left-5 text-[#000000] bg-white">
-                    Supporting name
+                    Supporting name<span class="text-red">*</span>
                   </p>
                   <div class="flex justify-between items-center h-full w-full">
                     <input

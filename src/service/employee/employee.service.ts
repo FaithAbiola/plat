@@ -250,18 +250,25 @@ class Employee {
       });
   }
   
-  async download(): Promise<any> {
-    return await this.request
-      .get(`/employee/settings/export`, {
-        headers: authHeader(),
-      })
-      .then((res) => {
-        return res;
-      })
-      .catch((err) => {
-        return err;
-      });
-  }
+  async download(employeesData: any[]): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+
+    return await customRequest
+        .post('/Employee/download-employees-data', {
+            employeesData: employeesData
+        }, {
+            headers: authhHeader(),
+            responseType: 'blob',
+        })
+        .then((res) => {
+            console.log("Download Response==========", res);
+            return res;
+        })
+        .catch((err) => {
+            return err;
+        });
+}
+
   async generateCsvTemplate(): Promise<any> {
     const customRequest = this.createAxiosInstance();
     
