@@ -90,7 +90,7 @@ async function checkDomainExists(email:string | null) {
 //   }
 // };
 
-handleVerification();
+// handleVerification();
 
 const handleRegister = async (): Promise<void> => {
   // check if form is formatted correctly
