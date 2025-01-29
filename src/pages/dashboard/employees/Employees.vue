@@ -34,7 +34,10 @@ const chossenDepartment = "";
 const openCalender = ref(false);
 const deleteEmployeesId = ref<string[]>([]);
 const showSuccess = ref(false);
-const deleteEmployeeId = ref<any>();
+const deleteEmployeeId = ref<string>("");
+const successMessage = ref("");
+const showModal = ref(false);
+// const deleteEmployeeId = ref<any>();
 const loading = ref(false);
 const confirmMessage = ref({ message: "" });
 const deleting = ref(false);
@@ -90,45 +93,63 @@ const download = () => {
 };
 
 const confirmDownload = async () => {
-  downloading.value = true;
+    downloading.value = true;
 
-  const response = await request(employeeStore.download(), downloading);
+    // Get the employees data from responseData
+    const employeesData = responseData.value.data.map((employee: any) => ({
+        id: employee.id,
+        userId: employee.userId,
+        firstName: employee.firstName,
+        lastName: employee.lastName,
+        email: employee.email,
+        employmentType: employee.employmentType,
+        phone: {
+            number: employee.phone.number,
+            countryCode: employee.phone.countryCode,
+        },
+        isActive: employee.isActive,
+        createdAt: employee.createdAt,
+        grades: {
+            id: employee.grades.id,
+            name: employee.grades.name,
+            code: employee.grades.code,
+            grossPay: employee.grades.grossPay,
+        },
+        department: {
+            id: employee.department.id,
+            departmentName: employee.department.departmentName,
+            supportingName: employee.department.supportingName,
+        },
+    }));
 
-  handleError(response, userStore);
-  const successResponse = handleSuccess(response, showSuccess);
+  await request(employeeStore.downloadData(employeesData), downloading);
+  successMessage.value = "Employees data downloaded successfully!";
+  showModal.value = false; 
 
-  if (successResponse && typeof successResponse !== "undefined") {
-    // console.log(successResponse.data);
-    // console.log('---')
-    successResponse.message = "Employee data download began successfully";
-    responseData.value.message= successResponse.message;
-
-    // console.log(successResponse.data.data);
-    // console.log('---')
-
-    const link = document.createElement("a");
-    link.setAttribute("href", successResponse.data.data.link);
-
-    link.setAttribute("download", "platoon_employee_record.txt");
-    link.style.display = "none";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
 };
 
-const checkState = (id: any) => {
-  return deleteEmployeesId.value.includes(id) ? true : false;
+
+// const checkState = (id: any) => {
+//   return deleteEmployeesId.value.includes(id) ? true : false;
+// };
+// const handleEmployee = (id: any) => {
+//   if (deleteEmployeesId.value.includes(id)) {
+//     deleteEmployeesId.value = deleteEmployeesId.value.filter((value: any) => {
+//       return value !== id;
+//     });
+//   } else {
+//     deleteEmployeesId.value.push(id);
+//   }
+// };
+const handleEmployee = (id: string) => {
+  console.log("Selected employee ID:", id);
+  deleteEmployeeId.value = id; 
 };
-const handleEmployee = (id: any) => {
-  if (deleteEmployeesId.value.includes(id)) {
-    deleteEmployeesId.value = deleteEmployeesId.value.filter((value: any) => {
-      return value !== id;
-    });
-  } else {
-    deleteEmployeesId.value.push(id);
-  }
+
+const checkState = (id: string) => {
+  return deleteEmployeeId.value === id;
 };
+
 const addAllEmployeeForDelete = () => {
   if (deleteEmployeesId.value[0]) {
     deleteEmployeesId.value.length = 0;
@@ -234,27 +255,33 @@ const getDepartments = async (page = 1) => {
 
 getDepartments();
 
-// const deleteEmployee = async (id: any) => {
-//   deleting.value = true;
 
-//   const response = await request(employeeStore.delete(id), deleting);
+const deleteEmployee = async (employeeId: string) => {
+  console.log("Deleting employee with ID:", employeeId);
+  deleting.value = true;
 
-//   handleError(response, userStore);
-//   const successResponse = handleSuccess(response, showSuccess);
+  const response = await request(
+    employeeStore.deleteEmployee(employeeId, organisationId),
+    deleting
+  );
 
-//   if (successResponse && typeof successResponse !== "undefined") {
-//     responseData.value.data = responseData.value.data.filter((data: any) => {
-//       return data.id !== id;
-//     });
-//   }
-//   deleteEmployeeId.value = null;
-// };
+  handleError(response, userStore);
+  const successResponse = handleSuccess(response, showSuccess);
 
-const confirmRemoveEmployees = () => {
-  confirmType.value = "delete";
-  confirmMessage.value.message = `Do you really  want to delete multiple employees(${deleteEmployeesId.value.length})?  `;
-  showConfirm.value = true;
+  if (successResponse && typeof successResponse !== "undefined") {
+    responseData.value.message = "Employee deleted successfully";
+    window.location.href = "/dashboard/employees/";
+    render.value = true;
+  }
 };
+const confirmRemoveEmployee = () => {
+  if (deleteEmployeeId.value) {
+    confirmType.value = "delete";
+    confirmMessage.value.message = `Do you really want to terminate this employee?`;
+    showConfirm.value = true;
+  }
+};
+
 
 const openEmployee = () => {
   if(departmentValues.value && departmentValues.value.length){
@@ -292,6 +319,7 @@ watch(showDepartment, (newValue, oldValue) => {
       v-if="showConfirm == true"
     >
       <template #title> Delete</template>
+      
       <!-- <template #confirm>
         <span
           @click="
@@ -304,8 +332,18 @@ watch(showDepartment, (newValue, oldValue) => {
           "
         >
           CONFIRM</span
-        ></template -->
-      >
+        ></template> -->
+        <template #confirm>
+          <span
+            @click="
+              deleteEmployee(deleteEmployeeId);
+              showConfirm = false;
+            "
+          >
+            CONFIRM
+          </span>
+        </template>
+        
       <template #message> {{ confirmMessage.message }}</template>
     </confirmAlert>
 
@@ -315,7 +353,7 @@ watch(showDepartment, (newValue, oldValue) => {
       v-if="showSuccess == true"
     >
       <template #otherMessage>CLOSE</template>
-      {{ responseData.message }}</successAlert
+      {{ successMessage }}</successAlert
     >
 
     <spinner
@@ -343,7 +381,8 @@ watch(showDepartment, (newValue, oldValue) => {
               }}</span
             >
             <span>
-              <ICaretUpDown @click="showDepartment = !showDepartment" />
+              <!-- <ICaretUpDown @click="showDepartment = !showDepartment" /> -->
+              <ICaretUpDown />
             </span>
 
             <div
@@ -380,7 +419,7 @@ watch(showDepartment, (newValue, oldValue) => {
           class="flex items-center space-x-4 pr-6 flex-shrink-0"
         >
           <button
-            @click="download"
+            @click="confirmDownload"
             class="bg-[#003b3d] py-3 font-medium rounded-full text-white px-4+1 text-sm"
           >
             <spinner v-if="downloading == true"></spinner>
@@ -388,14 +427,15 @@ watch(showDepartment, (newValue, oldValue) => {
           </button>
 
           <button
-            :disabled="deleteEmployeesId[0] ? false : true"
-            class="text-red text-sm font-medium bg-red-light px-4+1 py-3 rounded-full"
-            :class="!deleteEmployeesId[0] ? 'disabled:opacity-75' : ' '"
-            @click="confirmRemoveEmployees()"
+            :disabled="!deleteEmployeeId"
+            class="text-red text-sm font-medium bg-red-light px-4 py-3 rounded-full"
+            :class="!deleteEmployeeId ? 'disabled:opacity-75' : ''"
+            @click="confirmRemoveEmployee()"
           >
-            <spinner v-if="deleting == true" />
-            <span v-else> Remove Employee</span>
+            <spinner v-if="deleting" />
+            <span v-else>Remove Employee</span>
           </button>
+
         </div>
       </div>
       <!--  -->
@@ -416,7 +456,7 @@ watch(showDepartment, (newValue, oldValue) => {
                     <!-- <CheckBox customClasses="indeterminate-check" /> -->
 
                     <div class="space-x-2 flex items-center">
-                      <span>
+                      <!-- <span>
                         <FCheckBoxComp
                           :value="
                             deleteEmployeesId.length ===
@@ -426,7 +466,7 @@ watch(showDepartment, (newValue, oldValue) => {
                           "
                           name="employees"
                           @click="addAllEmployeeForDelete()"
-                      /></span>
+                      /></span> -->
 
                       <span>Name</span>
                     </div>

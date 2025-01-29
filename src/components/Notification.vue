@@ -1,6 +1,10 @@
 <script lang="ts" setup>
+import { computed, ref } from "vue";
 import { INotification } from "../core/icons";
 import { ComponentPosition as NotificationPosition } from "../interface/enums.interface";
+import { getItem } from "../core/utils/storage.helper";
+import { useUserStore } from "../store/index";
+import handleError from "../composables/handle_error.composable";
 
 withDefaults(
   defineProps<{
@@ -10,7 +14,58 @@ withDefaults(
     position: NotificationPosition.HOMEPAGE,
   }
 );
+
+const userStore = useUserStore();
+// variables
+const currentPage = ref(1);
+const totalPages = ref(1);
+const pageSize = ref(10);
+const totalItems = ref(0);
+const loading = ref(false);
+const responseData = ref<any>({ data: [], message: "" });
+
+// const userInfo = ref(getItem(import.meta.env.VITE_USERDETAILS));
+// const parsedUserInfo = typeof userInfo.value === 'string' ? JSON.parse(userInfo.value) : userInfo.value;
+// const userId = parsedUserInfo?.customerInfo?.userId;
+const userId = Number(localStorage.getItem('userId'));
+console.log("~~~~~~~~~~~~~:", userId);
+
+
+const unreadCount = computed(() => {
+  return responseData.value.data.filter((notification: { isRead: any; }) => !notification.isRead).length;
+});
+const isNotificationsVisible = ref(false);
+
+
+const fetchNotifications = async (page: number) => {
+  loading.value = true;
+  try {
+    const response = await userStore.getNotifications(userId, pageSize.value, page);
+    if (response.data) {
+      responseData.value.data = response.data.data.pageItems;
+      currentPage.value = response.data.data.currentPage;
+      totalPages.value = response.data.data.numberOfPages;
+      totalItems.value = response.data.data.pageSize * totalPages.value;
+    }
+  } catch (error) {
+    handleError(error, "Error fetching notifications");
+  } finally {
+    loading.value = false;
+  }
+};
+
+const toggleNotifications = () => {
+  isNotificationsVisible.value = !isNotificationsVisible.value;
+};
+
+const updatePage = (page: number) => {
+  fetchNotifications(page);
+};
+
+// Initial fetch
+fetchNotifications(currentPage.value);
 </script>
+
 <template class="">
   <div class="dropdown dropdown-end">
     <label
@@ -21,6 +76,7 @@ withDefaults(
           ? 'bg-clip-rgba text-white'
           : 'bg-grey-100',
       ]"
+      @click="toggleNotifications"
     >
       <span>
         <INotification
@@ -39,48 +95,28 @@ withDefaults(
             ? 'text-white bg-red'
             : 'text-red bg-red-rgba',
         ]"
-        >99+</span
+        >{{ unreadCount }}</span
       >
     </label>
 
     <!-- content -->
     <ul
+      v-if="isNotificationsVisible"
       tabindex="0"
-      class="dropdown-content menu p-6 shadow-rgba bg-white rounded-lg lg:w-[480px] mt-4 divide-y divide-grey-200"
+      class="dropdown-content menu p-6 shadow-rgba bg-white rounded-lg lg:w-[445px] mt-4 divide-y divide-grey-200"
       :class="[
         position === NotificationPosition.HOMEPAGE ? '-left-56' : '-left-44',
       ]"
     >
-      <li>
-        <div class="flex flex-col items-start space-y-1 p-4">
-          <a class="text-sm text-black font-bold">Title of Notification</a>
-          <p class="text-sm text-gray-rgba-4 font-semimedium">
-            Description of the notification in full, with no truncation. This
-            should be used for platform update or things that arent really long.
-            Maybe we’d discuss what this feature is really needed
-          </p>
-        </div>
-      </li>
-      <li>
-        <div class="flex flex-col items-start space-y-1 p-4">
-          <a class="text-sm text-black font-bold">Title of Notification</a>
-          <p class="text-sm text-gray-rgba-4 font-semimedium">
-            Description of the notification in full, with no truncation. This
-            should be used for platform update or things that arent really long.
-            Maybe we’d discuss what this feature is really needed
-          </p>
-        </div>
-      </li>
-      <li>
-        <div class="flex flex-col items-start space-y-1 p-4">
-          <a class="text-sm text-black font-bold">Title of Notification</a>
-          <p class="text-sm text-gray-rgba-4 font-semimedium">
-            Description of the notification in full, with no truncation. This
-            should be used for platform update or things that arent really long.
-            Maybe we’d discuss what this feature is really needed
-          </p>
-        </div>
-      </li>
+    <li v-for="notification in responseData.data" :key="notification.id">
+      <div class="flex flex-col items-start space-y-1 p-4">
+        <a class="text-sm text-black font-bold">{{ notification.message }}</a>
+        <p class="text-sm text-gray-rgba-4 font-semimedium">
+          {{ notification.isRead ? 'Read' : 'New' }} - {{ notification.message }}
+          <!-- {{ new Date(notification.createdAt).toLocaleString() }} -->
+        </p>
+      </div>
+    </li>
     </ul>
   </div>
 </template>

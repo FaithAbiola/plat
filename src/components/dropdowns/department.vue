@@ -17,8 +17,6 @@ const stateMessage = ref<string>("");
 const userInfo = ref(getItem(import.meta.env.VITE_USERDETAILS));
 
 const parsedUserInfo = typeof userInfo.value === 'string' ? JSON.parse(userInfo.value) : userInfo.value;
-
-// Access the organisationId safely
 const organisationId = parsedUserInfo?.customerInfo?.organisationId;
 console.log("~~~~~~~~~~~~~:", organisationId);
 

@@ -16,6 +16,7 @@ import SuccessAlert from "../components/alerts/SuccessAlert.vue";
 import { integer } from "@vuelidate/validators";
 import spinner from "../components/timer/Spinner.vue";
 import { getItem } from "../core/utils/storage.helper";
+import { inject } from "vue";
 
 // initialize store
 const employeeStore = useEmployeeStore();
@@ -56,11 +57,9 @@ const ErrorLog:any = ref([]);
 const headerError:any = ref([]);
 
 const showError:any = ref([]);
-
+const render = inject<any>("render");
 const responseData = ref<any>({ data: [], message: "" });
 const parsedUserInfo = typeof userInfo.value === 'string' ? JSON.parse(userInfo.value) : userInfo.value;
-
-// Access the organisationId safely
 const organisationId = parsedUserInfo?.customerInfo?.organisationId;
 
 console.log("Organisation ID:", organisationId);
@@ -244,7 +243,7 @@ const handleCsvUpload = async (event: Event) => {
     console.error('Organisation ID not found!');
     return;
   }
-
+console.log ("----", organisationId)
   try {
     const response = await employeeStore.importCsvFile({
       file,
@@ -255,6 +254,8 @@ const handleCsvUpload = async (event: Event) => {
     showModal.value = false; 
     showSuccess.value = true;
     successMessage.value = 'CSV imported successfully!';
+    render.value = true;
+
   } catch (error) {
     console.error('Error uploading CSV:', error);
     showError.value = true;

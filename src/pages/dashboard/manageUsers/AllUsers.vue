@@ -35,6 +35,7 @@ const showConfirm = ref(false);
 const loading = ref(false);
 const responseData = ref<any>({ data: [], message: "" });
 const successMessage = ref("Action successful");
+const render = inject<any>("render");
 
 // methods
 const userInfo = ref(getItem(import.meta.env.VITE_USERDETAILS));
@@ -76,11 +77,14 @@ const removeUser = async (id: string) => {
   try {
     const response = await userStore.deleteUser(id);
     if (response) {
-      responseData.value = responseData.value.filter((data: any) => data.id !== id);
+      console.log("Delete User Response:", response);
+      responseData.value.data = responseData.value.data.filter((data: any) => data.id !== id);
+      showSuccess.value = true;
       successMessage.value = `User was successfully deleted`;
+      render.value = true;
     }
   } catch (error) {
-    handleError(error, "Error deleting user");
+    console.error(error, "Error deleting user");
   } finally {
     loading.value = false;
   }

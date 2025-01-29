@@ -23,9 +23,13 @@ const loading = ref(false);
 const showSuccess = ref(false);
 const responseData = ref<any>({ message: "Signup successful" });
 const userInfo = ref(getItem(import.meta.env.VITE_USERDETAILS));
+const render = inject<any>("render");
 
 // emit
-const emit = defineEmits<{ (e: "fetchUsers"): void }>();
+const emit = defineEmits<{
+  (e: "fetchUsers"): void;
+  (e: "close"): void;
+}>();
 
 // inject
 const openCreateUser = inject<any>("openCreateUser");
@@ -96,8 +100,11 @@ const assignRole = async () => {
     try {
       const response = await userStore.assignRole(requestBody.userId, requestBody.roleId);
       if (response) {
-        showSuccess.value = true;
         responseData.value.message = "Role assigned successfully!";
+        showSuccess.value = true;
+        openCreateUser.value = false;
+        render.value = true;
+
       }
     } catch (error) {
       console.error(error);
@@ -122,7 +129,7 @@ fetchRoles();
     leave-active-class="animate__animated animate__fadeOutRight"
     :duration="400"
   >
-    <form>
+    <form @submit.prevent="assignRole">
       <successAlert
         v-if="showSuccess == true"
         @closeSuccess="showSuccess = false"
@@ -131,6 +138,7 @@ fetchRoles();
         <template #otherMessage>CLOSE</template>
         {{ responseData.message }}
       </successAlert>
+     
       <div class="w-screen z-50 bg-[#000000A3] min-h-screen h-full fixed">
         <div class="flex justify-center">
           <div
@@ -218,7 +226,7 @@ fetchRoles();
               </div>
             </div>
             <div class="flex pb-5">
-              <ButtonBlue @click="assignRole">
+              <ButtonBlue :disabled="loading">
                 <template v-slot:placeholder>
                   <spinner v-if="loading == true" />
                   <span v-else>Add User</span>

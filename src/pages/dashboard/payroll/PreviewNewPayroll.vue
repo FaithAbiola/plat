@@ -169,23 +169,66 @@ const removeEmployee = async (employeeId: number) => {
   }
 };
 
+// const saveAndContinue = async () => {
+//   const payrollId = responseData.value?.payroll?.id;
+//   if (payrollId) {
+//     await router.push({ 
+//       name: "dashboard.payroll.summary", 
+//       query: { payrollId } 
+//     });
+//   } else {
+//     console.error("Payroll ID is missing.");
+//   }
+// };
+
 const saveAndContinue = async () => {
-  const payrollId = responseData.value?.payroll?.id;
-  if (payrollId) {
-    await router.push({ 
-      name: "dashboard.payroll.summary", 
-      query: { payrollId } 
-    });
-  } else {
-    console.error("Payroll ID is missing.");
-  }
+    const payrollId = responseData.value?.payroll?.id;
+    if (!payrollId) {
+        console.error("Payroll ID is missing.");
+        return;
+    }
+
+    // Construct the payload for the update
+    const employeesSalary = responseData.value.employeeSalaries.map((employee: { employeeId: number; bonus: any; deduction: any; taxAmount: number; netPay: number; informalPayrollId: number; }) => ({
+        employeeId: employee.employeeId,
+        bonus: employee.bonus || { amount: 0, reason: "" },
+        deduction: employee.deduction || { amount: 0, reason: "" },
+        taxAmount: employee.taxAmount || 0,
+        netPay: employee.netPay || 0,
+        informalPayrollId: employee.informalPayrollId || 0,
+    }));
+
+    const payload = {
+        payrollId,
+        organisationId,
+        employeesSalary,
+        paytype: "Once",
+        scheduledMonth: new Date().toISOString(),
+    };
+
+    try {
+        // Call the update payroll method
+        const updateResponse = await payrollStore.updatePayroll(payload);
+        if (updateResponse.succeeded) {
+            await router.push({ 
+                name: "dashboard.payroll.summary", 
+                query: { payrollId } 
+            });
+        } else {
+            throw new Error(updateResponse.message);
+        }
+    } catch (error) {
+        console.error("Error saving payroll:", error);
+    }
 };
+
+
 
 const selectedEmployee = ref({ id: null, bonus: 0, deduction: 0, taxAmount: 0, netPay: 0 });
 
 const handleBonusSave = (bonusData: { amount: number; reason: string }) => {
   console.log("Bonus Data Received:", bonusData);
-  const employee = responseData.value.data.find((e: { id: null }) => e.id === selectedEmployee.value.id);
+  const employee = responseData.value.employeeSalaries.find((e: { employeeId: null }) => e.employeeId === selectedEmployee.value.id);
   if (employee) {
     employee.bonus = { ...bonusData }; 
   }
@@ -194,7 +237,7 @@ const handleBonusSave = (bonusData: { amount: number; reason: string }) => {
 
 const handleDeductionSave = (deductionData: { amount: number; reason: string }) => {
   console.log("Deduction Data Received:", deductionData);
-  const employee = responseData.value.data.find((e: { id: null }) => e.id === selectedEmployee.value.id);
+  const employee = responseData.value.employeeSalaries.find((e: { employeeId: null }) => e.employeeId === selectedEmployee.value.id);
   if (employee) {
     employee.deduction = { ...deductionData }; 
    
@@ -204,8 +247,8 @@ const handleDeductionSave = (deductionData: { amount: number; reason: string }) 
 
 const handleTaxSave = (taxData: { amount: number }) => {
   console.log("Tax Data Received:", taxData);
-  const employee = responseData.value.data.find(
-    (e: { id: null }) => e.id === selectedEmployee.value.id
+  const employee = responseData.value.employeeSalaries.find(
+    (e: { employeeId: null }) => e.employeeId === selectedEmployee.value.id
   );
   console.log("Taxxxx:", taxData.amount);
 
@@ -217,8 +260,8 @@ const handleTaxSave = (taxData: { amount: number }) => {
 
 const handleNetSave = (netPayData: { amount: number }) => {
   console.log("NetPay Data Received:", netPayData);
-  const employee = responseData.value.data.find(
-    (e: { id: null }) => e.id === selectedEmployee.value.id
+  const employee = responseData.value.employeeSalaries.find(
+    (e: { employeeId: null }) => e.employeeId === selectedEmployee.value.id
   );
   if (employee) {
     employee.netPay = netPayData.amount; 
@@ -381,7 +424,8 @@ const handleNetSave = (netPayData: { amount: number }) => {
                             @click="
                               [
                                 (showBonus = true),
-                                (selectedEmployee.id = employee.id),
+                                (selectedEmployee.id = employee.employeeId),
+                                (selectedEmployee.bonus = employee.bonus ? employee.bonus.amount : 0)
                               ]
                             "
                           />
@@ -400,7 +444,8 @@ const handleNetSave = (netPayData: { amount: number }) => {
                             @click="
                               [
                                 (showDeduction = true),
-                                (selectedEmployee.id = employee.id),
+                                (selectedEmployee.id = employee.employeeId),
+                                (selectedEmployee.deduction = employee.deduction ? employee.deduction.amount : 0)
                               ]
                             "
                           />
@@ -418,7 +463,8 @@ const handleNetSave = (netPayData: { amount: number }) => {
                             @click="
                               [
                                 (showTax = true),
-                                (selectedEmployee.id = employee.id),
+                                (selectedEmployee.id = employee.employeeId),
+                                (selectedEmployee.taxAmount = employee.taxAmount || 0) 
                               ]
                             "
                             />
@@ -434,7 +480,8 @@ const handleNetSave = (netPayData: { amount: number }) => {
                             @click="
                               [
                                 (showNetPay = true),
-                                (selectedEmployee.id = employee.id),
+                                (selectedEmployee.id = employee.employeeId),
+                                (selectedEmployee.netPay = employee.netPay || 0)
                               ]
                             "
                           />

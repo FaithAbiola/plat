@@ -99,6 +99,8 @@ const payrollStore = defineStore("payroll", {
     async getPayrollHistory(userId: number, transactionMonth?: number, transactionYear?: number, pageSize: number = 10, pageNumber: number = 1): Promise<any> {
       try {
           const response = await payrollService.getPayrollHistory(userId, transactionMonth, transactionYear, pageSize, pageNumber);
+          console.log('Payroll History:', response);
+
           if (response.data) {
               return await Promise.resolve(response);
           } else if (response.response) {
@@ -257,13 +259,15 @@ const payrollStore = defineStore("payroll", {
     },
 
     async updatePayroll(payload: {
+      payrollId: number;
       organisationId: number;
       employeesSalary: Array<{
         employeeId: number;
-        bonus?: { amount: number; reason: string };
-        deduction?: { amount: number; reason: string };
+        bonus: { amount: number; reason: string };
+        deduction: { amount: number; reason: string };
         taxAmount: number;
         netPay: number;
+        informalPayrollId: number;
       }>;
       paytype: string;
       scheduledMonth: string;
@@ -279,7 +283,7 @@ const payrollStore = defineStore("payroll", {
         console.error("Error updating payroll:", error);
         throw error;
       }
-    },
+    },    
 
     async getPayroll(params: {
       organisationId: number;

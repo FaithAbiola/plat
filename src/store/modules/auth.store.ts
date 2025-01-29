@@ -153,11 +153,10 @@ const authStore = defineStore("auth", {
         const response = await authService.updateProfile(data);
     
         if (response && response.data && response.data.succeeded) {
-          // Handle the success case
-          console.log(response.data.message); // Log success message
+          console.log(response.data.message); 
     
-          // Optional: You can clear or refresh user details here if needed
-          return response; // Return the full response for further handling
+          // clear or refresh user details here if needed
+          return response;
         } else {
           return Promise.reject(response.data.message || "Update failed");
         }
@@ -165,7 +164,20 @@ const authStore = defineStore("auth", {
         return Promise.reject(error);
       }
     },    
+    async changeThePassword(newPassword: string): Promise<any> {
+      try {
+        const response = await authService.changeThePassword({ newPassword });
     
+        if (response && response.data && response.data.succeeded) {
+          console.log(response.data.message); 
+          return response;
+        } else {
+          return Promise.reject(response.data.message || "Password change failed");
+        }
+      } catch (error: any) {
+        return Promise.reject(error);
+      }
+    },    
     // async userRegister(data: Register): Promise<any> {
     //   try {
     //     const response = await authService.register(data);
@@ -299,20 +311,20 @@ const authStore = defineStore("auth", {
         return await Promise.reject(error);
       }
     },
-    async changePassword(data: any): Promise<any> {
-      try {
-        const response = await authService.changePassword(data);
-        if (response.data) {
-          return await Promise.resolve(response);
-        } else if (response.response) {
-          return await Promise.reject(response.response);
-        } else {
-          return await Promise.reject(response.message);
-        }
-      } catch (error: any) {
-        return await Promise.reject(error);
-      }
-    },
+    // async changePassword(data: any): Promise<any> {
+    //   try {
+    //     const response = await authService.changePassword(data);
+    //     if (response.data) {
+    //       return await Promise.resolve(response);
+    //     } else if (response.response) {
+    //       return await Promise.reject(response.response);
+    //     } else {
+    //       return await Promise.reject(response.message);
+    //     }
+    //   } catch (error: any) {
+    //     return await Promise.reject(error);
+    //   }
+    // },
 
     async logoutUser(): Promise<any> {
       try {

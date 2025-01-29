@@ -159,29 +159,32 @@ async getSalaryBreakdown(employeeId: number): Promise<any> {
         throw err;
       });
   }
+
   async updatePayroll(payload: {
+    payrollId: number;
     organisationId: number;
     employeesSalary: Array<{
       employeeId: number;
-      bonus?: { amount: number; reason: string };
-      deduction?: { amount: number; reason: string };
+      bonus: { amount: number; reason: string };
+      deduction: { amount: number; reason: string };
       taxAmount: number;
       netPay: number;
+      informalPayrollId: number;
     }>;
     paytype: string;
     scheduledMonth: string;
   }): Promise<any> {
     const customRequest = this.createAxiosInstance();
-
+  
     return await customRequest
-      .post("/Payroll/update-payroll", payload)
+      .put("/Payroll/update-payroll", payload)
       .then((res) => res)
       .catch((err) => {
         console.error("Error updating payroll:", err);
         throw err;
       });
   }
-
+  
   async getPayroll(params: {
     organisationId: number;
     payrollId: number;

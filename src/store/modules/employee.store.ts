@@ -26,20 +26,43 @@ const employeeStore = defineStore('employee', {
         return await Promise.reject(error);
       }
     },
-    async download(): Promise<any> {
+    async downloadData(employeesData: any[]): Promise<any> {
       try {
-        const response = await employeeService.download();
-        if (response.data) {
-          return await Promise.resolve(response);
-        } else if (response.response) {
-          return await Promise.reject(response.response);
-        } else {
-          return await Promise.reject(response.message);
-        }
+          const response = await employeeService.download(employeesData);
+          if (response.data) {
+            const blob = new Blob([response.data], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'Employee_Data.csv');
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+              return await Promise.resolve(response);
+          } else if (response.response) {
+              return await Promise.reject(response.response);
+          } else {
+              return await Promise.reject(response.message);
+          }
       } catch (error: any) {
-        return await Promise.reject(error);
+          return await Promise.reject(error);
       }
-    },
+  },
+  
+    // async download(): Promise<any> {
+    //   try {
+    //     const response = await employeeService.download();
+    //     if (response.data) {
+    //       return await Promise.resolve(response);
+    //     } else if (response.response) {
+    //       return await Promise.reject(response.response);
+    //     } else {
+    //       return await Promise.reject(response.message);
+    //     }
+    //   } catch (error: any) {
+    //     return await Promise.reject(error);
+    //   }
+    // },
 
     async downloadCsvTemplate(): Promise<void> {
       try {
