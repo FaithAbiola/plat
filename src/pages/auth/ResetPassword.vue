@@ -62,23 +62,23 @@ async function checkDomainExists(email:string | null) {
 }
 
 // methods
-const handleVerification = async (): Promise<void> => {
-  // check if form is formatted correctlyx
+// const handleVerification = async (): Promise<void> => {
+//   // check if form is formatted correctlyx
 
-  loading.value = true;
-  const response = await request(authStore.changePassword({
-    "token": route.query.token,
-  }), loading);
+//   loading.value = true;
+//   const response = await request(authStore.changePassword({
+//     "token": route.query.token,
+//   }), loading);
 
-  handleError(response, userStore);
-  const successResponse = handleSuccess(response, showSuccess);
+//   handleError(response, userStore);
+//   const successResponse = handleSuccess(response, showSuccess);
 
-  if (successResponse && typeof successResponse !== "undefined") {
-    responseData.value = successResponse;
+//   if (successResponse && typeof successResponse !== "undefined") {
+//     responseData.value = successResponse;
 
-    is_good_token.value = true;
-  }
-};
+//     is_good_token.value = true;
+//   }
+// };
 
 // handleVerification();
 
