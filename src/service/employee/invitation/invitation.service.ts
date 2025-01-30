@@ -9,23 +9,11 @@ class EmployeeInvitation {
 
   private createAxiosInstance() {
     return axios.create({
-      baseURL: "https://platoon-backend.onrender.com/api", // Set your custom base URL here
-      headers: authhHeader(), // Include any headers you need
+      baseURL: "https://platoon-backend.onrender.com/api", 
+      headers: authhHeader(), 
     });
   }
 
-  // async index(): Promise<any> {
-  //   return await this.request
-  //     .get("/employee/invites", {
-  //       headers: authHeader(),
-  //     })
-  //     .then((res) => {
-  //       return res;
-  //     })
-  //     .catch((err) => {
-  //       return err;
-  //     });
-  // }
   async index(): Promise<any> {
     const customRequest = this.createAxiosInstance();
 
@@ -61,22 +49,23 @@ class EmployeeInvitation {
       });
   }
 
-  // async create(data: Create): Promise<any> {
-  //   return await this.request
-  //     .post(
-  //       "/employee/invites",
-  //       { ...data },
-  //       {
-  //         headers: authHeader(),
-  //       }
-  //     )
-  //     .then((res) => {
-  //       return res;
-  //     })
-  //     .catch((err) => {
-  //       return err;
-  //     });
-  // }
+  async fetchInviteUrl(inviteId: string): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+
+    return await customRequest
+        .get(`/Invite/FetchInviteUrl/${inviteId}`, {
+            headers: authhHeader(),
+        })
+        .then((res) => {
+            console.log("Fetched Invite URL:", res);
+            return res;
+        })
+        .catch((err) => {
+            console.error("Error fetching invite URL:", err);
+            throw err;
+        });
+}
+
 
   async create(data: Create): Promise<any> {
 

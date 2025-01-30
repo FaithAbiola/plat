@@ -100,6 +100,7 @@ const getGroup = async () => {
 //   }
 // };
 
+
 const deleteGroup = async () => {
     loading.value = true; 
     const response = await request(
@@ -107,18 +108,22 @@ const deleteGroup = async () => {
         deleteLoading
     );
 
-    // handleError(response, userStore);
     const successResponse = handleSuccess(response);
 
     if (successResponse && typeof successResponse !== "undefined") {
-        responseData.value = successResponse;
+        responseData.value.message = successResponse.message; 
         showSuccess.value = true;
         setTimeout(() => {
-        render.value = true; 
-        router.push("/dashboard/employees/departments");
-    }, 3000);
+            render.value = true; 
+            router.push("/dashboard/employees/departments");
+        }, 3000);
     } else {
-        errorResponse.value = response.message;
+        if (response && response.message) {
+            errorResponse.value = response.message; 
+        } else {
+            errorResponse.value = "An unknown error occurred."; 
+        }
+        showSuccess.value = false; 
     }
     loading.value = false; 
 };
@@ -146,6 +151,14 @@ defineExpose({
       {{ capitalizeFirstLetter(responseData.message) }}</successAlert
     >
 
+    <successAlert
+      :showSuccess="!!errorResponse"
+      @closeSuccess="errorResponse = ''"
+      v-if="errorResponse"
+    >
+      <template #otherMessage>CLOSE</template>
+      {{ capitalizeFirstLetter(errorResponse) }}
+    </successAlert>
     <div class="flex-1 space-y-12">
       <div class="">
         <div class="space-y-1">

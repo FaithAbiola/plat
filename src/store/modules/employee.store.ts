@@ -346,6 +346,21 @@ const employeeStore = defineStore('employee', {
         return await Promise.reject(error);
       }
     },
+
+    async fetchInviteLink(inviteId: string): Promise<any> {
+      try {
+          const response = await invitationService.fetchInviteUrl(inviteId);
+          if (response.data) {
+              return await Promise.resolve(response);
+          } else if (response.response) {
+              return await Promise.reject(response.response);
+          } else {
+              return await Promise.reject(response.message);
+          }
+      } catch (error: any) {
+          return await Promise.reject(error);
+      }
+  },  
     async invitationCreate(data: InvitationCreateInterface): Promise<any> {
       try {
         const response = await invitationService.create(data);

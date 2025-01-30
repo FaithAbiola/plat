@@ -130,6 +130,21 @@ const groupStore = defineStore("group", {
           return Promise.reject(error);
       }
   },  
+
+  async updateGrade(gradeId: number, data: { name: string; code: string; grossPay: number }): Promise<any> {
+    try {
+        const response = await groupService.updateGrade(gradeId, data);
+        if (response.data) {
+            return Promise.resolve(response);
+        } else if (response.response) {
+            return Promise.reject(response.response);
+        } else {
+            return Promise.reject(response.message);
+        }
+    } catch (error: any) {
+        return Promise.reject(error);
+    }
+},
     async updateGradeList(data: Update, id: string): Promise<any> {
       try {
         const response = await groupService.updateMultiple(data, id);
@@ -144,20 +159,20 @@ const groupStore = defineStore("group", {
         return await Promise.reject(error);
       }
     },
-    async gradeUpdate(data: Update, id: string, store_id: string): Promise<any> {
-      try {
-        const response = await groupService.updateGrade(data, id, store_id);
-        if (response.data) {
-          return await Promise.resolve(response);
-        } else if (response.response) {
-          return await Promise.reject(response.response);
-        } else {
-          return await Promise.reject(response.message);
-        }
-      } catch (error: any) {
-        return await Promise.reject(error);
-      }
-    },
+    // async gradeUpdate(data: Update, id: string, store_id: string): Promise<any> {
+    //   try {
+    //     const response = await groupService.updateGrade(data, id, store_id);
+    //     if (response.data) {
+    //       return await Promise.resolve(response);
+    //     } else if (response.response) {
+    //       return await Promise.reject(response.response);
+    //     } else {
+    //       return await Promise.reject(response.message);
+    //     }
+    //   } catch (error: any) {
+    //     return await Promise.reject(error);
+    //   }
+    // },
     async removeGrade(id: string, store_id: string): Promise<any> {
       try {
         const response = await groupService.deleteGrade(id, store_id);
