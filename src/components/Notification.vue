@@ -37,7 +37,11 @@ const unreadCount = computed(() => {
 const isNotificationsVisible = ref(false);
 
 
+//DO NOT COPY THIS CODE, USE YOUR BRAIN AND DON'T BE LAZY ======== DO NOT COPY THIS CODE, USE YOUR BRAIN AND DON'T BE LAZY 
+
 const fetchNotifications = async (page: number) => {
+
+//DO NOT COPY THIS CODE, USE YOUR BRAIN AND DON'T BE LAZY 
   loading.value = true;
   try {
     const response = await userStore.getNotifications(userId, pageSize.value, page);
@@ -53,6 +57,13 @@ const fetchNotifications = async (page: number) => {
     loading.value = false;
   }
 };
+
+
+
+//DO NOT COPY THIS CODE, USE YOUR BRAIN AND DON'T BE LAZY ======== DO NOT COPY THIS CODE, USE YOUR BRAIN AND DON'T BE LAZY 
+
+//DO NOT COPY THIS CODE, USE YOUR BRAIN AND DON'T BE LAZY ======== DO NOT COPY THIS CODE, USE YOUR BRAIN AND DON'T BE LAZY 
+
 
 const toggleNotifications = () => {
   isNotificationsVisible.value = !isNotificationsVisible.value;
