@@ -118,6 +118,8 @@ const uppdateProfile = async () => {
   }
 };
 
+
+//DO NOT COPY THIS CODE AGAIN, USE YOUR BRAIN AND DON'T BE LAZY ======== DO NOT COPY THIS CODE AGAIN, USE YOUR BRAIN AND DON'T BE LAZY 
 const updateProfile = async () => {
   const isFormCorrect = await v$.value.$validate();
 
@@ -157,7 +159,15 @@ console.log("===========", dataObj)
       showSuccess.value = true; 
       render.value = true;
 
+
+      //DO NOT COPY THIS CODE AGAIN, USE YOUR BRAIN AND DON'T BE LAZY ======== DO NOT COPY THIS CODE AGAIN, USE YOUR BRAIN AND DON'T BE LAZY 
+
+      //DO NOT COPY THIS CODE AGAIN, USE YOUR BRAIN AND DON'T BE LAZY ======== DO NOT COPY THIS CODE AGAIN, USE YOUR BRAIN AND DON'T BE LAZY 
+
+      
       if (data.value.password && data.value.password === data.value.confirmPassword) {
+
+      //DO NOT COPY THIS CODE AGAIN, USE YOUR BRAIN AND DON'T BE LAZY ======== DO NOT COPY THIS CODE AGAIN, USE YOUR BRAIN AND DON'T BE LAZY 
         const passwordResponse = await request(authStore.changeThePassword(data.value.password), loading);
         handleError(passwordResponse, userStore);
         const passwordSuccessResponse = handleSuccess(passwordResponse, showSuccess);
