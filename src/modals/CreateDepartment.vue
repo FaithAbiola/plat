@@ -165,28 +165,29 @@ const removeField = async (id: number, gradeKey: any) => {
   }
 };
 
-const updateGrade = async (id: number, gradeKey: any) => {
+const updateGrade = async (gradeId: number, index: number) => {
+    const gradeData = {
+        name: gradesArr.value[index].key,
+        code: gradesArr.value[index].value,
+        grossPay: Number(gradesArr.value[index].grossPay) || 0,
+    };
 
-  updateLoading.value[id] = true;
+    updateLoading.value[index] = true; 
+    try {
+        const response = await request(groupStore.updateGrade(gradeId, gradeData), loading);
+        handleError(response, userStore);
+        const successResponse = handleSuccess(response, showSuccess);
 
-  const found:any = gradesArr.value.find((item:any) => item.key == gradeKey);
-
-  if(found) {
-    const gradeData:any = ref({})
-  
-    gradeData.value[gradeKey] = found.value
-  
-    const response = await request(groupStore.gradeUpdate(gradeData.value, found.id, props.departmentId), loading);
-  
-    handleError(response, userStore);
-    const successResponse = handleSuccess(response, showSuccess);
-  
-    updateLoading.value[id] = false;
-  
-    if (successResponse && typeof successResponse !== "undefined") {
-      // console.log(successResponse)
+        if (successResponse && typeof successResponse !== "undefined") {
+          responseData.value.message = successResponse.message; 
+          showSuccess.value = true;
+            console.log("Grade updated successfully:", successResponse);
+        }
+    } catch (error) {
+        console.error("Error updating grade:", error);
+    } finally {
+        updateLoading.value[index] = false; 
     }
-  }
 };
 const removeFieldWIthoutLoading = (id:number) => {
   if (gradesArr.value.length > 1) {
@@ -290,7 +291,7 @@ const updateGroup = async () => {
         setTimeout(() => {
         render.value = true; 
         emit("close");
-    }, 3000); 
+    }, 1000); 
     }
     loading.value = false;
 };
@@ -473,7 +474,7 @@ onBeforeUnmount(() => {
                     <div class="flex items-center gap-3">
 
                       <div v-if="props.departmentId" >
-                        <button disabled=true type="button" v-if="!updateLoading[i]" @click="updateGrade(i, grade.key)" class="flex items-center cursor-pointer space-x-2.5 bg-[#003b3d] p-3 rounded-full px-2+1 flex-shrink-0">
+                        <button :disabled="updateLoading[i]" type="button" v-if="!updateLoading[i]" @click="updateGrade(Number(grade.id), i)" class="flex items-center cursor-pointer space-x-2.5 bg-[#003b3d] p-3 rounded-full px-2+1 flex-shrink-0">
                           <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M17 17H17.01M15.6 14H18C18.9319 14 19.3978 14 19.7654 14.1522C20.2554 14.3552 20.6448 14.7446 20.8478 15.2346C21 15.6022 21 16.0681 21 17C21 17.9319 21 18.3978 20.8478 18.7654C20.6448 19.2554 20.2554 19.6448 19.7654 19.8478C19.3978 20 18.9319 20 18 20H6C5.06812 20 4.60218 20 4.23463 19.8478C3.74458 19.6448 3.35523 19.2554 3.15224 18.7654C3 18.3978 3 17.9319 3 17C3 16.0681 3 15.6022 3.15224 15.2346C3.35523 14.7446 3.74458 14.3552 4.23463 14.1522C4.60218 14 5.06812 14 6 14H8.4M12 15V4M12 4L15 7M12 4L9 7" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
                         </button>
                         <spinner v-else />
@@ -611,10 +612,13 @@ onBeforeUnmount(() => {
         <div
           class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md"
         >
-          <form
+          <!-- <form
             @submit.prevent="updateDepartmentGroup"
             class="bg-white px-[20px] py-[27px] space-y-8"
-          >
+          > -->
+          <form
+            class="bg-white px-[20px] py-[27px] space-y-8"
+          > 
             <!-- content -->
             <header>
               <div class="flex items-start justify-between">
@@ -644,7 +648,7 @@ onBeforeUnmount(() => {
                 <h2 class="text-sm font-medium text-black-200">Grades</h2>
                 <!-- inputs -->
                 <div
-                  class="grid grid-cols-2 gap-2"
+                  class="grid grid-cols-3 gap-2"
                   id="grade"
                   v-for="(grade, i) in gradesArrCreate"
                   :key="i"
@@ -655,8 +659,6 @@ onBeforeUnmount(() => {
                     class="rounded-xl border px-4 h-[48px] font-normal text-left placeholder-strong text-black text-sm outline-none focus:outline-none"
                     placeholder="name"
                   />
-
-                  <div class="flex items-center gap-3">
                     <!-- <input
                       v-model="grade.value"
                       type="number"
@@ -682,7 +684,7 @@ onBeforeUnmount(() => {
                         @click="removeCreateField(i)"
                         >X</span
                       >
-                  </div>
+
                 </div>
                 <div class="flex pb-5 gap-3">
                   <button

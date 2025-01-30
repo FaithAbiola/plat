@@ -220,22 +220,45 @@ class Group {
         });
 }
 
-  async updateGrade(data: Update, id: string, store_id: string): Promise<any> {
-    return await this.request
-      .post(
-        `/groups/${store_id}/grades/${id}`,
-        { ...data },
-        {
-          headers: authHeader(),
-        }
-      )
+
+async updateGrade(gradeId: number, data: { name: string; code: string; grossPay: number }): Promise<any> {
+  const customRequest = this.createAxiosInstance();
+
+  return await customRequest
+      .put(`/Grade/update/${gradeId}`, null, {
+          params: {
+              name: data.name,
+              code: data.code,
+              grossPay: data.grossPay,
+          },
+          headers: authhHeader(),
+      })
       .then((res) => {
-        return res;
+          console.log("Update Grade response:", res);
+          return res;
       })
       .catch((err) => {
-        return err;
+          console.error("Error occurred during grade update:", err);
+          return err;
       });
-  }
+}
+
+  // async updateGrade(data: Update, id: string, store_id: string): Promise<any> {
+  //   return await this.request
+  //     .post(
+  //       `/groups/${store_id}/grades/${id}`,
+  //       { ...data },
+  //       {
+  //         headers: authHeader(),
+  //       }
+  //     )
+  //     .then((res) => {
+  //       return res;
+  //     })
+  //     .catch((err) => {
+  //       return err;
+  //     });
+  // }
   async updateMultiple(data: Update, id: string): Promise<any> {
     return await this.request
       .post(
@@ -289,9 +312,14 @@ class Group {
         })
         .catch((err) => {
             console.error("Error occurred during delete:", err);
-            return err;
+            if (err.response && err.response.data) {
+                return Promise.reject(err.response.data); 
+            } else {
+                return Promise.reject("An unknown error occurred."); 
+            }
         });
-  }
+}
+
 
 }
 

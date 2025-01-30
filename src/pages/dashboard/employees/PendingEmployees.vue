@@ -27,7 +27,7 @@ const loading = ref(false);
 const isEmptyTable = ref(false);
 const responseData = ref<any>({ data: [], message: "" });
 const successMessage = ref("");
-const copied = ref(false);
+const copied = ref<boolean[]>([]);
 const currentPage = ref(1);
 const totalPages = ref(1);
 const pageSize = ref(10);  // Make sure this is set to the page size used in the API
@@ -105,23 +105,6 @@ const updatePage = (page: number) => {
 }
 // fetchEmployees();
 
-// const removeEmployee = async (id: string) => {
-//   // console.log("removeEmployee hit");
-//   loading.value = true;
-
-//   const response = await request(employeeStore.delete(id), loading);
-//   handleError(response, userStore);
-//   const successResponse = handleSuccess(response, showSuccess);
-
-//   if (typeof successResponse !== "undefined") {
-//     responseData.value = responseData.value.filter((data: any) => {
-//       return data.id !== id;
-//     });
-//     successMessage.value = `Employee with id '${id}' was successfully deleted`;
-//     emit("refetchEmployee");
-//   }
-// };
-
 const removeEmployee = async (id: string) => {
   // loading.value = true;
 
@@ -146,14 +129,53 @@ const confirmRemoveEmployee = (id: string) => {
   showConfirm.value = true;
 };
 
-const copyLink = (link:string) => {
-  copied.value = true;
-  navigator.clipboard.writeText(
-    link
-      ? link
-      : ''
-  );
-}
+
+const getInviteLink = async (inviteId: string, index: number) => {
+    try {
+        const response = await employeeStore.fetchInviteLink(inviteId); 
+        if (response) {
+            const inviteLink = response.data.data; 
+            copyLink(inviteLink, index); 
+        } else {
+            console.error(response.message);
+        }
+    } catch (error) {
+        console.error("Error fetching invite link", error);
+    }
+};
+
+const copyLink = (link: string, index: number) => {
+    if (link) {
+        navigator.clipboard.writeText(link)
+            .then(() => {
+                copied.value[index] = true; 
+                console.log('Link copied to clipboard');
+
+                setTimeout(() => {
+                    copied.value[index] = false; 
+                }, 3000);
+            })
+            .catch(err => {
+                console.error('Failed to copy: ', err);
+                copied.value[index] = false; 
+            });
+    } else {
+        console.error('No link provided to copy');
+        copied.value[index] = false; 
+    }
+};
+
+
+// const copyLink = (link:string) => {
+//   copied.value = true;
+//   navigator.clipboard.writeText(
+//     link
+//       ? link
+//       : ''
+//   );
+// }
+
+
 </script>
 <template>
   <!-- Table -->
@@ -258,7 +280,7 @@ const copyLink = (link:string) => {
               >
               <!-- v-for="employee in responseData.data.filter((emp: null) => emp !== null)" -->
                 <tr
-                  v-for="employee in responseData.data"
+                  v-for="(employee, index) in responseData.data"
                   :key="employee.id"
                   class="text-black-100"
                 >
@@ -322,11 +344,11 @@ const copyLink = (link:string) => {
                   <td class="py-4 px-0 text-left whitespace-nowrap w-[18%]">
                     <div class="flex items-center justify-between">
                       <button
-                        @click="copyLink(employee.link)" 
-                        :disabled="true"
+                        @click="getInviteLink(employee.id, index)" 
+                        :disabled="false"
                         class="text-green bg-red-light text-sm text-bold px-4+1 py-2 rounded-full"
                       >
-                        {{ !copied ? 'Copy Invite Link' : 'Copied' }}
+                        {{ !copied[index] ? 'Copy Invite Link' : 'Copied' }}
                       </button>
                       <button
                         @click="confirmRemoveEmployee(employee.id)"
