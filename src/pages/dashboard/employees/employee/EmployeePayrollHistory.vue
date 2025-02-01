@@ -398,17 +398,17 @@ const router = useRouter()
     class="flex justify-center items-center lg:h-[400px] h-[300px]"
   />
   <div v-else class="w-full overflow-auto">
-    <!-- <EmptyState v-if="!responseData?.data && !responseData?.data?.payments?.length">
+    <EmptyState v-if="!fetchLoading && !payrollData.length">
       <template #icon>
         <IUserThree />
       </template>
       <template #heading> Payment details </template>
-      <template #desc> No payment found </template>
-    </EmptyState> -->
+      <template #desc> No payroll records found for this employee. </template>
+    </EmptyState>
     <div class="align-middle inline-block min-w-full">
       <div class="overflow-hidden sm:rounded-lg">
         <table class="min-w-full table-fixed">
-          <thead class="text-black-200 text-sm text-left">
+          <thead v-if="payrollData.length" class="text-black-200 text-sm text-left">
             <tr class="whitespace-nowrap">
               <th scope="col" class="py-4 font-normal text-left items-center space-x-3">
                 <span> Payroll </span>
