@@ -202,7 +202,7 @@ const gotoExternalRouteOnTab = (route:string) => {
           <span class="text-sm">Login As Company</span>
         </button>
         <button type="button"
-          @click="gotoExternalRouteOnTab('https://employee.platoonco.com/')"
+          @click="gotoExternalRouteOnTab('https://platoon-employee-portal.netlify.app/')"
           class="flex items-center justify-center w-full bg-grey py-3 px-6 rounded-full space-x-24"
         >
           <!-- <img src="/images/png/apple.png" alt="Apple" /> -->
