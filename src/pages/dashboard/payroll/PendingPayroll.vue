@@ -229,7 +229,7 @@ const fetchPayroll = async (page = 1) => {
     // @ts-ignore comment above the problematic line
     responseData.value.sort(function(a, b){return b.id - a.id})
   }
-  const response = await request(payrollStore.index(organisationId,null, "Pending", 10, page), loading);
+  const response = await request(payrollStore.index(organisationId,null, "Pending", null, 10, page), loading);
 
   const successResponse = handleSuccess(response);
 
