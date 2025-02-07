@@ -254,17 +254,32 @@ defineExpose({
   v$,
 });
 
+// const exportToPDF = () => {
+//   slip.value = {
+//         name: "Adebayoowa Temifayowa",
+//         narration: "October Payslip",
+//         paymentDate: "20/08/2024",
+//         grossPay: 0,
+//         bonus: 30000,
+//         deductions: 5000,
+//         tax: 500,
+//         netPay: 24500,
+//     };
+//     var element = document.getElementById('element-to-print');
+//     var opt = {
+//         orientation: 'p',
+//         unit: 'mm',
+//         format: 'a4',
+//         putOnlyUsedFonts:true,
+//         floatPrecision: 16,
+//         image: { type: 'jpeg', quality: 1.50 },
+//         html2canvas:  { scale: 4 },
+//     };
+//     html2pdf().set(opt).from(element).save(`${slip.value.name}-${slip.value.paymentDate}`);
+//     // html2pdf().set(opt).from(element).save(`${responseData.value.data.data.firstname+' '+responseData.value.data.data.lastname+slip.value.narration}-${slip.value.paymentDate}`);
+// }
+
 const exportToPDF = () => {
-  slip.value = {
-        name: "Adebayoowa Temifayowa",
-        narration: "October Payslip",
-        paymentDate: "20/08/2024",
-        grossPay: 0,
-        bonus: 30000,
-        deductions: 5000,
-        tax: 500,
-        netPay: 24500,
-    };
     var element = document.getElementById('element-to-print');
     var opt = {
         orientation: 'p',
@@ -275,8 +290,8 @@ const exportToPDF = () => {
         image: { type: 'jpeg', quality: 1.50 },
         html2canvas:  { scale: 4 },
     };
-    html2pdf().set(opt).from(element).save(`${slip.value.name}-${slip.value.paymentDate}`);
-    // html2pdf().set(opt).from(element).save(`${responseData.value.data.data.firstname+' '+responseData.value.data.data.lastname+slip.value.narration}-${slip.value.paymentDate}`);
+
+    html2pdf().set(opt).from(element).save(`${responseData.value.data.data.firstname+' '+responseData.value.data.data.lastname+slip.value.narration}-${slip.value.paymentDate}`);
 }
 
 const getProfile = async () => {
@@ -322,17 +337,47 @@ const fetchPayrollHistory = async () => {
     }
 };
 
-const downloadPayslip = async () => {
-    const startDate = "2025-01-06T07:58:29.599Z"; 
-    const endDate = "2025-01-06T07:58:29.599Z"; 
-    try {
-        const payslipData = await payrollStore.generatePayslip(Number(employeeId.value), organisationId, startDate, endDate);
+// const downloadPayslip = async () => {
+//     const startDate = "2025-01-06T07:58:29.599Z"; 
+//     const endDate = "2025-01-06T07:58:29.599Z"; 
+//     try {
+//         const payslipData = await payrollStore.generatePayslip(Number(employeeId.value), organisationId, startDate, endDate);
 
-        console.log("Payslip generated successfully:", payslipData);
+//         console.log("Payslip generated successfully:", payslipData);
+//     } catch (error) {
+//         console.error("Error generating payslip:", error);
+//     }
+// };
+
+const downloadPayslip = async (item: { payroll: { createdAt: any; }; narration: any; }) => {
+    const startDate = item.payroll.createdAt; 
+    const endDate = item.payroll.createdAt;
+
+    try {
+        const payslipData = await payrollStore.generatePayslip(
+            Number(employeeId.value), 
+            organisationId, 
+            startDate, 
+            endDate
+        );
+
+        slip.value = {
+            name: payslipData.data.firstname + ' ' + payslipData.data.lastname,
+            narration: item.narration,
+            paymentDate: payslipData.data.paymentDate || '--/--/---- --:-- --',
+            grossPay: formatNumber(payslipData.data.salary.gross || 0),
+            bonus: formatNumber(payslipData.data.breakdown.bonus || 0),
+            deductions: formatNumber(payslipData.data.breakdown.deductions || 0),
+            tax: formatNumber(payslipData.data.breakdown.tax || 0),
+            netPay: formatNumber(payslipData.data.salary.total || 0)
+        };
+
+        exportToPDF(); 
     } catch (error) {
         console.error("Error generating payslip:", error);
     }
 };
+
 
 // const slipInfo = (item:any) => {
 //   slip.value = {
@@ -483,8 +528,12 @@ const router = useRouter()
                   class="text-[#003b3d] bg-red-light text-sm text-bold px-4+1 py-2 rounded-full">
                   Download Payslip
                 </button> -->
-                  <button @click="exportToPDF"
+                  <!-- <button @click="exportToPDF"
                     class="text-[#003b3d] bg-red-light text-sm text-bold px-4+1 py-2 rounded-full">
+                    Download Payslip
+                  </button> -->
+
+                  <button @click="downloadPayslip(item)" class="text-[#003b3d] bg-red-light text-sm text-bold px-4 py-2 rounded-full">
                     Download Payslip
                   </button>
                   <!-- <button>

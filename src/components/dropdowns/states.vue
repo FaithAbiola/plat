@@ -2,15 +2,38 @@
 import { ref, inject } from "vue";
 // variables
 
+const props = defineProps<{
+  data: {
+    state: string;
+  };
+}>();
 // provide and inject
 const showState = inject<any>("showState");
 let selectedState = inject<any>("selectedState");
+let selectedCity = inject<any>("selectedCity");
+const showCity = inject<any>("showCity");
 // methods
+// const selectState = (state: string) => {
+//   selectedState.value = state;
+//   showState.value = false;
+//   // console.log(selectedState);
+// };
+
+// const selectState = (state: string) => {
+//   selectedState.value = state;
+//   props.data.state = state; 
+//   showState.value = false;
+// };
+
 const selectState = (state: string) => {
   selectedState.value = state;
-  showState.value = false;
-  // console.log(selectedState);
+  props.data.state = state; 
+  selectedCity.value = ""; 
+  showCity.value = false; 
+  showState.value = false; 
 };
+
+
 const states = ref([
   "FederalCapitalTerritory",
   "Abia",

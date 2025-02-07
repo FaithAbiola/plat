@@ -69,17 +69,17 @@ const updateId = (id: any) => {
   selectedDepartmentId.value = id;
 };
 const fetchInviteEmployees = async () => {
-  const totalPendingEmployeeCache = cache("total_pending_employees");
-  if (typeof totalPendingEmployeeCache !== "undefined") {
-    inviteData.value = totalPendingEmployeeCache;
-  }
+  // const totalPendingEmployeeCache = cache("total_pending_employees");
+  // if (typeof totalPendingEmployeeCache !== "undefined") {
+  //   inviteData.value = totalPendingEmployeeCache;
+  // }
   const response = await request(employeeStore.invitationIndex());
 
   const successResponse = handleSuccess(response);
 
   if (successResponse && typeof successResponse !== "undefined") {
     inviteData.value = successResponse.data.data;
-    cache("total_pending_employees", successResponse.data.data);
+    // cache("total_pending_employees", successResponse.data.data);
     console.log(successResponse.data);
     console.log(successResponse.data.data);
   }
@@ -88,18 +88,18 @@ fetchInviteEmployees();
 
 const fetchEmployees = async (page = 1) => {
   loading.value = true;
-  const totalEmployeeCached = cache("total_employees_length");
-  console.log("&&&&", totalEmployeeCached)
-  if (typeof totalEmployeeCached !== "undefined") {
-    employeeData.value = totalEmployeeCached;
-  }
+  // const totalEmployeeCached = cache("total_employees_length");
+  // console.log("&&&&", totalEmployeeCached)
+  // if (typeof totalEmployeeCached !== "undefined") {
+  //   employeeData.value = totalEmployeeCached;
+  // }
   const response = await request(employeeStore.index(organisationId, 10, page));
 
   const successResponse = handleSuccess(response);
   loading.value = false; 
   if (successResponse && typeof successResponse !== "undefined") {
     employeeData.value = successResponse.data.data.pageItems.length;
-    cache("total_employees_length", employeeData.value);
+    // cache("total_employees_length", employeeData.value);
     console.log("*********",successResponse.data.data.pageItems.length);
     console.log("****++++++*****",employeeData.value);
   }
@@ -107,12 +107,12 @@ const fetchEmployees = async (page = 1) => {
 fetchEmployees();
 
 const fetchGroups = async () => {
-  const groupCachedData = cache("total_departments");
-  console.log("&&&&", groupCachedData)
-  if (typeof groupCachedData !== "undefined") {
-    groupData.value = groupCachedData;
-    loadingDepartment.value = false;
-  }
+  // const groupCachedData = cache("total_departments");
+  // console.log("&&&&", groupCachedData)
+  // if (typeof groupCachedData !== "undefined") {
+  //   groupData.value = groupCachedData;
+  //   loadingDepartment.value = false;
+  // }
 
   const response = await request(groupStore.totalDepartment(organisationId));
   loadingDepartment.value = false;
@@ -121,7 +121,7 @@ const fetchGroups = async () => {
 
   if (successResponse && typeof successResponse !== "undefined") {
     groupData.value = successResponse.data.data;
-    cache("total_departments", groupData.value);
+    // cache("total_departments", groupData.value);
     console.log("!!!!!!!!", groupData.value);
   }
 };

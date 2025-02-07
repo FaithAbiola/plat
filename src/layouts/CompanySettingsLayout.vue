@@ -15,9 +15,17 @@ const loading = ref(false);
 // emits
 const emit = defineEmits<{ (e: "fetchCompanies"): void }>();
 // methods
+// const save = () => {
+//   childComponent.value.saveChanges().then(() => {
+//     emit("fetchCompanies");
+//   });
+// };
+
+
 const save = () => {
-  childComponent.value.saveChanges().then(() => {
-    emit("fetchCompanies");
+  loading.value = true;
+  childComponent.value.updateProfile().then(() => {
+    // emit("fetchCompanies");
   });
 };
 </script>

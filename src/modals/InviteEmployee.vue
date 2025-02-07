@@ -131,7 +131,7 @@ const handleInvite = async () => {
     // };
 
     const sendData = {
-      firstName: v$.value.name.$model.split(' ')[0], // Assuming name is "First Last"
+      firstName: v$.value.name.$model.split(' ')[0], 
       lastName: v$.value.name.$model.split(' ')[1],
       email: v$.value.email.$model as string,
       phoneNumber: data.value.phoneNumber as string,
@@ -175,7 +175,7 @@ const handleInvite = async () => {
         setTimeout(() => {
           render.value = true;
           emit("close");
-        }, 5000)
+        }, 2000)
       }
     }else{
       loading.value = false;

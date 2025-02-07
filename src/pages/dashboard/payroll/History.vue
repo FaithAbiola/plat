@@ -225,7 +225,7 @@ const fetchPayroll = async (page = 1) => {
   // }
   loading.value = true;
   try {
-    const response = await request(payrollStore.index(organisationId,null, null, 10, page), loading);
+    const response = await request(payrollStore.index(organisationId,null, null, 'Pending', 10, page), loading);
 
     const successResponse = handleSuccess(response);
 
@@ -264,7 +264,7 @@ const fetchAllPayrolls = async () => {
 
   do {
     try {
-      const response = await request(payrollStore.index(organisationId, null, null, 10, page), loading);
+      const response = await request(payrollStore.index(organisationId, null, null, 'Pending', 10, page), loading);
       const successResponse = handleSuccess(response);
 
       if (successResponse && typeof successResponse.data !== "undefined") {

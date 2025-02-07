@@ -375,7 +375,7 @@ const updatePage = (page: number) => {
                   v-if="loading == true"
                   class="flex justify-center items-center lg:h-[400px] h-[300px]"
                 />
-                <table class="min-w-full table-fixed">
+                <table v-else class="min-w-full table-fixed">
                   <thead
                     v-if="responseData && responseData.data"
                     class="text-black-200 text-sm text-left"

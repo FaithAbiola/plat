@@ -1,5 +1,139 @@
 <script setup lang="ts">
 import { IArrowDown } from "../../../core/icons";
+import { ref, computed, provide, reactive, onMounted, inject } from "vue";
+import { request } from "../../../composables/request.composable";
+import handleSuccess from "../../../composables/handle_success.composable";
+import handleError from "../../../composables/handle_error.composable";
+import useVuelidate from "@vuelidate/core";
+import { email, helpers, required } from "@vuelidate/validators";
+import { stringValidate, numberValidate } from "../../../validations/validate";
+
+import {
+  useCompanyStore,
+  useUserStore,
+  useAuthStore,
+} from "../../../store/index";
+
+
+const userStore = useUserStore();
+const authStore = useAuthStore();
+
+
+
+const loading = ref(false);
+const showSuccess = ref(false);
+const responseData = ref({ message: "action successful" });
+const render = inject<any>("render");
+
+
+let data = ref<{
+  firstname: string | null;
+  lastname: string | null;
+}>({
+  firstname: null,
+  lastname: null,
+});
+
+const disabled = ref(true);
+
+const capitalizeFirstLetter = (name: string | null) => {
+  if (!name) return "";
+  return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+};
+
+const fetchUserDetails = async () => {
+  const userId = Number(localStorage.getItem('userId'));
+  console.log("User ID:", userId); 
+  
+  if (userId) {
+    const response = await request(userStore.show(userId)); 
+    console.log("API Response:", response);
+    
+    const successResponse = handleSuccess(response);
+    
+    if (successResponse && successResponse.data && successResponse.data.data) {
+      const userData = successResponse.data.data.organisation.user; 
+      
+      data.value = {
+        firstname: capitalizeFirstLetter(userData.firstname || ""), 
+        lastname: capitalizeFirstLetter(userData.lastname || "")
+      };
+
+      console.log("Updated Data:", data.value);
+    } else {
+      console.error("Invalid response data:", successResponse);
+    }
+  }
+};
+
+
+const updateProfile = async () => {
+  const isFormCorrect = await v$.value.$validate();
+
+  if (isFormCorrect) {
+
+    const userId = Number(localStorage.getItem('userId'));
+
+    const dataObj = {
+      userId: userId,
+      firstName: v$.value.firstname.$model as string,
+      lastName: v$.value.lastname.$model as string,
+    };
+console.log("===========", dataObj)
+    loading.value = true;
+    try {
+    const response = await request(authStore.updateProfile(dataObj), loading);
+
+    handleError(response, userStore);
+    const successResponse = handleSuccess(response, showSuccess);
+
+    if (successResponse && successResponse.data && successResponse.data.succeeded) {
+      // Handle success response
+      responseData.value = {
+        message: successResponse.data.message,
+      };
+      showSuccess.value = true; 
+      render.value = true;
+      
+      await fetchUserDetails();
+    }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      responseData.value.message = "An error occurred while updating the profile.";
+    } finally {
+      loading.value = false;
+    }
+  }
+};
+
+fetchUserDetails();
+const rules = computed(() => {
+  return {
+   
+    firstname: {
+      stringValidate: helpers.withMessage(
+        "First name can only include alphabets",
+        () => stringValidate(data.value.firstname as string) as any
+      ),
+    },
+    lastname: {
+      stringValidate: helpers.withMessage(
+        "Last name can only include alphabets",
+        () => stringValidate(data.value.lastname as string) as any
+      ),
+    },
+  }
+});
+
+
+const v$ = useVuelidate(rules as any, data);
+
+defineExpose({
+  updateProfile,
+  disabled,
+  v$,
+});
+
 </script>
 <template>
   <div class="lg:px-0 lg:flex justify-center px-6 w-full">
@@ -48,31 +182,43 @@ import { IArrowDown } from "../../../core/icons";
             <div class="relative">
               <input
                 type="text"
-                id="firstname"
+                id="Name"
+                @click="disabled = false"
+                v-model="data.firstname"
                 maxlength="55"
-                class="input-float peer pr-10.5"
+                class="input-float text-black peer pr-10.5"
+                placeholder=""
               />
               <label
-                for="firstname"
+                for="Name"
                 class="input-float-label peer-focus:text-black-100 peer-placeholder-shown:scale-75 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-1 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:px-2"
               >
                 First Name</label
               >
+              <div v-if="v$.firstname.$error" class="text-red-600 text-xs">
+                {{ "* " + v$.firstname.$errors[0].$message }}
+              </div>
             </div>
 
             <div class="relative">
               <input
                 type="text"
-                id="lastname"
+                @click="disabled = false"
+                v-model="data.lastname"
+                id="lastName"
                 maxlength="55"
-                class="input-float peer pr-10.5"
+                class="input-float text-black peer pr-10.5"
+                placeholder=""
               />
               <label
                 for="lastname"
                 class="input-float-label peer-focus:text-black-100 peer-placeholder-shown:scale-75 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-1 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:px-2"
               >
-                Contact last name</label
+                Last name</label
               >
+              <div v-if="v$.lastname.$error" class="text-red-600 text-xs">
+                {{ "* " + v$.lastname.$errors[0].$message }}
+              </div>
             </div>
           </div>
         </div>

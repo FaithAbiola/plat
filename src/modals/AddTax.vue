@@ -24,7 +24,7 @@ const data = ref({ amount: props.employeeAmount ?? 0 });
 // Validation rules
 const rules = computed(() => ({
   amount: {
-    required: helpers.withMessage('Tax amount is required', required),
+    // required: helpers.withMessage('Tax amount is required', required),
   },
 }));
 
@@ -101,15 +101,14 @@ const v$ = useVuelidate(rules as any, data);
                   <div class="flex justify-between items-center h-full w-full">
                     <input
                       type="text"
-                      required
                       v-model.number="data.amount"
                       placeholder="Tax amount"
                       class="placeholder-strong rounded-lg w-full text-sm outline-none border-none h-full focus:outline-none focus:border-none"
                     />
                   </div>
-                  <div v-if="v$.amount.$error" class="text-red-600 text-xs">
+                  <!-- <div v-if="v$.amount.$error" class="text-red-600 text-xs">
                     {{ '* ' + v$.amount.$errors[0].$message }}
-                  </div>
+                  </div> -->
                 </div>
               </div>
   

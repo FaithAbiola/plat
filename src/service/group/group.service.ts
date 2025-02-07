@@ -243,6 +243,29 @@ async updateGrade(gradeId: number, data: { name: string; code: string; grossPay:
       });
 }
 
+async createGrades(departmentId: number, grades: { name: string; code: string; grossPay: number }[]): Promise<any> {
+  const customRequest = this.createAxiosInstance();
+
+  const requestBody = {
+      departmentId: departmentId,
+      grades: grades,
+  };
+
+  return await customRequest
+      .post('/Grade/create', requestBody, {
+          headers: authhHeader(),
+      })
+      .then((res) => {
+          console.log("Create Grades response:", res);
+          return res;
+      })
+      .catch((err) => {
+          console.error("Error occurred during grade creation:", err);
+          return err;
+      });
+}
+
+
   // async updateGrade(data: Update, id: string, store_id: string): Promise<any> {
   //   return await this.request
   //     .post(

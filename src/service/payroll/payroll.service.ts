@@ -14,7 +14,7 @@ class Payroll {
     });
   }
 
-  async get(organisationId: number, scheduledDate: string | null, status: string | null, pageSize: number = 10, pageNumber: number = 1): Promise<any> {
+  async get(organisationId: number, scheduledDate: string | null, status: string | null,  omitStatus: string | null, pageSize: number = 10, pageNumber: number = 1): Promise<any> {
     const customRequest = this.createAxiosInstance();
 
     return await customRequest
@@ -24,6 +24,7 @@ class Payroll {
           OrganisationId: organisationId,
           ScheduledDate: scheduledDate,
           Status: status,
+          OmitStatus: omitStatus,
           PageSize: pageSize,
           PageNumber: pageNumber,
         },
@@ -104,7 +105,7 @@ async getSalaryBreakdown(employeeId: number): Promise<any> {
   const customRequest = this.createAxiosInstance();
 
   return await customRequest
-      .get(`/salary-breakdown/${employeeId}`, {
+      .get(`/Salary/salary-breakdown/${employeeId}`, {
           headers: authHeader(),
       })
       .then((res) => {

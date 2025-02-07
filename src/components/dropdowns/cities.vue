@@ -1,18 +1,31 @@
 <script setup lang="ts">
 import { ref, inject } from "vue";
 
+const props = defineProps<{
+  data: {
+    city: string;
+    state: keyof typeof Cities; // Ensure state is a valid key of Cities
+  };
+}>();
 // provide and inject
 const showCity = inject<any>("showCity");
 let selectedCity = inject<any>("selectedCity");
 // methods
-const selectCity = (City: string) => {
-  selectedCity.value = City;
+// const selectCity = (City: string) => {
+//   selectedCity.value = City;
+//   showCity.value = false;
+//   // console.log(selectedCity);
+// };
+
+
+const selectCity = (city: string) => {
+  selectedCity.value = city;
+  props.data.city = city; // Update the city in data
   showCity.value = false;
-  // console.log(selectedCity);
 };
 
 // variables
-const Cities = ref({
+const Cities = {
   FederalCapitalTerritory: ["Abuja"],
   Abia: ["Aba", "Arochukwu", "Umuahia"],
   Adamawa: ["Jimeta", "Mubi", "Numan", "Yola"],
@@ -66,15 +79,15 @@ const Cities = ref({
   Taraba: ["Ibi", "Jalingo", "Muri"],
   Yobe: ["Damaturu", "Nguru"],
   Zamfara: ["Gusau", "Kaura Namoda"],
-});
-const props = defineProps<{ state: keyof Object }>();
+} as const;
+// const props = defineProps<{ state: keyof Object }>();
 </script>
 <template>
   <div
     class="space-y-5 p-6 shadow-rgba bg-white text-sm cursor-pointer font-bold rounded-lg"
   >
     <p
-      v-for="city in Cities[props.state]"
+      v-for="city in Cities[props.data.state]"
       :key="city"
       @click="selectCity(city)"
     >

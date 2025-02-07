@@ -32,12 +32,12 @@ let data = ref<{
   email: string | null;
   password: string | null;
   confirmPassword: string | null;
-  photo: string | null;
+  // photo: string | null;
   organisationName?: string; 
-  country?: string;
-  city?: string;
-  state?: string;
-  street?: string;
+  // country?: string;
+  // city?: string;
+  // state?: string;
+  // street?: string;
 }>({
   firstname: null,
   lastname: null,
@@ -45,12 +45,12 @@ let data = ref<{
   email: null,
   password: null,
   confirmPassword: null,
-  photo: null,
+  // photo: null,
   organisationName: undefined,
-  country: undefined,
-  city: undefined,
-  state: undefined,
-  street: undefined,
+  // country: undefined,
+  // city: undefined,
+  // state: undefined,
+  // street: undefined,
 });
 const showSuccess = ref(false);
 const disabled = ref(true);
@@ -119,7 +119,6 @@ const uppdateProfile = async () => {
 };
 
 
-//DO NOT COPY THIS CODE AGAIN, USE YOUR BRAIN AND DON'T BE LAZY ======== DO NOT COPY THIS CODE AGAIN, USE YOUR BRAIN AND DON'T BE LAZY 
 const updateProfile = async () => {
   const isFormCorrect = await v$.value.$validate();
 
@@ -130,18 +129,16 @@ const updateProfile = async () => {
     const countryCode = phoneNumber.match(/^\+\d{1,3}/)?.[0] || '';
     const actualNumber = phoneNumber.replace(countryCode, '').trim();
     const formattedNumber = actualNumber.startsWith('0') ? actualNumber : '0' + actualNumber;
+    const userId = Number(localStorage.getItem('userId'));
 
     const dataObj = {
+      userId: userId,
       organisationName: data.value.organisationName, 
       firstName: v$.value.firstname.$model as string,
       lastName: v$.value.lastname.$model as string,
       email: v$.value.email.$model as string,
       countryCode: countryCode,
-      phoneNumber: formattedNumber,
-      country: data.value.country, 
-      city: data.value.city, 
-      state: data.value.state, 
-      street: data.value.street, 
+      phoneNumber: formattedNumber, 
     };
 console.log("===========", dataObj)
     loading.value = true;
@@ -160,14 +157,9 @@ console.log("===========", dataObj)
       render.value = true;
 
 
-      //DO NOT COPY THIS CODE AGAIN, USE YOUR BRAIN AND DON'T BE LAZY ======== DO NOT COPY THIS CODE AGAIN, USE YOUR BRAIN AND DON'T BE LAZY 
-
-      //DO NOT COPY THIS CODE AGAIN, USE YOUR BRAIN AND DON'T BE LAZY ======== DO NOT COPY THIS CODE AGAIN, USE YOUR BRAIN AND DON'T BE LAZY 
-
       
       if (data.value.password && data.value.password === data.value.confirmPassword) {
 
-      //DO NOT COPY THIS CODE AGAIN, USE YOUR BRAIN AND DON'T BE LAZY ======== DO NOT COPY THIS CODE AGAIN, USE YOUR BRAIN AND DON'T BE LAZY 
         const passwordResponse = await request(authStore.changeThePassword(data.value.password), loading);
         handleError(passwordResponse, userStore);
         const passwordSuccessResponse = handleSuccess(passwordResponse, showSuccess);
@@ -213,12 +205,12 @@ const fetchUserDetails = async () => {
         telephone: userData.phoneNumber || "", 
         password: null, 
         confirmPassword: null, 
-        photo: userData.imageUrl || null,
+        // photo: userData.imageUrl || null,
         organisationName: organisationData.organisationName || "",
-        street: organisationData.address.street || "",
-        city: organisationData.address.city || "", 
-        state: organisationData.address.state || "", 
-        country: organisationData.address.country || "", 
+        // street: organisationData.address.street || "",
+        // city: organisationData.address.city || "", 
+        // state: organisationData.address.state || "", 
+        // country: organisationData.address.country || "", 
       };
 
       console.log("Updated Data:", data.value);

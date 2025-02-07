@@ -145,6 +145,20 @@ const groupStore = defineStore("group", {
         return Promise.reject(error);
     }
 },
+async createGrades(departmentId: number, grades: { name: string; code: string; grossPay: number }[]): Promise<any> {
+  try {
+      const response = await groupService.createGrades(departmentId, grades);
+      if (response.data) {
+          return Promise.resolve(response);
+      } else if (response.response) {
+          return Promise.reject(response.response);
+      } else {
+          return Promise.reject(response.message);
+      }
+  } catch (error: any) {
+      return Promise.reject(error);
+  }
+},
     async updateGradeList(data: Update, id: string): Promise<any> {
       try {
         const response = await groupService.updateMultiple(data, id);

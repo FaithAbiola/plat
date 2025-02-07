@@ -612,6 +612,7 @@ fetchPayrollSummary();
                     <!-- empty state below -->
                   <tbody v-else class="w-full">
                     <tr class="w-full no-hover">
+                      <td colspan="7">
                       <EmptyState>
                         <template #icon>
                           <IUserThree />
@@ -621,8 +622,8 @@ fetchPayrollSummary();
                           There are currently no payments  to show<br />
                           at the moment
                         </template>
-                       
                       </EmptyState>
+                    </td>
                     </tr>
                   </tbody>
                 </table>

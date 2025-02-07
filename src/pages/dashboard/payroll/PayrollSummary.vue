@@ -212,7 +212,9 @@ onMounted(() => {
         <div class="flex justify-between">
             <div class="flex space-x-5">
                 <div class="pt-1">
-                  <IArrowLeftTail />
+                  <button @click="router.back()">
+                    <IArrowLeftTail />
+                  </button>
                 </div>
                 <div>
                   <h3 class="font-bold text-2xl whitespace-nowrap">

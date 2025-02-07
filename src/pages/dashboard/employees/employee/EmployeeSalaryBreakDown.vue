@@ -388,8 +388,8 @@ defineExpose({
         <div v-if="salaryData.data">
         <!-- <div> -->
           <!-- <h3 class="text-black-rgba text-2xl font-black">NGN {{ formatNumber(responseData.data.data.grade.salary) }}</h3> -->
-          <h3 class="text-black-rgba text-2xl font-black">NGN 1,500,000</h3>
-          <!-- <span class="text-sm text-gray-rgba-3">NGN{{ salaryData.grossPay }}</span> -->
+          <!-- <h3 class="text-black-rgba text-2xl font-black">NGN 1,500,000</h3> -->
+          <span class="text-sm text-gray-rgba-3">NGN{{ salaryData.grossPay }}</span>
           <span class="text-sm text-gray-rgba-3">Gross Salary</span>
         </div>
 
@@ -397,8 +397,8 @@ defineExpose({
           <div class="text-base flex items-center justify-between py-4">
             <span class="font-semi-medium text-gray-rgba-3">Basic/Net</span>
             <!-- <span class="text-black-100 font-semi-medium">N{{ formatNumber(responseData.data.data.grade.salary) }}</span> -->
-            <!-- <span class="text-black-100 font-semi-medium">N{{ salaryData.netPay }}</span> -->
-            <span class="text-black-100 font-semi-medium">N24,500</span>
+            <span class="text-black-100 font-semi-medium">N{{ salaryData.netPay }}</span>
+            <!-- <span class="text-black-100 font-semi-medium">N24,500</span> -->
             <!-- <span class="text-black-100 font-semi-medium">n/a</span> -->
           </div>
           <div class="text-base flex items-center justify-between py-4">
@@ -430,8 +430,8 @@ defineExpose({
           <div class="text-base flex items-center justify-between py-4">
             <span class="font-semi-medium text-gray-rgba-3">Tax</span>
             <!-- <span class="text-black-100 font-semi-medium">N{{ formatNumber(grandTotal.tax) }}</span> -->
-            <!-- <span class="text-black-100 font-semi-medium">{{ salaryData.taxAmount }}</span> -->
-            <span class="text-black-100 font-semi-medium">N500</span>
+            <span class="text-black-100 font-semi-medium">N{{ salaryData.taxAmount }}</span>
+            <!-- <span class="text-black-100 font-semi-medium">N500</span> -->
           </div>
         </div>
       </div>
