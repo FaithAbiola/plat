@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, provide, watch, onMounted, nextTick, reactive } from "vue";
+import { ref, provide, watch, onMounted, nextTick, reactive, inject } from "vue";
 import successAlert from "../../../components/alerts/SuccessAlert.vue";
 import spinner from "../../../components/timer/Spinner.vue";
 
@@ -47,10 +47,12 @@ const employeeStore = useEmployeeStore();
 const departmentName = ref("");
 const showDepartment = ref(false);
 const data = ref({ department: "all" });
+const render = inject<any>("render");
 
 const showSuccess = ref(false);
 const editInput = ref(false);
 const loading = ref(false);
+const loadingDraft = ref(false);
 const saving = ref(false);
 const showBonus = ref(false);
 const showDeduction = ref(false);
@@ -63,13 +65,33 @@ const responseData = ref<any>({ data: [], message: "" });
 const employeeMap = ref<Record<string, string>>({}); 
 const successMessage = ref("Action successful");
 const showDropDown = ref(false);
-const grandTotal = ref({
+// const grandTotal = ref({
+//   grossPay: 0,
+//   bonus: 0,
+//   deductions: 0,
+//   taxAmount: 0,
+//   netPay: 0,
+// })
+
+const grandTotal = reactive({
   grossPay: 0,
   bonus: 0,
   deductions: 0,
   taxAmount: 0,
   netPay: 0,
-})
+});
+
+// Function to update netPay
+const updateNetPay = () => {
+  grandTotal.netPay = grandTotal.grossPay + grandTotal.bonus - grandTotal.deductions - grandTotal.taxAmount;
+};
+
+// Watch for changes in grossPay, bonus, deductions, and taxAmount
+watch(() => grandTotal.grossPay, updateNetPay);
+watch(() => grandTotal.bonus, updateNetPay);
+watch(() => grandTotal.deductions, updateNetPay);
+watch(() => grandTotal.taxAmount, updateNetPay);
+
 
 const dataObjj = reactive({
     employees: []
@@ -153,7 +175,14 @@ const fetchEmployees = async (page = 1) => {
     responseData.value.data = employees;
     console.log("$$$$$", employees)
 
-    employees.forEach((employee: { firstName: any; lastName: any; id: string | number; }) => {
+    employees.forEach((employee: {
+      taxAmount: number;
+      deduction: any;
+      bonus: any;
+      netPay: number;
+      grades: any; firstName: any; lastName: any; id: string | number; 
+}) => {
+  employee.netPay = employee.grades.grossPay + (employee.bonus ? employee.bonus.amount : 0) - (employee.deduction ? employee.deduction.amount : 0) - (employee.taxAmount || 0);
       const fullName = `${employee.firstName} ${employee.lastName}`;
       employeeMap.value[employee.id] = fullName;
       console.log("", fullName)
@@ -218,7 +247,7 @@ const handleSaveAndContinue = async () => {
 // };
 
 const handleSaveToDraft = async () => {
-  saving.value = true;
+  loadingDraft.value = true;
 
   try {
     const employeesSalary = responseData.value.data.map((employee: { id: any; bonus: any; deduction: any; taxAmount: any; netPay: any; }) => ({
@@ -244,6 +273,9 @@ const handleSaveToDraft = async () => {
       // localStorage.setItem("payrollTableData", JSON.stringify(responseData.value.data));
       showSuccess.value = true;
       successMessage.value = "Payroll saved to draft successfully!";
+      setTimeout(() => {
+        render.value = true;
+      }, 2000);
       console.log("Paaaay", response);
     } else {
       throw new Error(response.message);
@@ -251,7 +283,7 @@ const handleSaveToDraft = async () => {
   } catch (error) {
     console.error("Error saving payroll to draft:", error);
   } finally {
-    saving.value = false;
+    loadingDraft.value = false;
   }
 };
 
@@ -263,6 +295,7 @@ const handleBonusSave = (bonusData: { amount: number; reason: string }) => {
   const employee = responseData.value.data.find((e: { id: null }) => e.id === selectedEmployee.value.id);
   if (employee) {
     employee.bonus = { ...bonusData }; 
+    employee.netPay = employee.grades.grossPay + (employee.bonus ? employee.bonus.amount : 0) - (employee.deduction ? employee.deduction.amount : 0) - (employee.taxAmount || 0);
   }
   showBonus.value = false;
 };
@@ -272,6 +305,7 @@ const handleDeductionSave = (deductionData: { amount: number; reason: string }) 
   const employee = responseData.value.data.find((e: { id: null }) => e.id === selectedEmployee.value.id);
   if (employee) {
     employee.deduction = { ...deductionData }; 
+    employee.netPay = employee.grades.grossPay + (employee.bonus ? employee.bonus.amount : 0) - (employee.deduction ? employee.deduction.amount : 0) - (employee.taxAmount || 0);
    
   }
   showDeduction.value = false;
@@ -286,6 +320,7 @@ const handleTaxSave = (taxData: { amount: number }) => {
 
   if (employee) {
     employee.taxAmount = taxData.amount;
+    employee.netPay = employee.grades.grossPay + (employee.bonus ? employee.bonus.amount : 0) - (employee.deduction ? employee.deduction.amount : 0) - (employee.taxAmount || 0);
   }
   showTax.value = false;
 };
@@ -315,28 +350,28 @@ onMounted(() => {
     <AddBonus
     v-if="showBonus"
     :employeeId="selectedEmployee.id"
-    :employeeAmount="selectedEmployee.bonus"
+    :employeeAmount="selectedEmployee.bonus || 0"
     @save_bonus="handleBonusSave"
     @close_bonus="showBonus = false"
     />
     <AddDeduction
     v-if="showDeduction"
     :employeeId="selectedEmployee.id"
-    :employeeAmount="selectedEmployee.deduction"
+    :employeeAmount="selectedEmployee.deduction || 0"
     @save_deduction="handleDeductionSave"
     @close_deduction="showDeduction = false"
     />
     <AddTax
     v-if="showTax"
     :employeeId="selectedEmployee.id"
-    :employeeAmount="selectedEmployee.taxAmount"
+    :employeeAmount="selectedEmployee.taxAmount || 0"
     @save_tax="handleTaxSave"
     @close_tax="showTax = false"
     />
     <AddNetPay
     v-if="showNetPay"
     :employeeId="selectedEmployee.id"
-    :employeeAmount="selectedEmployee.netPay"
+    :employeeAmount="selectedEmployee.netPay || 0"
     @save_net="handleNetSave"
     @close_net="showNetPay = false"
     />
@@ -455,6 +490,7 @@ onMounted(() => {
                               [
                                 (showBonus = true),
                                 (selectedEmployee.id = employee.id),
+                                (selectedEmployee.bonus = employee.bonus ? employee.bonus.amount : 0) 
                               ]
                             "
                           />
@@ -474,6 +510,7 @@ onMounted(() => {
                               [
                                 (showDeduction = true),
                                 (selectedEmployee.id = employee.id),
+                                (selectedEmployee.deduction = employee.deduction ? employee.deduction.amount : 0)
                               ]
                             "
                           />
@@ -492,6 +529,7 @@ onMounted(() => {
                               [
                                 (showTax = true),
                                 (selectedEmployee.id = employee.id),
+                                (selectedEmployee.taxAmount = employee.taxAmount || 0)
                               ]
                             "
                             />
@@ -503,17 +541,18 @@ onMounted(() => {
                       </td>
                       <td class="py-4 text-left whitespace-nowrap">
                         <div class="flex space-x-2">
-                          <ITablePencil 
+                          <!-- <ITablePencil 
                             @click="
                               [
                                 (showNetPay = true),
                                 (selectedEmployee.id = employee.id),
+                                (selectedEmployee.netPay =  employee.netPay  || 0)
                               ]
                             "
-                          />
+                          /> -->
                           <div class="flex w-full justify-between">
                             <div class="text-left flex flex-col">
-                              <span class="text-sm font-semimedium"> ₦{{ employee.netPay || 0 }} </span>
+                              <span class="text-sm font-semimedium"> ₦{{  employee.netPay || 0 }} </span>
                               <span class="text-xs text-gray-rgba-3">Direct deposit</span>
                             </div>
                           </div>
@@ -530,12 +569,14 @@ onMounted(() => {
         <div class="px-5 flex space-x-4 mt-4 justify-left">
           <ButtonBlue @click="handleSaveAndContinue">
             <template v-slot:placeholder>
-              <span>Save & Continue</span>
+               <spinner v-if="saving == true"/>
+              <span v-else>Save & Continue</span>
             </template>
           </ButtonBlue>
           <ButtonLightBlue @click="handleSaveToDraft">
             <template v-slot:placeholder>
-              <span>Save changes for later</span>
+              <spinner v-if="loadingDraft == true"/>
+              <span v-else>Save changes for later</span>
             </template>
           </ButtonLightBlue>
         </div>

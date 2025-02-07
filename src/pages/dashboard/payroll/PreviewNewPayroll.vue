@@ -187,6 +187,7 @@ const saveAndContinue = async () => {
         console.error("Payroll ID is missing.");
         return;
     }
+    saving.value = true;
 
     // Construct the payload for the update
     const employeesSalary = responseData.value.employeeSalaries.map((employee: { employeeId: number; bonus: any; deduction: any; taxAmount: number; netPay: number; informalPayrollId: number; }) => ({
@@ -219,9 +220,20 @@ const saveAndContinue = async () => {
         }
     } catch (error) {
         console.error("Error saving payroll:", error);
+    } finally {
+      saving.value = false;
+
     }
 };
 
+const updateNetPay = (employee: { grossPay: any; bonus: { amount: any; }; deduction: { amount: any; }; taxAmount: number; netPay: number; }) => {
+    const grossPay = employee.grossPay;
+    const bonus = employee.bonus ? employee.bonus.amount : 0;
+    const deductions = employee.deduction ? employee.deduction.amount : 0;
+    const taxAmount = employee.taxAmount || 0;
+
+    employee.netPay = grossPay + bonus - deductions - taxAmount;
+};
 
 
 const selectedEmployee = ref({ id: null, bonus: 0, deduction: 0, taxAmount: 0, netPay: 0 });
@@ -231,6 +243,7 @@ const handleBonusSave = (bonusData: { amount: number; reason: string }) => {
   const employee = responseData.value.employeeSalaries.find((e: { employeeId: null }) => e.employeeId === selectedEmployee.value.id);
   if (employee) {
     employee.bonus = { ...bonusData }; 
+    updateNetPay(employee);
   }
   showBonus.value = false;
 };
@@ -240,6 +253,7 @@ const handleDeductionSave = (deductionData: { amount: number; reason: string }) 
   const employee = responseData.value.employeeSalaries.find((e: { employeeId: null }) => e.employeeId === selectedEmployee.value.id);
   if (employee) {
     employee.deduction = { ...deductionData }; 
+    updateNetPay(employee); 
    
   }
   showDeduction.value = false;
@@ -254,6 +268,7 @@ const handleTaxSave = (taxData: { amount: number }) => {
 
   if (employee) {
     employee.taxAmount = taxData.amount;
+    updateNetPay(employee); 
   }
   showTax.value = false;
 };
@@ -330,7 +345,8 @@ const handleNetSave = (netPayData: { amount: number }) => {
               <div>
                 <ButtonBlue @click="saveAndContinue">
                 <template v-slot:placeholder>
-                    <span>Save & Continue</span></template>
+                  <spinner v-if="saving == true"/>
+                    <span v-else>Save & Continue</span></template>
                 </ButtonBlue>
             </div>
         </div>
@@ -476,7 +492,7 @@ const handleNetSave = (netPayData: { amount: number }) => {
                       </td>
                       <td class="py-4 text-left whitespace-nowrap">
                         <div class="flex space-x-2">
-                          <ITablePencil 
+                          <!-- <ITablePencil 
                             @click="
                               [
                                 (showNetPay = true),
@@ -484,7 +500,7 @@ const handleNetSave = (netPayData: { amount: number }) => {
                                 (selectedEmployee.netPay = employee.netPay || 0)
                               ]
                             "
-                          />
+                          /> -->
                           <div class="flex w-full justify-between">
                             <div class="text-left flex flex-col">
                               <span class="text-sm font-semimedium"> ₦{{ employee.netPay || 0 }} </span>

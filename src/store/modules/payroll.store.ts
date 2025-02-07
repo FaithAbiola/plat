@@ -11,9 +11,9 @@ interface State {}
 const payrollStore = defineStore("payroll", {
   state: (): State => ({}),
   actions: {
-    async index(organisationId: number, scheduledDate: string | null, status: string | null, pageSize: number,pageNumber: number): Promise<any> {
+    async index(organisationId: number, scheduledDate: string | null, status: string | null, omitStatus: string | null, pageSize: number,pageNumber: number): Promise<any> {
       try {
-        const response = await payrollService.get(organisationId, scheduledDate, status, pageSize, pageNumber);
+        const response = await payrollService.get(organisationId, scheduledDate, status, omitStatus, pageSize, pageNumber);
         if (response.data) {
           return await Promise.resolve(response);
         } else if (response.response) {

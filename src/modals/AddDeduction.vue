@@ -75,11 +75,11 @@ const handleSubmit = () => {
 const rules = computed(() => {
   return {
     amount: {
-      required: helpers.withMessage('Email amount is required', required),
+      // required: helpers.withMessage('Email amount is required', required),
     },
-    reason: {
-      required: helpers.withMessage(' Reason is required', required),
-    },
+    // reason: {
+    //   required: helpers.withMessage(' Reason is required', required),
+    // },
   };
 });
 
@@ -149,15 +149,14 @@ const v$ = useVuelidate(rules as any, data);
                 <div class="flex justify-between items-center h-full w-full">
                   <input
                     type="text"
-                    required
                     v-model.number="data.amount"
                     placeholder="Deduction amount"
                     class="placeholder-strong rounded-lg w-full text-sm outline-none border-none h-full focus:outline-none focus:border-none"
                   />
                 </div>
-                <div v-if="v$.amount.$error" class="text-red-600 text-xs">
+                <!-- <div v-if="v$.amount.$error" class="text-red-600 text-xs">
                   {{ '* ' + v$.amount.$errors[0].$message }}
-                </div>
+                </div> -->
               </div>
               <!-- <div
                 class="font-normal relative w-auto text-left rounded-xl px-4 h-[48px] text-gray-rgba-3 border text-black"
@@ -215,14 +214,13 @@ const v$ = useVuelidate(rules as any, data);
               <div>
                 <textarea
                   v-model="data.reason"
-                  required
                   class="w-full focus:outline-none outline-none py-3 font-normal border-grey-300 text-left rounded-xl px-4 h-[70px] border text-black"
                   placeholder="Reason"
                 ></textarea>
               </div>
-              <div v-if="v$.reason.$error" class="text-red-600 text-xs">
+              <!-- <div v-if="v$.reason.$error" class="text-red-600 text-xs">
                 {{ '* ' + v$.reason.$errors[0].$message }}
-              </div>
+              </div> -->
               <!--  -->
             </div>
 

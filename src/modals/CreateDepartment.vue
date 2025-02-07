@@ -325,6 +325,67 @@ const updateDepartmentGroup = async () => {
   loading.value = false;
 };
 
+const refreshGrades = async () => {
+    loading.value = true; 
+    await setField();
+    loading.value = false; 
+};
+
+
+const createGrades = async () => {
+    const gradesData = gradesArrCreate.value.map(grade => ({
+        name: grade.key,
+        code: grade.value,
+        grossPay: Number(grade.grossPay) || 0,
+    }));
+
+    loading.value = true;
+    const response = await request(groupStore.createGrades(props.departmentId, gradesData), loading);
+
+    handleError(response, userStore);
+    const successResponse = handleSuccess(response, showSuccess);
+
+    if (successResponse && typeof successResponse !== "undefined") {
+      
+      const newGrades = Array.isArray(successResponse.data) ? successResponse.data : [];
+
+        gradesArr.value.push(...newGrades); 
+        responseData.value = successResponse;
+        await refreshGrades();
+        showSuccess.value = true;
+        setTimeout(() => {
+          addGarde.value = false;
+        }, 2000);
+    } else {
+        console.error("Error:", response.message);
+    }
+    loading.value = false;
+};
+
+// const createGrades = async () => {
+//     const gradesData = gradesArrCreate.value.map(grade => ({
+//         name: grade.key,
+//         code: grade.value,
+//         grossPay: Number(grade.grossPay) || 0,
+//     }));
+
+//     loading.value = true;
+//     const response = await request(groupStore.createGrades(props.departmentId, gradesData), loading);
+
+//     handleError(response, userStore);
+//     const successResponse = handleSuccess(response, showSuccess);
+
+//     if (successResponse && typeof successResponse !== "undefined") {
+//         responseData.value = successResponse;
+//         showSuccess.value = true;
+//         setTimeout(() => {
+//             render.value = true;
+//             emit("close");
+//         }, 5000);
+//     }
+//     loading.value = false;
+// };
+
 setField();
 
 onBeforeUnmount(() => {
@@ -617,6 +678,7 @@ onBeforeUnmount(() => {
             class="bg-white px-[20px] py-[27px] space-y-8"
           > -->
           <form
+          @submit.prevent="createGrades"
             class="bg-white px-[20px] py-[27px] space-y-8"
           > 
             <!-- content -->
@@ -632,7 +694,7 @@ onBeforeUnmount(() => {
                 </div>
                 <div>
                   <button
-                    v-on:click="$emit('close')"
+                    v-on:click="addGarde = false" 
                     class="bg-blue-lighter rounded-full top-12 right-12 p-3"
                   >
                     <IClose />

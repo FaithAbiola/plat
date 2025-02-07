@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, provide, reactive, onMounted } from "vue";
+import { ref, computed, provide, reactive, onMounted, inject } from "vue";
 import { useRouter } from "vue-router";
 import { IArrowDown } from "../../../core/icons";
 import { request } from "../../../composables/request.composable";
@@ -39,15 +39,70 @@ const disabled = ref(true);
 const profile = ref<any>();
 const defaultCompanyId = ref("");
 const responseData = ref({ message: "action successful" });
-let data = ref<any>({
-  name: "",
-  email: "",
-  telephone: "",
+const render = inject<any>("render");
+
+// let data = ref<any>({
+//   name: "",
+//   email: "",
+//   telephone: "",
+//   city: "",
+//   country: "Nigeria",
+//   address: "",
+//   industry: "",
+//   currency: 1,
+// });
+type StateType = 
+  | "Bauchi" 
+  | "Enugu" 
+  | "Gombe" 
+  | "Kaduna" 
+  | "Kano" 
+  | "Katsina" 
+  | "Lagos" 
+  | "Nasarawa" 
+  | "Ondo" 
+  | "Oyo" 
+  | "Sokoto" 
+  | "FederalCapitalTerritory" 
+  | "Abia" 
+  | "Adamawa" 
+  | "AkwaIbom" 
+  | "Bayelsa" 
+  | "Benue" 
+  | "Borno" 
+  | "CrossRiver" 
+  | "Delta" 
+  | "Ebonyi" 
+  | "Ekiti" 
+  | "Imo" 
+  | "Jigawa" 
+  | "Kebbi" 
+  | "Kogi" 
+  | "Kwara" 
+  | "Niger" 
+  | "Ogun" 
+  | "Osun" 
+  | "Plateau" 
+  | "Rivers" 
+  | "Taraba" 
+  | "Yobe" 
+  | "Zamfara";
+let data = ref<{
+  telephone: string | null;
+  email: string | null;
+  organisationName?: string; 
+  country?: string;
+  city: string;
+  state: StateType;
+  street?: string;
+}>({
+  telephone: null,
+  email: null,
+  organisationName: undefined,
+  country: undefined,
   city: "",
-  country: "Nigeria",
-  address: "",
-  industry: "",
-  currency: 1,
+  state: "Lagos",
+  street: undefined,
 });
 const valid = ref(false);
 
@@ -76,91 +131,163 @@ const onInput = (phone: number, phoneObject: any, input: any) => {
   }
 };
 
-const validatePhone = () => {
-  return valid.value;
+const validatePhone = (phone: string) => {
+  if (!phone) return true; 
+  const phoneRegex = /^\+\d{1,3}\d{9,14}$/; 
+  return phoneRegex.test(phone);
 };
 
-const getProfile = async () => {
-  const response = await request(authStore.getProfile());
+const capitalizeFirstLetter = (name: string | null) => {
+  if (!name) return "";
+  return name
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
 
-  // handleError(response, userStore);
-  const successResponse = handleSuccess(response);
 
-  if (successResponse && typeof successResponse !== "undefined") {
-    profile.value = successResponse.data;
+const fetchUserDetails = async () => {
+  const userId = Number(localStorage.getItem('userId'));
+  console.log("User ID:", userId); 
+  
+  if (userId) {
+    const response = await request(userStore.show(userId)); 
+    console.log("API Response:", response);
+    
+    const successResponse = handleSuccess(response);
+    
+    if (successResponse && successResponse.data && successResponse.data.data) {
+      const userData = successResponse.data.data.organisation.user; 
+      const organisationData = successResponse.data.data.organisation; 
+      
+      data.value = {
+        email: userData.email || "", 
+        telephone: userData.phoneNumber || "", 
+        organisationName: capitalizeFirstLetter(organisationData.organisationName || ""),
+        street: organisationData.address.street || "",
+        city: organisationData.address.city || "", 
+        state: organisationData.address.state || "", 
+        country: organisationData.address.country || "", 
+      };
 
-    successResponse.data.data.companies.forEach((company: any) => {
-      if (company.is_default == true) {
-        // console.log(true, company);
-        data.value.name = company?.name?company.name:"";
-        data.value.email = company?.email?company.email:"";
-        data.value.telephone = company?.telephone?company.telephone:"";
-        data.value.country = company?.country?company.country:"";
-        data.value.address = company?.address?company.address:"";
-        city.value = company?.city?company.city:"";
-        state.value = company?.state?company.state:"";
-        industryState.value = company?.industry ? company.industry:"";
-        defaultCompanyId.value = company?.id;
-      }
-    });
+      state.value = data.value.state as StateEnum;
+      city.value = data.value.city;
+      console.log("Updated Data:", data.value);
+    } else {
+      console.error("Invalid response data:", successResponse);
+    }
   }
 };
 
-const saveChanges = async () => {
+
+fetchUserDetails();
+
+// const saveChanges = async () => {
+//   const isFormCorrect = await v$.value.$validate();
+
+//   if (isFormCorrect == true) {
+//     const sendData = {
+//       email: v$.value.email.$model as string,
+//       city: city.value as string,
+//       country: data.value.country as string,
+//       state: state.value as StateEnum,
+//       industry: industryState.value as string,
+//       currency: data.value.currency as number,
+//       address: v$.value.address.$model as string,
+//       telephone: v$.value.telephone.$model as number,
+//       name: v$.value.name.$model as string,
+//     };
+
+//     loading.value = true;
+//     emit("loadingTrue");
+
+//     // if there is no default company
+//     if (defaultCompanyId.value === "") {
+//       const response = await request(companyStore.create(sendData), loading);
+//       // console.log(response);
+//       emit("loadingFalse");
+//       handleError(response, userStore);
+//       const successResponse = handleSuccess(response, showSuccess);
+
+//       if (successResponse && typeof successResponse !== "undefined") {
+//         getProfile();
+//         responseData.value = successResponse;
+//         responseData.value.message = "Company information added successfully";
+//         // console.log(successResponse.data);
+//       }
+
+//       // loading.value = false;
+//       // emit("loadingFalse");
+//       // userStore.error.type = errorType.userError;
+//       // userStore.error.message =
+//       //   "There is no default company associated with this account.Try setting a default company by switching";
+//       // return (userStore.error.value = true);
+//     } else {
+//       const response = await request(
+//         companyStore.update(sendData, defaultCompanyId.value),
+//         loading
+//       );
+//       // console.log(response);
+//       emit("loadingFalse");
+//       handleError(response, userStore);
+//       const successResponse = handleSuccess(response, showSuccess);
+
+//       if (successResponse && typeof successResponse !== "undefined") {
+//         responseData.value = successResponse;
+//         responseData.value.message = "Company information updated successfully";
+//         // console.log(successResponse.data);
+//       }
+//     }
+//   }
+// };
+
+
+const updateProfile = async () => {
   const isFormCorrect = await v$.value.$validate();
 
-  if (isFormCorrect == true) {
-    const sendData = {
+  if (isFormCorrect) {
+    const phoneNumber = v$.value.telephone.$model as string;
+
+    // Extract country code and actual phone number
+    const countryCode = phoneNumber.match(/^\+\d{1,3}/)?.[0] || '';
+    const actualNumber = phoneNumber.replace(countryCode, '').trim();
+    const formattedNumber = actualNumber.startsWith('0') ? actualNumber : '0' + actualNumber;
+    const userId = Number(localStorage.getItem('userId'));
+
+    const dataObj = {
+      userId: userId,
+      organisationName: data.value.organisationName, 
       email: v$.value.email.$model as string,
-      city: city.value as string,
-      country: data.value.country as string,
-      state: state.value as StateEnum,
-      industry: industryState.value as string,
-      currency: data.value.currency as number,
-      address: v$.value.address.$model as string,
-      telephone: v$.value.telephone.$model as number,
-      name: v$.value.name.$model as string,
+      countryCode: countryCode,
+      phoneNumber: formattedNumber,
+      country: data.value.country, 
+      city: data.value.city, 
+      state: data.value.state, 
+      street: data.value.street, 
     };
-
+console.log("===========", dataObj)
     loading.value = true;
-    emit("loadingTrue");
+    try {
+    const response = await request(authStore.updateProfile(dataObj), loading);
 
-    // if there is no default company
-    if (defaultCompanyId.value === "") {
-      const response = await request(companyStore.create(sendData), loading);
-      // console.log(response);
-      emit("loadingFalse");
-      handleError(response, userStore);
-      const successResponse = handleSuccess(response, showSuccess);
+    handleError(response, userStore);
+    const successResponse = handleSuccess(response, showSuccess);
 
-      if (successResponse && typeof successResponse !== "undefined") {
-        getProfile();
-        responseData.value = successResponse;
-        responseData.value.message = "Company information added successfully";
-        // console.log(successResponse.data);
-      }
-
-      // loading.value = false;
-      // emit("loadingFalse");
-      // userStore.error.type = errorType.userError;
-      // userStore.error.message =
-      //   "There is no default company associated with this account.Try setting a default company by switching";
-      // return (userStore.error.value = true);
-    } else {
-      const response = await request(
-        companyStore.update(sendData, defaultCompanyId.value),
-        loading
-      );
-      // console.log(response);
-      emit("loadingFalse");
-      handleError(response, userStore);
-      const successResponse = handleSuccess(response, showSuccess);
-
-      if (successResponse && typeof successResponse !== "undefined") {
-        responseData.value = successResponse;
-        responseData.value.message = "Company information updated successfully";
-        // console.log(successResponse.data);
-      }
+    if (successResponse && successResponse.data && successResponse.data.succeeded) {
+      // Handle success response
+      responseData.value = {
+        message: successResponse.data.message,
+      };
+      showSuccess.value = true; 
+      render.value = true;
+      
+      await fetchUserDetails();
+    }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      responseData.value.message = "An error occurred while updating the profile.";
+    } finally {
+      loading.value = false;
     }
   }
 };
@@ -173,13 +300,16 @@ const rules = computed(() => {
     },
 
     telephone: {
-      required: helpers.withMessage("Telephone is required", required),
+      // required: helpers.withMessage("Telephone is required", required),
       validatePhone: helpers.withMessage("Invalid Phone Number", validatePhone),
     },
 
-    name: {
-      required: helpers.withMessage("Company name is required", required),
-    },
+    // name: {
+    //   stringValidate: helpers.withMessage(
+    //     "First name can only include alphabets",
+    //     () => stringValidate(data.value.organisationName as string) as any
+    //   ),
+    // },
     address: {
       // required: helpers.withMessage("Company address is required", required),
     },
@@ -219,7 +349,7 @@ const v$ = useVuelidate(rules as any, data);
 
 // define expose
 defineExpose({
-  saveChanges,
+  updateProfile,
   disabled,
   v$,
 });
@@ -252,7 +382,7 @@ defineExpose({
               <input
                 type="text"
                 @click="disabled = false"
-                v-model="data.name"
+                v-model="data.organisationName"
                 id="NameofCompany"
                 maxlength="55"
                 class="input-float peer pr-10.5"
@@ -263,9 +393,9 @@ defineExpose({
               >
                 Name Of Company</label
               >
-              <div v-if="v$.name.$error" class="text-red-600 text-xs">
+              <!-- <div v-if="v$.name.$error" class="text-red-600 text-xs">
                 {{ "* " + v$.name.$errors[0].$message }}
-              </div>
+              </div> -->
             </div>
 
             <div class="relative">
@@ -288,21 +418,30 @@ defineExpose({
               </div>
             </div>
 
-            <div class="relative">
-              <!-- <vue-tel-input
-                :value="data.telephone"
-                @click="disabled = false"
-                @input="onInput"
-                class="text-black text-sm border py-2 telinput"
-              ></vue-tel-input> -->
-              <label
-                for="Telephone"
-                class="input-float-label peer-focus:text-black-100 peer-placeholder-shown:scale-75 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-1 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:px-2"
-              >
-                Telephone</label
-              >
-              <div v-if="v$.telephone.$error" class="text-red-600 text-xs">
-                {{ "* " + v$.telephone.$errors[0].$message }}
+            <div>
+              <div class="relative">
+                <!-- <vue-tel-input
+                  :value="data.telephone"
+                  @input="onInput"
+                  class="text-black text-sm border py-2 telinput"
+                ></vue-tel-input> -->
+                <input
+                  type="tel"
+                  id="Telephone"
+                  v-model="data.telephone"
+                  maxlength="14"
+                  class="input-float text-black peer pr-10.5"
+                  placeholder="+2348145951347"
+                />
+                <label
+                  for="Telephone"
+                  class="input-float-label peer-focus:text-black-100 peer-placeholder-shown:scale-75 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-1 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:px-2"
+                >
+                  Telephone (with country code)</label
+                >
+                <div v-if="v$.telephone.$error" class="text-red-600 text-xs">
+                  {{ "* " + v$.telephone.$errors[0].$message }}
+                </div>
               </div>
             </div>
 
@@ -346,7 +485,7 @@ defineExpose({
             >
               <input
                 @click="[(showState = true), (disabled = false)]"
-                :value="state"
+                :value="data.state"
                 type="text"
                 class="rounded-lg text-black text-sm outline-none py-4 border-none focus:outline-none focus:border-none"
                 placeholder="Select State"
@@ -360,7 +499,7 @@ defineExpose({
               v-if="showState == true"
             >
               <div>
-                <component :is="State"></component>
+                <component :is="State" :data="data"></component>
               </div>
             </div>
           </div>
@@ -385,13 +524,13 @@ defineExpose({
               v-if="showCity == true"
             >
               <div>
-                <component :is="City" :state="state"></component>
+                <component :is="City" :data="data" :state="data.state"></component>
               </div>
             </div>
           </div>
           <div class="relative">
             <textarea
-              v-model="data.address"
+              v-model="data.street"
               @click="disabled = false"
               id="companyAddress"
               class="input-float peer h-[12rem] pr-10.5"

@@ -77,7 +77,8 @@ const handleRegisterEmployee = async (): Promise<void> => {
         responseData.value = successResponse;
 
         setTimeout(() => {
-          router.push({ name: 'auth.login' });
+          // router.push({ name: 'auth.login' });
+          window.location.href = 'https://platoon-employee-portal.netlify.app/';
         }, 3000);
       } else {
       showError.value = true; 
