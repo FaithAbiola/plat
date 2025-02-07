@@ -22,7 +22,42 @@ import { storeItem, getItem } from "../../core/utils/storage.helper";
 // initialize store
 const authStore = useAuthStore();
 const userStore = useUserStore();
-
+type StateType = 
+  | "Bauchi" 
+  | "Enugu" 
+  | "Gombe" 
+  | "Kaduna" 
+  | "Kano" 
+  | "Katsina" 
+  | "Lagos" 
+  | "Nasarawa" 
+  | "Ondo" 
+  | "Oyo" 
+  | "Sokoto" 
+  | "FederalCapitalTerritory" 
+  | "Abia" 
+  | "Adamawa" 
+  | "AkwaIbom" 
+  | "Bayelsa" 
+  | "Benue" 
+  | "Borno" 
+  | "CrossRiver" 
+  | "Delta" 
+  | "Ebonyi" 
+  | "Ekiti" 
+  | "Imo" 
+  | "Jigawa" 
+  | "Kebbi" 
+  | "Kogi" 
+  | "Kwara" 
+  | "Niger" 
+  | "Ogun" 
+  | "Osun" 
+  | "Plateau" 
+  | "Rivers" 
+  | "Taraba" 
+  | "Yobe" 
+  | "Zamfara";
 // variables
 const loading = ref(false);
 let data = ref<{
@@ -34,10 +69,10 @@ let data = ref<{
   confirmPassword: string | null;
   // photo: string | null;
   organisationName?: string; 
-  // country?: string;
-  // city?: string;
-  // state?: string;
-  // street?: string;
+  country?: string;
+  city?: string;
+  state?: StateType;
+  street?: string;
 }>({
   firstname: null,
   lastname: null,
@@ -47,10 +82,10 @@ let data = ref<{
   confirmPassword: null,
   // photo: null,
   organisationName: undefined,
-  // country: undefined,
-  // city: undefined,
-  // state: undefined,
-  // street: undefined,
+  country: undefined,
+  city: "",
+  state: "Lagos",
+  street: undefined,
 });
 const showSuccess = ref(false);
 const disabled = ref(true);
@@ -139,6 +174,10 @@ const updateProfile = async () => {
       email: v$.value.email.$model as string,
       countryCode: countryCode,
       phoneNumber: formattedNumber, 
+      country: data.value.country, 
+      city: data.value.city, 
+      state: data.value.state, 
+      street: data.value.street,
     };
 console.log("===========", dataObj)
     loading.value = true;
@@ -197,20 +236,23 @@ const fetchUserDetails = async () => {
     if (successResponse && successResponse.data && successResponse.data.data) {
       const userData = successResponse.data.data.organisation.user; 
       const organisationData = successResponse.data.data.organisation; 
-      
+      const countryCode = userData.phone.countryCode || ""; 
+      const phoneNumber = userData.phone.number || ""; 
+      const formattedNumber = phoneNumber.startsWith('0') ? phoneNumber.slice(1) : phoneNumber; 
+      const telephone = `${countryCode}${formattedNumber}`;
       data.value = {
         firstname: capitalizeFirstLetter(userData.firstname || ""), 
         lastname: capitalizeFirstLetter(userData.lastname || ""), 
         email: userData.email || "", 
-        telephone: userData.phoneNumber || "", 
+        telephone: telephone || "", 
         password: null, 
         confirmPassword: null, 
         // photo: userData.imageUrl || null,
         organisationName: organisationData.organisationName || "",
-        // street: organisationData.address.street || "",
-        // city: organisationData.address.city || "", 
-        // state: organisationData.address.state || "", 
-        // country: organisationData.address.country || "", 
+        street: organisationData.address.street || "",
+        city: organisationData.address.city || "", 
+        state: organisationData.address.state || "", 
+        country: organisationData.address.country || "", 
       };
 
       console.log("Updated Data:", data.value);

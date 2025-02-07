@@ -180,13 +180,13 @@ const fetchEmployees = async (page = 1) => {
   loading.value = true;
 
   // console.log("fetching employeee");
-  const totalEmployeeCached = cache("total_employees");
-  console.log("##########",totalEmployeeCached);
+  // const totalEmployeeCached = cache("total_employees");
+  // console.log("##########",totalEmployeeCached);
 
-  if (typeof totalEmployeeCached !== "undefined") {
-    loading.value = false;
-    responseData.value.data = totalEmployeeCached;
-  }
+  // if (typeof totalEmployeeCached !== "undefined") {
+  //   loading.value = false;
+  //   responseData.value.data = totalEmployeeCached;
+  // }
   console.log("ertyuio",responseData.value.data);
   const response = await request(employeeStore.index(organisationId, 10, page), loading);
   // console.log(loading.value);
@@ -194,7 +194,7 @@ const fetchEmployees = async (page = 1) => {
   const successResponse = handleSuccess(response);
 
   if (successResponse && typeof successResponse !== "undefined") {
-    cache("total_employees", successResponse.data.data.pageItems);
+    // cache("total_employees", successResponse.data.data.pageItems);
     responseData.value.data = successResponse.data.data.pageItems;
     currentPage.value = successResponse.data.data.currentPage;
     totalPages.value = successResponse.data.data.numberOfPages;

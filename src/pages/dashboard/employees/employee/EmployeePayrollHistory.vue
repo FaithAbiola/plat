@@ -124,6 +124,24 @@ const slip = ref({
   netPay: 0,
 })
 
+// const slip = ref({
+//   name: "",
+//   department: "", 
+//   grade: "", 
+//   organisation: "", 
+//   organisationAddress: "", 
+//   organisationContact: "", 
+//   paymentDate: "",
+//   payPeriod: "", 
+//   grossPay: 0,
+//   bonus: 0,
+//   deductions: 0,
+//   tax: 0,
+//   pension: 0, 
+//   netPay: 0,
+// });
+
+
 // provide and inject
 provide("showDepartment", showDepartment);
 provide("selectedDepartment", [data, departmentName]);
@@ -175,7 +193,13 @@ const validatePhone = () => {
   return valid.value;
 };
 
-
+const capitalizeAllLetter = (name: string | null) => {
+  if (!name) return "";
+  return name
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
 
 
 // fetchBank();
@@ -254,32 +278,17 @@ defineExpose({
   v$,
 });
 
-// const exportToPDF = () => {
-//   slip.value = {
-//         name: "Adebayoowa Temifayowa",
-//         narration: "October Payslip",
-//         paymentDate: "20/08/2024",
-//         grossPay: 0,
-//         bonus: 30000,
-//         deductions: 5000,
-//         tax: 500,
-//         netPay: 24500,
-//     };
-//     var element = document.getElementById('element-to-print');
-//     var opt = {
-//         orientation: 'p',
-//         unit: 'mm',
-//         format: 'a4',
-//         putOnlyUsedFonts:true,
-//         floatPrecision: 16,
-//         image: { type: 'jpeg', quality: 1.50 },
-//         html2canvas:  { scale: 4 },
-//     };
-//     html2pdf().set(opt).from(element).save(`${slip.value.name}-${slip.value.paymentDate}`);
-//     // html2pdf().set(opt).from(element).save(`${responseData.value.data.data.firstname+' '+responseData.value.data.data.lastname+slip.value.narration}-${slip.value.paymentDate}`);
-// }
-
 const exportToPDF = () => {
+  slip.value = {
+        name: `${data.value.firstname} ${data.value.lastname}`, 
+        narration: "October Payslip",
+        paymentDate: "20/08/2024",
+        grossPay: 0,
+        bonus: 30000,
+        deductions: 5000,
+        tax: 500,
+        netPay: 24500,
+    };
     var element = document.getElementById('element-to-print');
     var opt = {
         orientation: 'p',
@@ -290,9 +299,25 @@ const exportToPDF = () => {
         image: { type: 'jpeg', quality: 1.50 },
         html2canvas:  { scale: 4 },
     };
-
-    html2pdf().set(opt).from(element).save(`${responseData.value.data.data.firstname+' '+responseData.value.data.data.lastname+slip.value.narration}-${slip.value.paymentDate}`);
+    html2pdf().set(opt).from(element).save(`${slip.value.name}-${slip.value.paymentDate}`);
+    // html2pdf().set(opt).from(element).save(`${responseData.value.data.data.firstname+' '+responseData.value.data.data.lastname+slip.value.narration}-${slip.value.paymentDate}`);
 }
+
+// const exportToPDF = () => {
+//     var element = document.getElementById('element-to-print');
+//     var opt = {
+//         orientation: 'p',
+//         unit: 'mm',
+//         format: 'a4',
+//         putOnlyUsedFonts:true,
+//         floatPrecision: 16,
+//         image: { type: 'jpeg', quality: 1.50 },
+//         html2canvas:  { scale: 4 },
+//     };
+
+//     html2pdf().set(opt).from(element).save(`${slip.value.name}-${slip.value.paymentDate}`);
+//     // html2pdf().set(opt).from(element).save(`${responseData.value.data.data.firstname+' '+responseData.value.data.data.lastname+slip.value.narration}-${slip.value.paymentDate}`);
+// }
 
 const getProfile = async () => {
   console.log(employeeId.value);
@@ -309,9 +334,10 @@ const getProfile = async () => {
     data.value.lastname = capitalizeFirstLetter(employeeData.user.lastname);
     responseData.value.data = successResponse.data;
     userId.value = employeeData.userId;
+    slip.value.name = `${data.value.firstname} ${data.value.lastname}`;
     await fetchPayrollHistory();
     console.log("/////", userId.value);
-
+    responseData.value.data.data.employee.user.firstname
     emit(
       "setSingleEmployeeName",
       `${data.value.firstname} ${data.value.lastname}`
@@ -349,34 +375,79 @@ const fetchPayrollHistory = async () => {
 //     }
 // };
 
-const downloadPayslip = async (item: { payroll: { createdAt: any; }; narration: any; }) => {
-    const startDate = item.payroll.createdAt; 
-    const endDate = item.payroll.createdAt;
+// const downloadPayslip = async (item: { payroll: { createdAt: any; }; narration: any; }) => {
+//     const startDate = item.payroll.createdAt; 
+//     const endDate = item.payroll.createdAt;
 
-    try {
-        const payslipData = await payrollStore.generatePayslip(
-            Number(employeeId.value), 
-            organisationId, 
-            startDate, 
-            endDate
-        );
+//     try {
+//         const payslipData = await payrollStore.generatePayslip(
+//             Number(employeeId.value), 
+//             organisationId, 
+//             startDate, 
+//             endDate
+//         );
 
-        slip.value = {
-            name: payslipData.data.firstname + ' ' + payslipData.data.lastname,
-            narration: item.narration,
-            paymentDate: payslipData.data.paymentDate || '--/--/---- --:-- --',
-            grossPay: formatNumber(payslipData.data.salary.gross || 0),
-            bonus: formatNumber(payslipData.data.breakdown.bonus || 0),
-            deductions: formatNumber(payslipData.data.breakdown.deductions || 0),
-            tax: formatNumber(payslipData.data.breakdown.tax || 0),
-            netPay: formatNumber(payslipData.data.salary.total || 0)
-        };
+//         slip.value = {
+//             name: payslipData.data.firstname + ' ' + payslipData.data.lastname,
+//             narration: item.narration,
+//             paymentDate: payslipData.data.paymentDate || '--/--/---- --:-- --',
+//             grossPay: formatNumber(payslipData.data.salary.gross || 0),
+//             bonus: formatNumber(payslipData.data.breakdown.bonus || 0),
+//             deductions: formatNumber(payslipData.data.breakdown.deductions || 0),
+//             tax: formatNumber(payslipData.data.breakdown.tax || 0),
+//             netPay: formatNumber(payslipData.data.salary.total || 0)
+//         };
 
-        exportToPDF(); 
-    } catch (error) {
-        console.error("Error generating payslip:", error);
-    }
-};
+//         exportToPDF(); 
+//     } catch (error) {
+//         console.error("Error generating payslip:", error);
+//     }
+// };
+
+// const downloadPayslip = async (item: { payroll: { createdAt: any; }; }) => {
+//     // const startDate = item.payroll.createdAt; 
+//     // const endDate = item.payroll.createdAt;
+//     const startDate = '2022-02-07T12:45:12.746Z'; 
+//     const endDate = '2022-02-07T12:45:12.746Z';
+
+//     try {
+//         const response = await payrollStore.generatePayslip(
+//             Number(employeeId.value), 
+//             organisationId, 
+//             startDate, 
+//             endDate
+//         );
+
+//         if (response.succeeded) {
+//             const payslipData = response.data;
+
+//             // Update the slip data with the response
+//             slip.value = {
+//                 name: capitalizeAllLetter(payslipData.employeeName),
+//                 paymentDate: new Date().toLocaleDateString(), // You can adjust this as needed
+//                 grossPay: formatNumber(payslipData.grossPay || 0),
+//                 bonus: formatNumber(payslipData.bonus || 0),
+//                 deductions: formatNumber(payslipData.deductions || 0),
+//                 tax: formatNumber(payslipData.taxAmount || 0),
+//                 netPay: formatNumber(payslipData.netPay || 0),
+//                 pension: formatNumber(payslipData.pensionAmount || 0),
+//                 department: payslipData.departmentName || 'N/A', // Handle null values
+//                 grade: payslipData.gradeName || 'N/A',
+//                 organisation: payslipData.organisationName,
+//                 organisationAddress: payslipData.organisationAddress,
+//                 organisationContact: payslipData.organisationContact,
+//                 payPeriod: payslipData.payPeriod
+//             };
+
+//             exportToPDF(); // Call the function to export to PDF
+//         } else {
+//             console.error(response.message);
+//         }
+//     } catch (error) {
+//         console.error("Error generating payslip:", error);
+//     }
+// };
+
 
 
 // const slipInfo = (item:any) => {
@@ -393,44 +464,44 @@ const downloadPayslip = async (item: { payroll: { createdAt: any; }; narration: 
 
 //   exportToPDF();
 // }
-const slipInfoo = (item:any) => {
-  slip.value = {
-    name: responseData.value.data.data.firstname+' '+responseData.value.data.data.lastname,
-    narration: item.narration,
-    paymentDate: item.payroll ? dateFormat(item.payroll.created_at) : '--/--/---- --:-- --',
-    grossPay: item.meta ? formatNumber(item.meta.salary.gross) : 0,
-    bonus: item.meta ? formatNumber(item.meta.breakdown.bonus) : 0,
-    deductions: item.meta ? formatNumber(item.meta.breakdown.deductions) : 0,
-    tax: item.meta ? formatNumber(item.meta.breakdown.tax) : 0,
-    netPay: item.meta ? formatNumber(item.meta.salary.total) : 0,
-  }
+// const slipInfoo = (item:any) => {
+//   slip.value = {
+//     name: responseData.value.data.data.firstname+' '+responseData.value.data.data.lastname,
+//     narration: item.narration,
+//     paymentDate: item.payroll ? dateFormat(item.payroll.created_at) : '--/--/---- --:-- --',
+//     grossPay: item.meta ? formatNumber(item.meta.salary.gross) : 0,
+//     bonus: item.meta ? formatNumber(item.meta.breakdown.bonus) : 0,
+//     deductions: item.meta ? formatNumber(item.meta.breakdown.deductions) : 0,
+//     tax: item.meta ? formatNumber(item.meta.breakdown.tax) : 0,
+//     netPay: item.meta ? formatNumber(item.meta.salary.total) : 0,
+//   }
 
-  exportToPDF();
-}
+//   exportToPDF();
+// }
 
-const slipInfo = async (item: any) => {
-    const startDate = "2025-01-06T07:58:29.599Z";
-    const endDate = "2025-01-06T07:58:29.599Z";
+// const slipInfo = async (item: any) => {
+//     const startDate = "2025-01-06T07:58:29.599Z";
+//     const endDate = "2025-01-06T07:58:29.599Z";
 
-    try {
-        const payslipData = await payrollStore.generatePayslip(Number(employeeId.value), organisationId, startDate, endDate);
+//     try {
+//         const payslipData = await payrollStore.generatePayslip(Number(employeeId.value), organisationId, startDate, endDate);
 
-        slip.value = {
-            name: payslipData.data.firstname + ' ' + payslipData.data.lastname, 
-            narration: item.narration,
-            paymentDate: payslipData.data.paymentDate || '--/--/---- --:-- --', 
-            grossPay: formatNumber(payslipData.data.salary.gross || 0), 
-            bonus: formatNumber(payslipData.data.breakdown.bonus || 0), 
-            deductions: formatNumber(payslipData.data.breakdown.deductions || 0), 
-            tax: formatNumber(payslipData.data.breakdown.tax || 0), 
-            netPay: formatNumber(payslipData.data.salary.total || 0) 
-        };
+//         slip.value = {
+//             name: payslipData.data.firstname + ' ' + payslipData.data.lastname, 
+//             narration: item.narration,
+//             paymentDate: payslipData.data.paymentDate || '--/--/---- --:-- --', 
+//             grossPay: formatNumber(payslipData.data.salary.gross || 0), 
+//             bonus: formatNumber(payslipData.data.breakdown.bonus || 0), 
+//             deductions: formatNumber(payslipData.data.breakdown.deductions || 0), 
+//             tax: formatNumber(payslipData.data.breakdown.tax || 0), 
+//             netPay: formatNumber(payslipData.data.salary.total || 0) 
+//         };
 
-        exportToPDF();
-    } catch (error) {
-        console.error("Error generating payslip:", error);
-    }
-};
+//         exportToPDF();
+//     } catch (error) {
+//         console.error("Error generating payslip:", error);
+//     }
+// };
 
 
 getProfile();
@@ -528,14 +599,14 @@ const router = useRouter()
                   class="text-[#003b3d] bg-red-light text-sm text-bold px-4+1 py-2 rounded-full">
                   Download Payslip
                 </button> -->
-                  <!-- <button @click="exportToPDF"
+                  <button @click="exportToPDF"
                     class="text-[#003b3d] bg-red-light text-sm text-bold px-4+1 py-2 rounded-full">
                     Download Payslip
-                  </button> -->
-
-                  <button @click="downloadPayslip(item)" class="text-[#003b3d] bg-red-light text-sm text-bold px-4 py-2 rounded-full">
-                    Download Payslip
                   </button>
+
+                  <!-- <button @click="downloadPayslip(item)" class="text-[#003b3d] bg-red-light text-sm text-bold px-4 py-2 rounded-full">
+                    Download Payslip
+                  </button> -->
                   <!-- <button>
                     <IMenuVertical />
                   </button> -->
@@ -595,6 +666,7 @@ const router = useRouter()
         </div>
       </div>
     </div> -->
+
     <div class="hidden">
       <div id="element-to-print">   
         <div class="p-6 bg-white shadow-md rounded-md w-full max-w-3xl mx-auto">
@@ -620,7 +692,7 @@ const router = useRouter()
               <p class="font-semibold py-1">Pay Date</p>
             </div>
             <div class="text-left">
-              <p class="py-1">Adebayoowa Temifayowa</p>
+              <p class="py-1">{{slip.name }}</p>
               <p class="py-1">Full Time</p>
               <p class="py-1">October</p>
               <p class="py-1">20/08/2024</p>
@@ -687,12 +759,75 @@ const router = useRouter()
           <!-- Account Details -->
           <div class="px-8 mb-4 mt-5">
             <h3 class="font-bold">Account Details</h3>
-            <p>Account Name: Adebayoowa Temifayowa</p>
+            <p>Account Name: {{slip.name }}</p>
             <p>Account Number: 1234567890</p>
             <p>Bank Name: Opay</p>
           </div>
         </div>
       </div>
     </div>
+    <!-- <div class="hidden">
+      <div id="element-to-print">   
+        <div class="p-6 bg-white shadow-md rounded-md w-full max-w-3xl mx-auto">
+          <div class="flex justify-between items-center pb-4 mb-4">
+            <img src="/images/png/logo.png" alt="logo" class="h-12">
+            <div class="text-left text-sm">
+              <p class="font-bold">{{ slip.organisation }}</p>
+              <p>{{ slip.organisationAddress }}</p>
+              <p>Lagos</p>
+            </div>
+          </div>
+      
+          <h1 class="text-2xl text-center font-bold mb-6">Payslip</h1>
+      
+          <div class="flex justify-between px-8 mb-4">
+            <div>
+              <p class="font-semibold py-1">Employee Name</p>
+              <p class="font-semibold py-1">Employment Status</p>
+              <p class="font-semibold py-1">Month</p>
+              <p class="font-semibold py-1">Pay Date</p>
+            </div>
+            <div class="text-left">
+              <p class="py-1">{{ slip.name }}</p>
+              <p class="py-1">Full Time</p>
+              <p class="py-1">October</p>
+              <p class="py-1">20/08/2024</p>
+            </div>
+          </div>
+      
+          <div class="flex justify-between mx-5 px-3 py-2 font-semibold bg-white-smoke">
+            <span>Description</span>
+            <span class="mr-4">Amount</span>
+          </div>
+          <div class="flex justify-between px-8">
+            <div>
+              <p class="py-2">Gross Pay</p>
+              <p class="py-2">Bonus</p>
+              <p class="py-2">Deduction</p>
+              <p class="py-2">Tax</p>
+              <p class="py-2">Pension</p>
+            </div>
+            <div class="text-left">
+              <p class="py-2">₦{{ slip.grossPay }}</p>
+              <p class="py-2">₦{{ slip.bonus }}</p>
+              <p class="py-2">₦{{ slip.deductions }}</p>
+              <p class="py-2">₦{{ slip.tax }}</p>
+              <p class="py-2">₦{{ slip.pension }}</p>
+            </div>
+          </div>
+          <div class="flex justify-between mx-5 px-3 py-2 mb-4 font-semibold bg-white-smoke">
+            <span>Net Pay</span>
+            <span>₦{{ slip.netPay }}</span>
+          </div>
+      
+          <div class="px-8 mb-4 mt-5">
+            <h3 class="font-bold">Account Details</h3>
+            <p>Account Name:{{ slip.name }}</p>
+            <p>Account Number: 1234567890</p>
+            <p>Bank Name: Opay</p>
+          </div>
+        </div>
+      </div>
+    </div> -->
   </div>
 </template>
