@@ -137,6 +137,8 @@ const validatePhone = (phone: string) => {
   return phoneRegex.test(phone);
 };
 
+
+
 const capitalizeFirstLetter = (name: string | null) => {
   if (!name) return "";
   return name
@@ -159,10 +161,13 @@ const fetchUserDetails = async () => {
     if (successResponse && successResponse.data && successResponse.data.data) {
       const userData = successResponse.data.data.organisation.user; 
       const organisationData = successResponse.data.data.organisation; 
-      
+      const countryCode = userData.phone.countryCode || ""; 
+      const phoneNumber = userData.phone.number || ""; 
+      const formattedNumber = phoneNumber.startsWith('0') ? phoneNumber.slice(1) : phoneNumber; 
+      const telephone = `${countryCode}${formattedNumber}`;
       data.value = {
         email: userData.email || "", 
-        telephone: userData.phoneNumber || "", 
+        telephone: telephone || "", 
         organisationName: capitalizeFirstLetter(organisationData.organisationName || ""),
         street: organisationData.address.street || "",
         city: organisationData.address.city || "", 
@@ -445,7 +450,7 @@ defineExpose({
               </div>
             </div>
 
-            <div class="relative w-auto">
+            <!-- <div class="relative w-auto">
               <div
                 class="cursor-pointer font-normal items-center text-left rounded-lg px-2 border text-gray-rgba-3 flex justify-between"
               >
@@ -468,7 +473,7 @@ defineExpose({
                   <component :is="Industries"></component>
                 </div>
               </div>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>

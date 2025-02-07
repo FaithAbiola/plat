@@ -25,13 +25,59 @@ const showSuccess = ref(false);
 const responseData = ref({ message: "action successful" });
 const render = inject<any>("render");
 
+type StateType = 
+  | "Bauchi" 
+  | "Enugu" 
+  | "Gombe" 
+  | "Kaduna" 
+  | "Kano" 
+  | "Katsina" 
+  | "Lagos" 
+  | "Nasarawa" 
+  | "Ondo" 
+  | "Oyo" 
+  | "Sokoto" 
+  | "FederalCapitalTerritory" 
+  | "Abia" 
+  | "Adamawa" 
+  | "AkwaIbom" 
+  | "Bayelsa" 
+  | "Benue" 
+  | "Borno" 
+  | "CrossRiver" 
+  | "Delta" 
+  | "Ebonyi" 
+  | "Ekiti" 
+  | "Imo" 
+  | "Jigawa" 
+  | "Kebbi" 
+  | "Kogi" 
+  | "Kwara" 
+  | "Niger" 
+  | "Ogun" 
+  | "Osun" 
+  | "Plateau" 
+  | "Rivers" 
+  | "Taraba" 
+  | "Yobe" 
+  | "Zamfara";
 
 let data = ref<{
   firstname: string | null;
   lastname: string | null;
+  country?: string;
+  city?: string;
+  state?: StateType;
+  street?: string;
+  telephone: string | null;
 }>({
   firstname: null,
   lastname: null,
+  telephone: null,
+  country: undefined,
+  city: "",
+  state: "Lagos",
+  street: undefined,
 });
 
 const disabled = ref(true);
@@ -53,10 +99,20 @@ const fetchUserDetails = async () => {
     
     if (successResponse && successResponse.data && successResponse.data.data) {
       const userData = successResponse.data.data.organisation.user; 
+      const organisationData = successResponse.data.data.organisation; 
+      const countryCode = userData.phone.countryCode || ""; 
+      const phoneNumber = userData.phone.number || ""; 
+      const formattedNumber = phoneNumber.startsWith('0') ? phoneNumber.slice(1) : phoneNumber; 
+      const telephone = `${countryCode}${formattedNumber}`;
       
       data.value = {
         firstname: capitalizeFirstLetter(userData.firstname || ""), 
-        lastname: capitalizeFirstLetter(userData.lastname || "")
+        lastname: capitalizeFirstLetter(userData.lastname || ""),
+        telephone: telephone || "",
+        street: organisationData.address.street || "",
+        city: organisationData.address.city || "", 
+        state: organisationData.address.state || "", 
+        country: organisationData.address.country || "", 
       };
 
       console.log("Updated Data:", data.value);
@@ -71,6 +127,13 @@ const updateProfile = async () => {
   const isFormCorrect = await v$.value.$validate();
 
   if (isFormCorrect) {
+    const phoneNumber = data.value.telephone as string;
+
+    // Extract country code and actual phone number
+    const countryCode = phoneNumber.match(/^\+\d{1,3}/)?.[0] || '';
+    const actualNumber = phoneNumber.replace(countryCode, '').trim();
+    const formattedNumber = actualNumber.startsWith('0') ? actualNumber : '0' + actualNumber;
+    // const userId = Number(localStorage.getItem('userId'));
 
     const userId = Number(localStorage.getItem('userId'));
 
@@ -78,6 +141,12 @@ const updateProfile = async () => {
       userId: userId,
       firstName: v$.value.firstname.$model as string,
       lastName: v$.value.lastname.$model as string,
+      countryCode: countryCode,
+      phoneNumber: formattedNumber, 
+      country: data.value.country, 
+      city: data.value.city, 
+      state: data.value.state, 
+      street: data.value.street,
     };
 console.log("===========", dataObj)
     loading.value = true;
