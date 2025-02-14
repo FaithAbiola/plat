@@ -1,6 +1,6 @@
 log
 <script setup lang="ts">
-import { ref, provide, watchEffect } from "vue";
+import { ref, provide, watchEffect, watch } from "vue";
 import ButtonBlue from "../../../components/buttons/ButtonBlue.vue";
 import { IArrowLeftTail } from "../../../core/icons";
 import FCheckedComponent from "../../../components/forms/FCheckBox.vue";
@@ -16,6 +16,7 @@ import successAlert from "../../../components/alerts/SuccessAlert.vue";
 import spinner from "../../../components/timer/Spinner.vue";
 import { UpdateSettings } from "../../../service/payroll/interface/payroll.interface";
 import month from "../../../components/dropdowns/month.vue";
+import timeDropdown from "../../../components/dropdowns/time.vue";
 import handleError from "../../../composables/handle_error.composable";
 // initialize router
 
@@ -33,6 +34,17 @@ const selectedMonth = ref("");
 const salaryBreakdown = ref([{ key: "", value: "" }]);
 const showPayrollBonus = ref(false);
 const showSalaryBreakdown = ref(false);
+const showTimeDropdown = ref(false);
+const selectedTime = ref("");
+
+// Provide the dropdown state
+provide("showTimeDropdown", showTimeDropdown);
+provide("selectedTime", selectedTime);
+
+watch(selectedTime, (newTime) => {
+  data.value.scheduled_at = newTime;
+});
+
 const data = ref<UpdateSettings>({
   frequency: "",
   scheduled_at: "",
@@ -135,6 +147,7 @@ const fetchPayrollSettings = async () => {
 
 provide("showMonth", showMonth);
 provide<any>("selectedMonth", selectedMonth);
+
 
 // watchers
 // watchEffect(() => {
@@ -250,6 +263,34 @@ provide<any>("selectedMonth", selectedMonth);
               <!-- <span class="text-xs text-gray-rgba-3">50 Employees</span> -->
             </div>
           </div>
+        </div>
+        <div class="flex pt-6">
+          <div class="lg:flex-1">
+            <div class="grid lg:grid-cols-2 pt-7 gap-4">
+              <div class="relative">
+                <input
+                  type="text"
+                  id="payrollSendTime"
+                  @click="showTimeDropdown = !showTimeDropdown"
+                  :value="data.scheduled_at"
+                  maxlength="55"
+                  class="input-float peer pr-10.5"
+                  placeholder=""
+                />
+                <label
+                  for="payrollSendTime"
+                  class="input-float-label peer-focus:text-black-100 peer-placeholder-shown:scale-75 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-1 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:px-2"
+                >
+                  Input payroll send time
+                </label>
+    
+                <div v-if="showTimeDropdown" class="w-full absolute z-50">
+                  <timeDropdown class="h-60 overflow overflow-scroll scrollbar-hide"/>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex-1 w-full"></div>
         </div>
       </div>
       <!--  -->

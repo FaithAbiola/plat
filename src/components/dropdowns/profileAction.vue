@@ -21,15 +21,14 @@ const uploadImage = async () => {
 
   const formData = new FormData();
   formData.append('Image', selectedFile.value);
-  const userId = Number(localStorage.getItem('userId')); // Retrieve userId from storage
+  const userId = Number(localStorage.getItem('userId'));
 
   try {
-    const response = await store.updateUserImage(userId, formData); // Call the store action
+    const response = await store.updateUserImage(userId, formData); 
 
     if (response) {
       alert("Profile picture updated successfully!");
-      // Optionally, refresh the user details or perform any other actions
-      showUploadInput.value = false; // Hide the input after successful upload
+      showUploadInput.value = false; 
     }
   } catch (error) {
     alert("Error updating profile picture: ");

@@ -185,6 +185,22 @@ async getSalaryBreakdown(employeeId: number): Promise<any> {
         throw err;
       });
   }
+
+  async setupPayoutTime(payload: {
+    organisationId: number;
+    sendTime: string;
+  }): Promise<any> {
+    const customRequest = this.createAxiosInstance();
+  
+    return await customRequest
+      .put("/Settings/setup-payout-time", payload)
+      .then((res) => res)
+      .catch((err) => {
+        console.error("Error setting up payout time:", err);
+        throw err;
+      });
+  }
+  
   
   async getPayroll(params: {
     organisationId: number;
