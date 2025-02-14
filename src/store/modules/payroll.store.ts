@@ -285,6 +285,23 @@ const payrollStore = defineStore("payroll", {
       }
     },    
 
+    async setupPayoutTime(payload: {
+      organisationId: number;
+      sendTime: string;
+    }): Promise<any> {
+      try {
+        const response = await payrollService.setupPayoutTime(payload);
+        if (response.data && response.data.succeeded) {
+          return response.data;
+        } else {
+          throw new Error(response.message);
+        }
+      } catch (error) {
+        console.error("Error setting up payout time:", error);
+        throw error;
+      }
+    },    
+    
     async getPayroll(params: {
       organisationId: number;
       payrollId: number;

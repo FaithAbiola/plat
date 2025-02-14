@@ -202,6 +202,19 @@ const handleSaveAndContinue = async () => {
   saving.value = true;
 
   try {
+
+    const scheduledDate = new Date();
+    const sendTime = new Date(scheduledDate.setDate(scheduledDate.getDate() + 14)).toISOString();
+
+    const payoutTimeResponse = await payrollStore.setupPayoutTime({
+      organisationId,
+      sendTime,
+    });
+
+    console.log("====", payoutTimeResponse)
+    if (!payoutTimeResponse.succeeded) {
+      throw new Error(payoutTimeResponse.message);
+    }
     const employeesSalary = responseData.value.data.map((employee: { id: any; bonus: any; deduction: any; taxAmount: any; netPay: any; }) => ({
       employeeId: employee.id,
       bonus: JSON.parse(JSON.stringify(employee.bonus || { amount: 0, reason: "" })),
@@ -232,8 +245,17 @@ const handleSaveAndContinue = async () => {
     } else {
       throw new Error(response.message);
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error saving payroll:", error);
+
+    if (error.response && error.response.data) {
+      const errorData = error.response.data;
+      successMessage.value = errorData.message || "An error occurred while creating the payroll.";
+      showSuccess.value = true;
+    } else {
+      successMessage.value = error.message || "An error occurred while creating the payroll.";
+      showSuccess.value = true;
+    }
   } finally {
     saving.value = false;
   }
