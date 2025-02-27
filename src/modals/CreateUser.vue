@@ -45,6 +45,14 @@ const showRoleDropdown = ref(false);
 const parsedUserInfo = typeof userInfo.value === 'string' ? JSON.parse(userInfo.value) : userInfo.value;
 const organisationId = parsedUserInfo?.customerInfo?.organisationId
 
+const capitalizeName = (name: string) => {
+  return name
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
+
 const fetchEmployees = async () => {
   loading.value = true;
   try {
@@ -61,7 +69,7 @@ const fetchEmployees = async () => {
 };
 
 const selectEmployee = (employee: any) => {
-  selectedEmployee.value = `${employee.firstName} ${employee.lastName}`;
+  selectedEmployee.value = `${capitalizeName(employee.firstName)} ${capitalizeName(employee.lastName)}`;
   showEmployeeDropdown.value = false; 
 };
 const fetchRoles = async () => {
@@ -186,7 +194,7 @@ fetchRoles();
                   <div v-if="employees[0]">
                     <div v-for="employee in employees" :key="employee.id">
                       <p @click="selectEmployee(employee)" class="cursor-pointer">
-                        {{ employee.firstName }} {{ employee.lastName }}
+                        {{ capitalizeName(employee.firstName) }} {{ capitalizeName(employee.lastName) }}
                       </p>
                     </div>
                   </div>
