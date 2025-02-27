@@ -191,7 +191,7 @@ const updatePage = (page: number) => {
                       <td class="whitespace-nowrap w-[25%]">
                         <div class="font-normal text-left flex">
                           <span class="text-sm font-semimedium">{{
-                            user.phone.number
+                            user.phoneNumber
                           }}</span>
                         </div>
                       </td>
