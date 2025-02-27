@@ -78,7 +78,15 @@ const fetchRoles = async () => {
     const response = await userStore.fetchRoles(); 
     console.log("0000", response)
     // if (response.data && response.data.succeeded) {
-      roles.value = response;
+      // if (response.data && response.data.succeeded) {
+        if (Array.isArray(response) && response.length > 0) {
+      roles.value = response.filter(role => 
+        role.name === "OrganisationSuperAdmin" || role.name === "OrganisationAdmin"
+      );
+    }
+    // }
+
+    console.log("Filtered Roles: ", roles.value);
     // }
     console.log("(((((((", roles.value)
 
