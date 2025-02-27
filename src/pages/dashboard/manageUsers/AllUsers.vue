@@ -46,6 +46,13 @@ const organisationId = parsedUserInfo?.customerInfo?.organisationId;
 const selectedUserId = ref<number | null>(null);
 const openUpdateUser = inject<Ref<boolean>>("openUpdateUser", ref(false));
 
+  const capitalizeName = (name: string) => {
+  return name
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
 const openUpdateUserModal = (userId: number) => {
   selectedUserId.value = userId;
   localStorage.setItem('selectedUserId', JSON.stringify(userId)); 
@@ -169,7 +176,7 @@ const updatePage = (page: number) => {
                         <div class="">
                           <div class="flex flex-col">
                             <span class="text-sm font-semimedium"
-                              >{{ user.firstname }} {{ user.lastname }}</span
+                              >{{ capitalizeName(user.firstname) }} {{ capitalizeName(user.lastname) }}</span
                             >
                           </div>
                         </div>
@@ -184,7 +191,7 @@ const updatePage = (page: number) => {
                       <td class="whitespace-nowrap w-[25%]">
                         <div class="font-normal text-left flex">
                           <span class="text-sm font-semimedium">{{
-                            user.phoneNumber
+                            user.phone.number
                           }}</span>
                         </div>
                       </td>

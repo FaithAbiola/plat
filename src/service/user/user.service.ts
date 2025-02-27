@@ -68,7 +68,7 @@ class UserService {
   }
 
   async getNotifications(userId: number, pageSize: number, pageNumber: number): Promise<any> {
-    const customRequest = this.createNotificationAxiosInstance();
+    const customRequest = this.createAxiosInstance();
     return await customRequest
       .get("/Notification/retrieve-notification", {
         params: {
