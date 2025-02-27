@@ -50,7 +50,7 @@ const data = ref<{
   name: "",
   email: "",
   phoneNumber: "",
-  countryCode: "",
+  countryCode: "+234",
   employmentType: "",
   gradeId: null,
   departmentId: null,
@@ -58,7 +58,7 @@ const data = ref<{
 
 const departmentName = ref("");
 const showDepartment = ref(false);
-const countryCodeName = ref("");
+const countryCodeName = ref("+234");
 const showCountryCode = ref(false); 
 const employmentTypeName = ref("");
 const showEmploymentType = ref(false); 
