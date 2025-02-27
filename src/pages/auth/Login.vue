@@ -80,11 +80,9 @@ const handleLogin = async (): Promise<void> => {
     loading.value = true;
     const response = await request(authStore.userLoginn(data), loading);
 
-    handleError(response, userStore);
     const successResponse = handleSuccess(response, showSuccess);
 
     if (successResponse && typeof successResponse !== "undefined") {
-      // console.log(true);
       responseData.value = successResponse;
       responseData.value.message = "Login successful";
       console.log("Response Data:::::::::", responseData.value);
@@ -98,13 +96,10 @@ const handleLogin = async (): Promise<void> => {
       setTimeout(() => {
         window.location.href = "/dashboard/home"; // Redirect to dashboard
       }, 3000);
-      // setTimeout(() => {
-      //   (window.location as unknown as string) = responseData.value.data.data
-      //     .companies[0]
-      //     ? "/dashboard/home"
-      //     : "dashboard/company-settings/company-information";
-      // }, 3000);
-    }
+    } else {
+        responseData.value = { message: response.data?.message }; 
+        showSuccess.value = true; 
+      }
   }
 };
 const verifyEmail = async () => {
