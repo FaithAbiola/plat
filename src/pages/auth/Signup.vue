@@ -70,43 +70,19 @@ const handleRegister = async (): Promise<void> => {
   invalidDomain.value = false;
 
   if (isFormCorrect == true) {
-    // const data = {
-    //   telephone: v$.value.telephone.$model as number,
-    //   email: v$.value.email.$model as string,
-    //   password: v$.value.password.$model as string,
-    //   confirmPassword: v$.value.confirmPassword.$model as string,
-    //   firstname: v$.value.firstname.$model as string,
-    //   lastname: v$.value.lastname.$model as string,
-    //   // company: { name: v$.value.company.name.$model as string },
-    // };
-
     const data = {
       email: v$.value.email.$model as string,
       company: v$.value.company.$model as string,
-      // company: { name: v$.value.company.name.$model as string },
       password: v$.value.password.$model as string,
     };
     console.log("Data to be sent:", data);
 
     loading.value = true;
-    // const is_alive = await checkDomainExists(data.email)
-    // .then((result: any) => {
-    //   if (result) {
-    //     return true;
-    //   } else {
-    //     return false;
-    //   }
-    // })
-    // .catch(error => {
-    //   return "Not yet ready";
-    // });
-    // const is_alive = true;
+  
+    try {
 
-    // if(){
-      const response = await request(authStore.userRegister(data), loading);
+     const response = await request(authStore.userRegister(data), loading);
       console.log("Response from API:", response);
-
-      handleError(response, userStore);
   
       const successResponse = handleSuccess(response, showSuccess);
   
@@ -116,12 +92,15 @@ const handleRegister = async (): Promise<void> => {
         setTimeout(() => {
           router.replace("/login");
         }, 3000);
+      }else {
+        responseData.value = { message: response.data?.message }; 
+        showSuccess.value = true; 
       }
-    // }else{
-    //   loading.value = false;
-    //   invalidDomain.value = true;
-    // }
-  }
+    } catch (error: any) {
+      responseData.value = { message: error.response?.data?.message || "An error occurred" }; 
+      showSuccess.value = true; 
+    }
+  } 
 };
 
 // const stringValidation = () => stringValidate(data.company.name);
